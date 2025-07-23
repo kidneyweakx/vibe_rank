@@ -6,25 +6,25 @@
 //
 
 import SwiftUI
+import Firebase
 
 @main
 struct viberankingApp: App {
     // Environment objects
-    @StateObject private var firebaseService = FirebaseService.shared
+    @StateObject private var authenticationViewModel = AuthenticationViewModel()
     @StateObject private var errorHandler = ErrorHandler()
-    
+
     init() {
-        // Firebase will be configured when dependencies are added
-        
+        FirebaseApp.configure()
         // Print app info for debugging
         print("App Version: \(AppInfo.fullVersionString)")
         print("Environment: \(AppEnvironment.current)")
     }
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(firebaseService)
+                .environmentObject(authenticationViewModel)
                 .environmentObject(errorHandler)
                 .onAppear {
                     // Log app start event

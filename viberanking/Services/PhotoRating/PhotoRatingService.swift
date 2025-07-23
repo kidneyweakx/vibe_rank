@@ -7,13 +7,24 @@
 
 import Foundation
 import Combine
+import FirebaseFirestore
 
 // MARK: - Photo Rating Service Implementation
 @MainActor
 class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
     
     // MARK: - Properties
-    private let firebaseService = FirebaseService.shared
+    private let db = Firestore.firestore()
+    private var photosCollection: CollectionReference {
+        return db.collection("photos")
+    }
+    private var ratingsCollection: CollectionReference {
+        return db.collection("ratings")
+    }
+    private var usersCollection: CollectionReference {
+        return db.collection("users")
+    }
+    
     @Published var isLoading = false
     @Published var error: AppError?
     
@@ -37,14 +48,13 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
                 return photosCache.filter { $0.userId != userId }
             }
             
-            // Simulate Firebase Firestore query
-            // In real implementation, this would query Firestore:
-            // let query = firebaseService.photosCollection
-            //     .whereField("userId", isNotEqualTo: userId)
-            //     .order(by: "uploadedAt", descending: true)
-            //     .limit(to: 50)
+            let query = photosCollection
+                .whereField("userId", isNotEqualTo: userId)
+                .order(by: "uploadedAt", descending: true)
+                .limit(to: 50)
             
-            let photos = try await simulateFetchPhotos(excludingUserId: userId)
+            let snapshot = try await query.getDocuments()
+            let photos = try snapshot.documents.compactMap { try $0.data(as: Photo.self) }
             
             // Update cache
             photosCache = photos
@@ -53,7 +63,7 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
             return photos
             
         } catch {
-            let appError = AppError.networkError(error)
+            let appError = AppError.firebaseError(.firestoreError(error.localizedDescription))
             self.error = appError
             throw appError
         }
@@ -65,12 +75,7 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
         defer { isLoading = false }
         
         do {
-            // Simulate Firebase Firestore write
-            // In real implementation:
-            // try await firebaseService.ratingsCollection.document(rating.id).setData(from: rating)
-            // Also update the photo's ratings array and statistics
-            
-            try await simulateSubmitRating(rating)
+            try await ratingsCollection.document(rating.id).setData(from: rating)
             
             // Update local cache if photo exists
             if let photoIndex = photosCache.firstIndex(where: { $0.id == rating.photoId }) {
@@ -78,7 +83,7 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
             }
             
         } catch {
-            let appError = AppError.networkError(error)
+            let appError = AppError.firebaseError(.firestoreError(error.localizedDescription))
             self.error = appError
             throw appError
         }
@@ -102,18 +107,14 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
             // Analyze style preferences based on rated photos
             try await analyzeStylePreferences(for: &preferences, from: ratings)
             
-            // Simulate Firebase Firestore write
-            // In real implementation:
-            // try await firebaseService.usersCollection
-            //     .document(preferences.userId)
-            //     .collection("preferences")
-            //     .document("current")
-            //     .setData(from: preferences)
-            
-            try await simulateUpdatePreferences(preferences)
+            try await usersCollection
+                .document(preferences.userId)
+                .collection("preferences")
+                .document("current")
+                .setData(from: preferences)
             
         } catch {
-            let appError = AppError.networkError(error)
+            let appError = AppError.firebaseError(.firestoreError(error.localizedDescription))
             self.error = appError
             throw appError
         }
@@ -122,56 +123,6 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
 
 // MARK: - Private Helper Methods
 private extension PhotoRatingService {
-    
-    /// Simulate fetching photos from Firestore
-    func simulateFetchPhotos(excludingUserId: String) async throws -> [Photo] {
-        // Simulate network delay
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        // Generate sample photos for testing
-        var samplePhotos: [Photo] = []
-        
-        for i in 1...20 {
-            let photo = Photo(
-                id: "photo_\(i)",
-                userId: "user_\(i % 5 + 1)", // Distribute among 5 different users
-                imageURL: "https://example.com/photo_\(i).webp",
-                dateTaken: Date().addingTimeInterval(-Double.random(in: 3600...86400)), // Random time within 24 hours
-                metadata: PhotoMetadata(
-                    dateTaken: Date().addingTimeInterval(-Double.random(in: 3600...86400)),
-                    cameraModel: "iPhone 15 Pro"
-                )
-            )
-            samplePhotos.append(photo)
-        }
-        
-        // Filter out the current user's photos
-        return samplePhotos.filter { $0.userId != excludingUserId }
-    }
-    
-    /// Simulate submitting a rating to Firestore
-    func simulateSubmitRating(_ rating: Rating) async throws {
-        // Simulate network delay
-        try await Task.sleep(nanoseconds: 200_000_000)
-        
-        // In real implementation, this would:
-        // 1. Add rating to ratings collection
-        // 2. Update photo's ratings array
-        // 3. Recalculate photo's average score
-        // 4. Update user's rating progress
-        
-        print("Rating submitted: Photo \(rating.photoId) rated \(rating.isHot ? "Hot" : "Not") by user \(rating.raterId)")
-    }
-    
-    /// Simulate updating user preferences in Firestore
-    func simulateUpdatePreferences(_ preferences: UserPreferences) async throws {
-        // Simulate network delay
-        try await Task.sleep(nanoseconds: 200_000_000)
-        
-        print("User preferences updated for user \(preferences.userId)")
-        print("Total ratings given: \(preferences.totalRatingsGiven)")
-        print("Hot rating percentage: \(preferences.hotRatingPercentage * 100)%")
-    }
     
     /// Analyze style preferences based on rated photos
     func analyzeStylePreferences(for preferences: inout UserPreferences, from ratings: [Rating]) async throws {

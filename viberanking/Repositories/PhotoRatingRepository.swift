@@ -7,13 +7,18 @@
 
 import Foundation
 import Combine
+import FirebaseFirestore
 
 // MARK: - Photo Rating Repository Implementation
 @MainActor
 class PhotoRatingRepository: ObservableObject {
     
     // MARK: - Properties
-    private let firebaseService = FirebaseService.shared
+    private let db = Firestore.firestore()
+    private var ratingsCollection: CollectionReference {
+        return db.collection("ratings")
+    }
+    
     @Published var isLoading = false
     @Published var error: AppError?
     
@@ -34,17 +39,13 @@ class PhotoRatingRepository: ObservableObject {
                 throw AppError.validationError("用戶已經評分過這張照片")
             }
             
-            // Simulate Firestore write
-            // In real implementation:
-            // try await firebaseService.ratingsCollection.document(rating.id).setData(from: rating)
-            
-            try await simulateSubmitRating(rating)
+            try await ratingsCollection.document(rating.id).setData(from: rating)
             
             // Update local cache
             updateLocalCache(with: rating)
             
         } catch {
-            let appError = error as? AppError ?? AppError.networkError(error)
+            let appError = error as? AppError ?? AppError.firebaseError(.firestoreError(error.localizedDescription))
             self.error = appError
             throw appError
         }
@@ -61,13 +62,12 @@ class PhotoRatingRepository: ObservableObject {
                 return cachedRatings
             }
             
-            // Simulate Firestore query
-            // In real implementation:
-            // let query = firebaseService.ratingsCollection
-            //     .whereField("photoId", isEqualTo: photoId)
-            //     .order(by: "createdAt", descending: true)
+            let query = ratingsCollection
+                .whereField("photoId", isEqualTo: photoId)
+                .order(by: "createdAt", descending: true)
             
-            let ratings = try await simulateFetchRatingsByPhoto(photoId: photoId)
+            let snapshot = try await query.getDocuments()
+            let ratings = try snapshot.documents.compactMap { try $0.data(as: Rating.self) }
             
             // Update cache
             ratingsCache[photoId] = ratings
@@ -75,7 +75,7 @@ class PhotoRatingRepository: ObservableObject {
             return ratings
             
         } catch {
-            let appError = AppError.networkError(error)
+            let appError = AppError.firebaseError(.firestoreError(error.localizedDescription))
             self.error = appError
             throw appError
         }
@@ -92,13 +92,12 @@ class PhotoRatingRepository: ObservableObject {
                 return cachedRatings
             }
             
-            // Simulate Firestore query
-            // In real implementation:
-            // let query = firebaseService.ratingsCollection
-            //     .whereField("raterId", isEqualTo: userId)
-            //     .order(by: "createdAt", descending: true)
+            let query = ratingsCollection
+                .whereField("raterId", isEqualTo: userId)
+                .order(by: "createdAt", descending: true)
             
-            let ratings = try await simulateFetchRatingsByUser(userId: userId)
+            let snapshot = try await query.getDocuments()
+            let ratings = try snapshot.documents.compactMap { try $0.data(as: Rating.self) }
             
             // Update cache
             userRatingsCache[userId] = ratings
@@ -106,7 +105,7 @@ class PhotoRatingRepository: ObservableObject {
             return ratings
             
         } catch {
-            let appError = AppError.networkError(error)
+            let appError = AppError.firebaseError(.firestoreError(error.localizedDescription))
             self.error = appError
             throw appError
         }
@@ -145,63 +144,6 @@ class PhotoRatingRepository: ObservableObject {
 
 // MARK: - Private Helper Methods
 private extension PhotoRatingRepository {
-    
-    /// Simulate submitting a rating to Firestore
-    func simulateSubmitRating(_ rating: Rating) async throws {
-        // Simulate network delay
-        try await Task.sleep(nanoseconds: 300_000_000)
-        
-        // In real implementation, this would also:
-        // 1. Update the photo document with new rating
-        // 2. Recalculate photo statistics
-        // 3. Update user's rating progress
-        
-        print("Rating submitted successfully: \(rating.id)")
-    }
-    
-    /// Simulate fetching ratings by photo from Firestore
-    func simulateFetchRatingsByPhoto(photoId: String) async throws -> [Rating] {
-        // Simulate network delay
-        try await Task.sleep(nanoseconds: 200_000_000)
-        
-        // Generate sample ratings for testing
-        var ratings: [Rating] = []
-        let ratingCount = Int.random(in: 5...25)
-        
-        for i in 1...ratingCount {
-            let rating = Rating(
-                id: "rating_\(photoId)_\(i)",
-                photoId: photoId,
-                raterId: "user_\(i % 10 + 1)",
-                isHot: Bool.random()
-            )
-            ratings.append(rating)
-        }
-        
-        return ratings
-    }
-    
-    /// Simulate fetching ratings by user from Firestore
-    func simulateFetchRatingsByUser(userId: String) async throws -> [Rating] {
-        // Simulate network delay
-        try await Task.sleep(nanoseconds: 200_000_000)
-        
-        // Generate sample user ratings for testing
-        var ratings: [Rating] = []
-        let ratingCount = Int.random(in: 10...50)
-        
-        for i in 1...ratingCount {
-            let rating = Rating(
-                id: "rating_\(userId)_\(i)",
-                photoId: "photo_\(i % 20 + 1)",
-                raterId: userId,
-                isHot: Bool.random()
-            )
-            ratings.append(rating)
-        }
-        
-        return ratings
-    }
     
     /// Update local cache with new rating
     func updateLocalCache(with rating: Rating) {
