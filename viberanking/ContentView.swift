@@ -34,17 +34,31 @@ struct MainTabView: View {
                 }
             
             // Upload tab - restricted for guests
-            Text("上傳")
-                .tabItem {
-                    Label("上傳", systemImage: "square.and.arrow.up")
-                }
+            if viewModel.isGuest {
+                GuestRestrictedView(feature: "上傳照片")
+                    .tabItem {
+                        Label("上傳", systemImage: "square.and.arrow.up")
+                    }
+            } else {
+                Text("上傳")
+                    .tabItem {
+                        Label("上傳", systemImage: "square.and.arrow.up")
+                    }
+            }
             
             
             // Report tab - restricted for guests
-            Text("報告")
-                .tabItem {
-                    Label("報告", systemImage: "chart.bar.fill")
-                }
+            if viewModel.isGuest {
+                GuestRestrictedView(feature: "風格報告")
+                    .tabItem {
+                        Label("報告", systemImage: "chart.bar.fill")
+                    }
+            } else {
+                Text("報告")
+                    .tabItem {
+                        Label("報告", systemImage: "chart.bar.fill")
+                    }
+            }
             
             
             // Profile tab - shows guest info or regular profile
@@ -115,11 +129,11 @@ struct ProfilePlaceholderView: View {
     var body: some View {
         VStack(spacing: 20) {
             // Profile image
-            Image(systemName: "person.crop.circle")
+            Image(systemName: viewModel.isGuest ? "person.crop.circle.badge.questionmark" : "person.crop.circle")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 80, height: 80)
-                .foregroundColor(.blue)
+                .foregroundColor(viewModel.isGuest ? .orange : .blue)
             
             // User info
             if let user = viewModel.user {
@@ -127,6 +141,15 @@ struct ProfilePlaceholderView: View {
                     .font(.title2)
                     .fontWeight(.semibold)
                 
+                if viewModel.isGuest {
+                    Text("訪客模式")
+                        .font(.caption)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(Color.orange.opacity(0.2))
+                        .foregroundColor(.orange)
+                        .cornerRadius(12)
+                }
                 
                 Text(user.email)
                     .font(.subheadline)
@@ -148,6 +171,11 @@ struct ProfilePlaceholderView: View {
                     ProgressView(value: user.ratingProgress.progressPercentage)
                         .progressViewStyle(LinearProgressViewStyle())
                     
+                    if viewModel.isGuest {
+                        Text("⚠️ 訪客模式下進度不會被保存")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                    }
                 }
                 .padding()
                 .background(Color.gray.opacity(0.1))
@@ -157,7 +185,7 @@ struct ProfilePlaceholderView: View {
             Spacer()
             
             // Sign out button
-            Button("登出") {
+            Button(viewModel.isGuest ? "退出訪客模式" : "登出") {
                 viewModel.signOut()
             }
             .foregroundColor(.red)

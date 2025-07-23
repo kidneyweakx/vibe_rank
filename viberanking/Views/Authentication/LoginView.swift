@@ -63,6 +63,16 @@ struct LoginView: View {
                         .foregroundColor(.white)
                         .cornerRadius(8)
                     }
+                    
+                    Button(action: {
+                        viewModel.signInAsGuest()
+                    }) {
+                        Text("以訪客模式繼續")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .underline()
+                    }
+                    .padding(.top, 8)
                 }
                 .padding(.horizontal)
             }

@@ -18,6 +18,7 @@ class AuthenticationViewModel: ObservableObject {
     @Published var isAuthenticated: Bool = false
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var isGuest: Bool = false
     
     private let authenticationService: AuthenticationServiceProtocol
     private var cancellables = Set<AnyCancellable>()
@@ -35,6 +36,7 @@ class AuthenticationViewModel: ObservableObject {
     func signInWithGoogle() {
         isLoading = true
         errorMessage = nil
+        isGuest = false
         
         Task {
             do {
@@ -51,6 +53,7 @@ class AuthenticationViewModel: ObservableObject {
     func signInWithApple() {
         isLoading = true
         errorMessage = nil
+        isGuest = false
         
         Task {
             do {
@@ -64,14 +67,32 @@ class AuthenticationViewModel: ObservableObject {
         }
     }
     
+    func signInAsGuest() {
+        isLoading = true
+        errorMessage = nil
+        isGuest = true
+        
+        let guestUser = User(
+            id: "guest_\(UUID().uuidString)",
+            name: "訪客",
+            email: "guest@example.com"
+        )
+        self.user = guestUser
+        self.isAuthenticated = true
+        isLoading = false
+    }
+    
     func signOut() {
         isLoading = true
         
         Task {
             do {
-                try await authenticationService.signOut()
+                if !isGuest {
+                    try await authenticationService.signOut()
+                }
                 self.user = nil
                 self.isAuthenticated = false
+                self.isGuest = false
             } catch {
                 self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
             }
