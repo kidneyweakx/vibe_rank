@@ -106,9 +106,54 @@ private extension PhotoRatingView {
                 
                 Spacer()
                 
+                // Sync Status
+                if viewModel.needsSync {
+                    HStack(spacing: 4) {
+                        Image(systemName: "icloud.and.arrow.up")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                        Text("\(viewModel.pendingRatingsCount)")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                    }
+                    .onTapGesture {
+                        Task {
+                            await viewModel.syncPendingRatings()
+                        }
+                    }
+                }
+                
+                Spacer()
+                
                 Text("\(viewModel.ratingProgress.requiredRatings)")
                     .font(.caption)
                     .foregroundColor(.secondary)
+            }
+            
+            // Sync notification
+            if viewModel.needsSync {
+                HStack {
+                    Image(systemName: "wifi.slash")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                    Text("有 \(viewModel.pendingRatingsCount) 個評分待同步")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                    
+                    Spacer()
+                    
+                    Button("同步") {
+                        Task {
+                            await viewModel.syncPendingRatings()
+                        }
+                    }
+                    .font(.caption)
+                    .foregroundColor(.blue)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(8)
             }
         }
         .padding(.horizontal)

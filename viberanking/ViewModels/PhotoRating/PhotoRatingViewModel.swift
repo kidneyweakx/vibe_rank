@@ -26,6 +26,7 @@ class PhotoRatingViewModel: BaseViewModel {
     // MARK: - Private Properties
     private let photoRatingService: PhotoRatingServiceProtocol
     private let userRepository: UserRepositoryProtocol
+    private let ratingProgressService: RatingProgressServiceProtocol
     private var cancellables = Set<AnyCancellable>()
     private var currentUserId: String = ""
     private var userRatings: [Rating] = []
@@ -59,9 +60,12 @@ class PhotoRatingViewModel: BaseViewModel {
     }
     
     // MARK: - Initialization
-    init(photoRatingService: PhotoRatingServiceProtocol, userRepository: UserRepositoryProtocol) {
+    init(photoRatingService: PhotoRatingServiceProtocol, 
+         userRepository: UserRepositoryProtocol,
+         ratingProgressService: RatingProgressServiceProtocol) {
         self.photoRatingService = photoRatingService
         self.userRepository = userRepository
+        self.ratingProgressService = ratingProgressService
         super.init()
         setupBindings()
     }
@@ -69,7 +73,11 @@ class PhotoRatingViewModel: BaseViewModel {
     override convenience init() {
         self.init(
             photoRatingService: PhotoRatingService(),
-            userRepository: UserRepository()
+            userRepository: UserRepository(),
+            ratingProgressService: RatingProgressService(
+                userRepository: UserRepository(),
+                ratingRepository: RatingRepository()
+            )
         )
     }
     
@@ -116,18 +124,17 @@ class PhotoRatingViewModel: BaseViewModel {
         )
         
         await performAsyncTask {
-            // Submit rating
+            // Submit rating through photo rating service
             try await self.photoRatingService.submitRating(rating)
+            
+            // Update progress through rating progress service
+            self.ratingProgress = try await self.ratingProgressService.updateRatingProgress(
+                userId: self.currentUserId, 
+                rating: rating
+            )
             
             // Update local state
             self.userRatings.append(rating)
-            self.ratingProgress.completedRatings += 1
-            
-            // Update user progress in repository
-            try await self.userRepository.updateRatingProgress(
-                userId: self.currentUserId,
-                progress: self.ratingProgress
-            )
             
             // Show feedback animation
             if withAnimation {
@@ -143,9 +150,9 @@ class PhotoRatingViewModel: BaseViewModel {
             // Move to next photo
             await self.moveToNextPhoto()
             
-            // Update user preferences periodically
-            if self.userRatings.count % 5 == 0 {
-                try await self.photoRatingService.updateUserPreferences(from: self.userRatings)
+            // Check if sync is needed for offline ratings
+            if self.ratingProgressService.needsSync(userId: self.currentUserId) {
+                try await self.ratingProgressService.syncLocalRatings(userId: self.currentUserId)
             }
         }
     }
@@ -204,6 +211,28 @@ class PhotoRatingViewModel: BaseViewModel {
     /// Refresh photos
     func refreshPhotos() async {
         await loadPhotosForRating(userId: currentUserId)
+    }
+    
+    /// Sync any pending offline ratings
+    func syncPendingRatings() async {
+        await performAsyncTask {
+            if self.ratingProgressService.needsSync(userId: self.currentUserId) {
+                try await self.ratingProgressService.syncLocalRatings(userId: self.currentUserId)
+                
+                // Refresh progress after sync
+                self.ratingProgress = try await self.ratingProgressService.getRatingProgress(userId: self.currentUserId)
+            }
+        }
+    }
+    
+    /// Get pending ratings count for UI display
+    var pendingRatingsCount: Int {
+        return ratingProgressService.getPendingRatingsCount(userId: currentUserId)
+    }
+    
+    /// Check if user needs to sync
+    var needsSync: Bool {
+        return ratingProgressService.needsSync(userId: currentUserId)
     }
 }
 
