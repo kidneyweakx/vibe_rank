@@ -8,6 +8,26 @@
 import Foundation
 import Combine
 
+// MARK: - Error Handler
+@MainActor
+class ErrorHandler: ObservableObject {
+    @Published var currentError: AppError?
+    
+    func handle(_ error: Error) {
+        if let appError = error as? AppError {
+            currentError = appError
+        } else if let firebaseError = error as? FirebaseError {
+            currentError = AppError.firebaseError(firebaseError)
+        } else {
+            currentError = AppError.networkError(error)
+        }
+    }
+    
+    func clearError() {
+        currentError = nil
+    }
+}
+
 // MARK: - Base ViewModel Protocol
 protocol BaseViewModelProtocol: ObservableObject {
     var isLoading: Bool { get set }
@@ -21,6 +41,7 @@ protocol BaseViewModelProtocol: ObservableObject {
 @MainActor
 class BaseViewModel: BaseViewModelProtocol {
     @Published var isLoading = false
+    @Published var error: AppError?
     let errorHandler = ErrorHandler()
     
     private var cancellables = Set<AnyCancellable>()
@@ -32,6 +53,7 @@ class BaseViewModel: BaseViewModelProtocol {
     private func setupErrorHandling() {
         errorHandler.$currentError
             .sink { [weak self] error in
+                self?.error = error
                 if error != nil {
                     self?.isLoading = false
                 }

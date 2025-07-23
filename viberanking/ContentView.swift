@@ -44,7 +44,7 @@ struct MainTabView: View {
     var body: some View {
         TabView {
             // Rating tab - available for all users
-            PhotoRatingPlaceholderView()
+            PhotoRatingTabView()
                 .tabItem {
                     Label("評分", systemImage: "star.fill")
                 }
@@ -84,35 +84,25 @@ struct MainTabView: View {
     }
 }
 
-struct PhotoRatingPlaceholderView: View {
+struct PhotoRatingTabView: View {
     @EnvironmentObject private var firebaseService: FirebaseService
     
     var body: some View {
-        VStack {
-            if firebaseService.isGuest {
-                Text("🎯 評分功能")
-                    .font(.title2)
-                    .padding()
-                
-                Text("訪客模式下您可以評分照片，但評分記錄不會被保存")
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.secondary)
-                    .padding()
+        Group {
+            if let currentUser = firebaseService.currentUser {
+                PhotoRatingView(userId: currentUser.id)
             } else {
-                Text("🎯 評分功能")
-                    .font(.title2)
-                    .padding()
-                
-                Text("開始評分照片來解鎖上傳功能")
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.secondary)
-                    .padding()
+                VStack {
+                    Text("🎯 評分功能")
+                        .font(.title2)
+                        .padding()
+                    
+                    Text("請先登入以使用評分功能")
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.secondary)
+                        .padding()
+                }
             }
-            
-            Button("開始評分") {
-                // TODO: Navigate to rating view
-            }
-            .buttonStyle(.borderedProminent)
         }
     }
 }

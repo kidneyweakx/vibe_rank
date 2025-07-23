@@ -4,6 +4,10 @@
 
 數位頂尖社交評價平台是一個基於 SwiftUI 的 iOS 應用程式，採用 MVVM 架構模式和現代 iOS 開發最佳實踐。應用程式的核心流程是引導用戶通過評分其他人的照片來解鎖上傳自己照片的功能，最終獲得個性化的風格分析報告。
 
+### 注意
+
+不要用 UIKit
+
 ### 技術棧
 
 - **UI Framework**: SwiftUI with iOS 16+ modern APIs (AsyncImage, NavigationStack)

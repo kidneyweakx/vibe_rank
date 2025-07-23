@@ -7,6 +7,30 @@
 
 import Foundation
 
+// MARK: - Firebase Error Types
+enum FirebaseError: Error, LocalizedError {
+    case authenticationError
+    case firestoreError(String)
+    case storageError(String)
+    case networkError
+    case unknownError
+    
+    var errorDescription: String? {
+        switch self {
+        case .authenticationError:
+            return "Firebase 認證錯誤"
+        case .firestoreError(let message):
+            return "資料庫錯誤: \(message)"
+        case .storageError(let message):
+            return "儲存錯誤: \(message)"
+        case .networkError:
+            return "Firebase 網路連接錯誤"
+        case .unknownError:
+            return "未知的 Firebase 錯誤"
+        }
+    }
+}
+
 // MARK: - Application Error Types
 enum AppError: Error, LocalizedError {
     case authenticationFailed
@@ -84,26 +108,3 @@ enum AppError: Error, LocalizedError {
     }
 }
 
-// MARK: - Error Handler Utility
-class ErrorHandler: ObservableObject {
-    @Published var currentError: AppError?
-    @Published var showingError = false
-    
-    func handle(_ error: Error) {
-        DispatchQueue.main.async {
-            if let appError = error as? AppError {
-                self.currentError = appError
-            } else if let firebaseError = error as? FirebaseError {
-                self.currentError = .firebaseError(firebaseError)
-            } else {
-                self.currentError = .networkError(error)
-            }
-            self.showingError = true
-        }
-    }
-    
-    func clearError() {
-        currentError = nil
-        showingError = false
-    }
-}

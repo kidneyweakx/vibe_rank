@@ -63,23 +63,7 @@ struct UserProgress: Codable {
     }
 }
 
-struct Achievement: Codable, Identifiable {
-    let id: String
-    let title: String
-    let description: String
-    let iconName: String
-    let unlockedAt: Date?
-    let isUnlocked: Bool
-    
-    init(id: String, title: String, description: String, iconName: String) {
-        self.id = id
-        self.title = title
-        self.description = description
-        self.iconName = iconName
-        self.unlockedAt = nil
-        self.isUnlocked = false
-    }
-}
+
 
 struct IncentiveStatus: Codable {
     var acceleratedRatingsAvailable: Int

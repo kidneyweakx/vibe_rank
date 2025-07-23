@@ -43,6 +43,18 @@ class UserRepository: UserRepositoryProtocol {
     }
     
     // MARK: - User-specific Operations
+    func getUser(by id: String) async throws -> User? {
+        // Placeholder implementation - return a sample user for testing
+        print("Getting user by id: \(id)")
+        return User(
+            id: id,
+            name: "Test User",
+            email: "test@example.com",
+            profileImageURL: nil,
+            gender: .other
+        )
+    }
+    
     func findByEmail(_ email: String) async throws -> User? {
         // Placeholder implementation
         print("Finding user by email: \(email)")

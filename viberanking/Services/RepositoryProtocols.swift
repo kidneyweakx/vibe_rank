@@ -21,6 +21,7 @@ protocol BaseRepositoryProtocol {
 
 // MARK: - User Repository Protocol
 protocol UserRepositoryProtocol: BaseRepositoryProtocol where Entity == User {
+    func getUser(by id: String) async throws -> User?
     func findByEmail(_ email: String) async throws -> User?
     func updateRatingProgress(userId: String, progress: RatingProgress) async throws
     func getUserPreferences(userId: String) async throws -> UserPreferences?

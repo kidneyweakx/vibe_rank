@@ -108,29 +108,3 @@ class FirebaseService: ObservableObject {
     }
 }
 
-// MARK: - Firebase Error Handling
-enum FirebaseError: Error, LocalizedError {
-    case userNotAuthenticated
-    case documentNotFound
-    case uploadFailed(Error)
-    case downloadFailed(Error)
-    case networkError(Error)
-    case invalidData
-    
-    var errorDescription: String? {
-        switch self {
-        case .userNotAuthenticated:
-            return "用戶未登入"
-        case .documentNotFound:
-            return "找不到相關資料"
-        case .uploadFailed(let error):
-            return "上傳失敗: \(error.localizedDescription)"
-        case .downloadFailed(let error):
-            return "下載失敗: \(error.localizedDescription)"
-        case .networkError(let error):
-            return "網路錯誤: \(error.localizedDescription)"
-        case .invalidData:
-            return "資料格式錯誤"
-        }
-    }
-}

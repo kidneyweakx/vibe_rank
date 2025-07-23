@@ -32,7 +32,10 @@ struct viberankingApp: App {
                 }
                 .alert(
                     errorHandler.currentError?.localizedDescription ?? "Error",
-                    isPresented: $errorHandler.showingError
+                    isPresented: Binding<Bool>(
+                        get: { errorHandler.currentError != nil },
+                        set: { _ in errorHandler.clearError() }
+                    )
                 ) {
                     Button("OK") {
                         errorHandler.clearError()
