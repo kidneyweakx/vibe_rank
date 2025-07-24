@@ -31,14 +31,14 @@
 
 - [-] 3. 實現認證系統
 
-  - [-] 3.1 創建 AuthenticationService 和相關協議
+  - [x] 3.1 創建 AuthenticationService 和相關協議
 
     - 實現 Google 和 Apple 登入的 Service 層
     - 創建用戶狀態管理的 ViewModel
     - 編寫認證相關的單元測試
     - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-  - [ ] 3.2 構建登入 UI 界面
+  - [x] 3.2 構建登入 UI 界面
 
     - 設計現代化的登入畫面，支援 Light/Dark Mode
     - 實現 Google 和 Apple 登入按鈕
