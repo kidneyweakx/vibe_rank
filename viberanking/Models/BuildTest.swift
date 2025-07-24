@@ -23,7 +23,7 @@ struct BuildTest {
         print("Rating created: \(rating.id)")
         
         // Test StyleReport model
-        let ranking = StyleRanking(overallRank: 1, totalUsers: 100)
+        let ranking = StyleRanking(overallScore: 95.5, percentile: 90.0, categoryRankings: [.elegant: 1, .classic: 2])
         let styleReport = StyleReport(
             userId: "test",
             dominantStyle: .elegant,

@@ -33,6 +33,9 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
     private var lastFetchTime: Date?
     private let cacheExpirationTime: TimeInterval = 300 // 5 minutes
     
+    // Sample photo service for fallback
+    private let samplePhotoService = SamplePhotoService()
+    
     // MARK: - PhotoRatingServiceProtocol Implementation
     
     /// Fetch photos for rating, excluding the current user's photos
@@ -56,16 +59,36 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
             let snapshot = try await query.getDocuments()
             let photos = try snapshot.documents.compactMap { try $0.data(as: Photo.self) }
             
-            // Update cache
+            // If no real photos available, use sample photos
+            if photos.isEmpty {
+                print("📸 No real photos found, using sample photos for rating")
+                let samplePhotos = try await samplePhotoService.getSamplePhotos()
+                
+                // Update cache with sample photos
+                photosCache = samplePhotos
+                lastFetchTime = Date()
+                
+                return samplePhotos.filter { $0.userId != userId }
+            }
+            
+            // Update cache with real photos
             photosCache = photos
             lastFetchTime = Date()
             
             return photos
             
         } catch {
-            let appError = AppError.firebaseError(.firestoreError(error.localizedDescription))
-            self.error = appError
-            throw appError
+            // If Firebase fails, try to use sample photos as fallback
+            print("⚠️ Firebase error, falling back to sample photos: \(error.localizedDescription)")
+            
+            do {
+                let samplePhotos = try await samplePhotoService.getSamplePhotos()
+                return samplePhotos.filter { $0.userId != userId }
+            } catch {
+                let appError = AppError.firebaseError(.firestoreError(error.localizedDescription))
+                self.error = appError
+                throw appError
+            }
         }
     }
     
@@ -75,7 +98,16 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
         defer { isLoading = false }
         
         do {
-            try await ratingsCollection.document(rating.id).setData(from: rating)
+            // Check if this is a sample photo
+            let isSamplePhoto = rating.photoId.hasPrefix("sample_")
+            
+            if !isSamplePhoto {
+                // Only save to Firebase if it's a real photo
+                try await ratingsCollection.document(rating.id).setData(from: rating)
+            } else {
+                print("📝 Rating submitted for sample photo: \(rating.photoId)")
+                // For sample photos, we just update the local cache
+            }
             
             // Update local cache if photo exists
             if let photoIndex = photosCache.firstIndex(where: { $0.id == rating.photoId }) {

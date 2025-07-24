@@ -7,32 +7,6 @@
 
 import Foundation
 
-// MARK: - Style Report Model
-struct StyleReport: Codable, Identifiable {
-    let id: String
-    let userId: String
-    let dominantStyle: StyleType
-    let styleBreakdown: [String: Double] // Using String keys for Codable compatibility
-    let ranking: StyleRanking
-    let recommendations: [String]
-    let generatedAt: Date
-    
-    init(userId: String,
-         dominantStyle: StyleType,
-         styleBreakdown: [StyleType: Double],
-         ranking: StyleRanking,
-         recommendations: [String]) {
-        self.id = UUID().uuidString
-        self.userId = userId
-        self.dominantStyle = dominantStyle
-        // Convert StyleType keys to String keys for Codable compatibility
-        self.styleBreakdown = Dictionary(uniqueKeysWithValues: styleBreakdown.map { ($0.key.rawValue, $0.value) })
-        self.ranking = ranking
-        self.recommendations = recommendations
-        self.generatedAt = Date()
-    }
-}
-
 // MARK: - Style Type Enum
 enum StyleType: String, CaseIterable, Codable {
     case elegant = "優雅"
@@ -43,67 +17,134 @@ enum StyleType: String, CaseIterable, Codable {
     case artistic = "藝術"
     
     var displayName: String {
-        return self.rawValue
+        return rawValue
     }
     
     var description: String {
         switch self {
         case .elegant:
-            return "展現優雅氣質，注重細節與品味"
+            return "精緻優雅的風格，展現品味與氣質"
         case .casual:
-            return "輕鬆自然的日常風格"
+            return "輕鬆自然的風格，舒適且親和"
         case .trendy:
-            return "緊跟時尚潮流，展現個性"
+            return "時尚前衛的風格，跟上潮流趨勢"
         case .classic:
-            return "經典不敗的永恆風格"
+            return "經典永恆的風格，不受時間影響"
         case .sporty:
-            return "活力運動風，展現健康活力"
+            return "運動活力的風格，展現健康活力"
         case .artistic:
-            return "富有創意與藝術感的獨特風格"
+            return "藝術創意的風格，獨特且富有創意"
+        }
+    }
+    
+    var emoji: String {
+        switch self {
+        case .elegant:
+            return "✨"
+        case .casual:
+            return "😊"
+        case .trendy:
+            return "🔥"
+        case .classic:
+            return "👑"
+        case .sporty:
+            return "💪"
+        case .artistic:
+            return "🎨"
         }
     }
 }
 
-// MARK: - Style Ranking
-struct StyleRanking: Codable {
-    let overallRank: Int
-    let totalUsers: Int
-    let categoryRanks: [String: Int] // Using String keys for Codable compatibility
-    let percentile: Double
+// MARK: - Style Report Model
+struct StyleReport: Codable, Identifiable {
+    let id: String
+    let userId: String
+    let dominantStyle: StyleType
+    let styleBreakdown: [String: Double] // Using String keys for Codable compatibility
+    let ranking: StyleRanking
+    let recommendations: [String]
+    let generatedAt: Date
     
-    init(overallRank: Int, totalUsers: Int, categoryRanks: [StyleType: Int] = [:]) {
-        self.overallRank = overallRank
-        self.totalUsers = totalUsers
-        // Convert StyleType keys to String keys for Codable compatibility
-        self.categoryRanks = Dictionary(uniqueKeysWithValues: categoryRanks.map { ($0.key.rawValue, $0.value) })
-        self.percentile = Double(totalUsers - overallRank + 1) / Double(totalUsers) * 100
+    init(userId: String, dominantStyle: StyleType, styleBreakdown: [StyleType: Double], ranking: StyleRanking, recommendations: [String]) {
+        self.id = UUID().uuidString
+        self.userId = userId
+        self.dominantStyle = dominantStyle
+        self.styleBreakdown = Dictionary(uniqueKeysWithValues: styleBreakdown.map { ($0.key.rawValue, $0.value) })
+        self.ranking = ranking
+        self.recommendations = recommendations
+        self.generatedAt = Date()
     }
     
-    var rankingDescription: String {
-        let percentage = Int(percentile)
-        return "您的風格排名前 \(percentage)%"
+    /// Get style breakdown with StyleType keys
+    var styleBreakdownTyped: [StyleType: Double] {
+        return Dictionary(uniqueKeysWithValues: styleBreakdown.compactMap { key, value in
+            guard let styleType = StyleType(rawValue: key) else { return nil }
+            return (styleType, value)
+        })
     }
 }
 
-// MARK: - Style Evolution (for gamification)
-struct StyleEvolution: Codable {
+// MARK: - Style Ranking Model
+struct StyleRanking: Codable {
+    let overallScore: Double
+    let percentile: Double
+    let categoryRankings: [String: Int] // category -> rank
+    
+    init(overallScore: Double, percentile: Double, categoryRankings: [StyleType: Int]) {
+        self.overallScore = overallScore
+        self.percentile = percentile
+        self.categoryRankings = Dictionary(uniqueKeysWithValues: categoryRankings.map { ($0.key.rawValue, $0.value) })
+    }
+    
+    /// Get category rankings with StyleType keys
+    var categoryRankingsTyped: [StyleType: Int] {
+        return Dictionary(uniqueKeysWithValues: categoryRankings.compactMap { key, value in
+            guard let styleType = StyleType(rawValue: key) else { return nil }
+            return (styleType, value)
+        })
+    }
+}
+
+// MARK: - CTA Message Model
+struct CTAMessage: Codable, Identifiable {
+    let id: String
     let userId: String
-    let reports: [StyleReport]
-    let evolutionTrend: [String: Double] // Using String keys for Codable compatibility
-    let lastUpdated: Date
+    let title: String
+    let subtitle: String
+    let buttonText: String
+    let motivationalText: String
+    let dominantStyle: StyleType
+    let personalizedElements: [String]
+    let createdAt: Date
     
-    init(userId: String, reports: [StyleReport] = []) {
+    init(userId: String, title: String, subtitle: String, buttonText: String, motivationalText: String, dominantStyle: StyleType, personalizedElements: [String]) {
+        self.id = UUID().uuidString
         self.userId = userId
-        self.reports = reports
-        self.evolutionTrend = [:]
-        self.lastUpdated = Date()
+        self.title = title
+        self.subtitle = subtitle
+        self.buttonText = buttonText
+        self.motivationalText = motivationalText
+        self.dominantStyle = dominantStyle
+        self.personalizedElements = personalizedElements
+        self.createdAt = Date()
+    }
+}
+
+// MARK: - CTA Trigger Conditions
+struct CTATriggerConditions: Codable {
+    let minimumRatingsRequired: Int
+    let hasUnlockedUpload: Bool
+    let userPreferencesAnalyzed: Bool
+    let dominantStyleIdentified: Bool
+    
+    init(minimumRatingsRequired: Int = 20, hasUnlockedUpload: Bool = false, userPreferencesAnalyzed: Bool = false, dominantStyleIdentified: Bool = false) {
+        self.minimumRatingsRequired = minimumRatingsRequired
+        self.hasUnlockedUpload = hasUnlockedUpload
+        self.userPreferencesAnalyzed = userPreferencesAnalyzed
+        self.dominantStyleIdentified = dominantStyleIdentified
     }
     
-    var hasEvolution: Bool {
-        return reports.count > 1
-    }
-    
-    var latestReport: StyleReport? {
-        return reports.sorted { $0.generatedAt > $1.generatedAt }.first
+    var shouldShowCTA: Bool {
+        return hasUnlockedUpload && userPreferencesAnalyzed && dominantStyleIdentified
     }
 }
