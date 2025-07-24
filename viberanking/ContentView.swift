@@ -66,6 +66,12 @@ struct MainTabView: View {
                 .tabItem {
                     Label("個人", systemImage: "person.fill")
                 }
+            
+            // Firebase Test Tab
+            FirebaseTestView()
+                .tabItem {
+                    Label("Test", systemImage: "arrow.up.circle.fill")
+                }
         }
     }
 }

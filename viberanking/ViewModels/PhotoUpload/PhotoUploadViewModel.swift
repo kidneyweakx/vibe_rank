@@ -15,8 +15,7 @@ import UIKit
 enum PhotoUploadState {
     case idle
     case selecting
-    case validating
-    case previewing(UIImage, PhotoMetadata?)
+    case previewing(UIImage)
     case uploading(progress: Double)
     case completed(Photo)
     case error(AppError)
@@ -35,13 +34,10 @@ class PhotoUploadViewModel: BaseViewModel {
     // MARK: - Published Properties
     @Published var uploadState: PhotoUploadState = .idle
     @Published var selectedImage: UIImage?
-    @Published var photoMetadata: PhotoMetadata?
     @Published var uploadProgress: Double = 0.0
     @Published var showingImagePicker = false
     @Published var showingCamera = false
     @Published var sourceType: PhotoSourceType = .photoLibrary
-    @Published var validationMessage: String = ""
-    @Published var isValidationPassed = false
     
     // MARK: - Dependencies
     private let photoUploadService: PhotoUploadServiceProtocol
@@ -52,7 +48,7 @@ class PhotoUploadViewModel: BaseViewModel {
     private var currentUploadTask: Task<Void, Never>?
     
     // MARK: - Initialization
-    init(photoUploadService: PhotoUploadServiceProtocol, 
+    init(photoUploadService: PhotoUploadServiceProtocol,
          authService: AuthenticationServiceProtocol) {
         self.photoUploadService = photoUploadService
         self.authService = authService
@@ -86,7 +82,7 @@ class PhotoUploadViewModel: BaseViewModel {
     /// Handle selected image from picker
     func handleSelectedImage(_ image: UIImage) {
         selectedImage = image
-        validateSelectedImage(image)
+        uploadState = .previewing(image)
     }
     
     /// Start photo upload process
@@ -118,10 +114,7 @@ class PhotoUploadViewModel: BaseViewModel {
         cancelUpload()
         uploadState = .idle
         selectedImage = nil
-        photoMetadata = nil
         uploadProgress = 0.0
-        validationMessage = ""
-        isValidationPassed = false
         showingImagePicker = false
         showingCamera = false
     }
@@ -130,7 +123,7 @@ class PhotoUploadViewModel: BaseViewModel {
     func retryUpload() {
         if case .error = uploadState {
             if let image = selectedImage {
-                validateSelectedImage(image)
+                uploadState = .previewing(image)
             } else {
                 uploadState = .idle
             }
@@ -151,67 +144,6 @@ private extension PhotoUploadViewModel {
                 }
             }
             .store(in: &cancellables)
-    }
-    
-    /// Validate selected image with EXIF data
-    func validateSelectedImage(_ image: UIImage) {
-        uploadState = .validating
-        validationMessage = "正在驗證照片..."
-        
-        Task {
-            do {
-                // Convert image to data for EXIF processing
-                guard let imageData = image.jpegData(compressionQuality: 1.0) else {
-                    throw AppError.invalidImageFormat
-                }
-                
-                // Extract EXIF data
-                let metadata = try await photoUploadService.extractEXIFData(imageData)
-                
-                // Validate photo freshness
-                let isValid = try await photoUploadService.validatePhotoFreshness(metadata)
-                
-                await MainActor.run {
-                    self.photoMetadata = metadata
-                    self.isValidationPassed = isValid
-                    self.uploadState = .previewing(image, metadata)
-                    self.updateValidationMessage(for: metadata)
-                }
-                
-            } catch let error as AppError {
-                await MainActor.run {
-                    self.setError(error)
-                }
-            } catch {
-                await MainActor.run {
-                    self.setError(.validationError("照片驗證失敗"))
-                }
-            }
-        }
-    }
-    
-    /// Update validation message based on metadata
-    func updateValidationMessage(for metadata: PhotoMetadata) {
-        if metadata.hasValidEXIF {
-            if metadata.isRecentPhoto {
-                validationMessage = "✅ 照片驗證通過"
-            } else {
-                validationMessage = "⚠️ 照片拍攝時間超過24小時"
-            }
-        } else {
-            validationMessage = "❌ 照片缺少必要的EXIF資料"
-        }
-        
-        if let cameraModel = metadata.cameraModel {
-            validationMessage += "\n📷 相機: \(cameraModel)"
-        }
-        
-        if let dateTaken = metadata.dateTaken {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .short
-            validationMessage += "\n📅 拍攝時間: \(formatter.string(from: dateTaken))"
-        }
     }
     
     /// Perform the actual photo upload
@@ -266,7 +198,7 @@ extension PhotoUploadViewModel {
     /// Check if upload can be started
     var canStartUpload: Bool {
         if case .previewing = uploadState {
-            return isValidationPassed && selectedImage != nil
+            return selectedImage != nil
         }
         return false
     }

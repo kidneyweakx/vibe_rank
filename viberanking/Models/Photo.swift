@@ -13,34 +13,20 @@ struct Photo: Codable, Identifiable {
     let userId: String
     let imageURL: String
     let uploadedAt: Date
-    let dateTaken: Date?
-    let isVerifiedRecent: Bool
     var ratings: [Rating]
     var averageScore: Double
     var totalRatings: Int
-    let metadata: PhotoMetadata?
     
-    init(id: String = UUID().uuidString, 
-         userId: String, 
-         imageURL: String, 
-         dateTaken: Date? = nil,
-         metadata: PhotoMetadata? = nil) {
+    init(id: String = UUID().uuidString,
+         userId: String,
+         imageURL: String) {
         self.id = id
         self.userId = userId
         self.imageURL = imageURL
         self.uploadedAt = Date()
-        self.dateTaken = dateTaken
-        self.isVerifiedRecent = Self.checkIfRecent(dateTaken: dateTaken)
         self.ratings = []
         self.averageScore = 0.0
         self.totalRatings = 0
-        self.metadata = metadata
-    }
-    
-    private static func checkIfRecent(dateTaken: Date?) -> Bool {
-        guard let dateTaken = dateTaken else { return false }
-        let twentyFourHoursAgo = Date().addingTimeInterval(-24 * 60 * 60)
-        return dateTaken >= twentyFourHoursAgo
     }
     
     mutating func addRating(_ rating: Rating) {
@@ -57,27 +43,6 @@ struct Photo: Codable, Identifiable {
         
         let hotRatings = ratings.filter { $0.isHot }.count
         averageScore = Double(hotRatings) / Double(totalRatings)
-    }
-}
-
-// MARK: - Photo Metadata
-struct PhotoMetadata: Codable {
-    let dateTaken: Date?
-    let cameraModel: String?
-    let isRecentPhoto: Bool
-    let hasValidEXIF: Bool
-    
-    init(dateTaken: Date? = nil, cameraModel: String? = nil) {
-        self.dateTaken = dateTaken
-        self.cameraModel = cameraModel
-        self.isRecentPhoto = Self.checkIfRecent(dateTaken: dateTaken)
-        self.hasValidEXIF = dateTaken != nil || cameraModel != nil
-    }
-    
-    private static func checkIfRecent(dateTaken: Date?) -> Bool {
-        guard let dateTaken = dateTaken else { return false }
-        let twentyFourHoursAgo = Date().addingTimeInterval(-24 * 60 * 60)
-        return dateTaken >= twentyFourHoursAgo
     }
 }
 

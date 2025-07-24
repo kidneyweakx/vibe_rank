@@ -26,8 +26,8 @@ protocol PhotoRatingServiceProtocol {
 
 // MARK: - Photo Upload Service Protocol
 protocol PhotoUploadServiceProtocol {
-    /// Upload photo with EXIF validation and WebP conversion
-    func uploadPhoto(_ imageData: Data, for userId: String) async throws -> Photo
+    /// Upload photo from UIImage
+    func uploadPhoto(_ image: UIImage, for userId: String) async throws -> Photo
     
     /// Convert image to WebP format
     func convertToWebP(_ imageData: Data, quality: Float) async throws -> Data
@@ -35,17 +35,8 @@ protocol PhotoUploadServiceProtocol {
     /// Generate thumbnails at different sizes
     func generateThumbnails(_ imageData: Data) async throws -> PhotoSizes
     
-    /// Extract EXIF data from image data
-    func extractEXIFData(_ imageData: Data) async throws -> PhotoMetadata
-    
-    /// Validate photo freshness
-    func validatePhotoFreshness(_ metadata: PhotoMetadata) async throws -> Bool
-    
     /// Get upload progress for a photo
     func getUploadProgress(for photoId: String) async throws -> UploadProgress
-    
-    /// Upload photo from UIImage
-    func uploadPhoto(_ image: UIImage, for userId: String) async throws -> Photo
     
     /// Get upload status for multiple photos
     func getUploadStatuses(for photoIds: [String]) async throws -> [String: UploadProgress]

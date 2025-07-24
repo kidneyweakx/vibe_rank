@@ -63,17 +63,10 @@ class SamplePhotoService: ObservableObject, SamplePhotoServiceProtocol {
     
     /// Generate a sample photo with specified parameters
     func generateSamplePhoto(id: String, imageUrl: String, style: StyleType) -> Photo {
-        let metadata = PhotoMetadata(
-            dateTaken: Date().addingTimeInterval(-Double.random(in: 0...86400)), // Random time within last 24 hours
-            cameraModel: "Sample Camera"
-        )
-        
         var photo = Photo(
             id: id,
             userId: "sample_user",
-            imageURL: imageUrl,
-            dateTaken: metadata.dateTaken,
-            metadata: metadata
+            imageURL: imageUrl
         )
         
         // Add some sample ratings to make it more realistic

@@ -11,18 +11,15 @@ import XCTest
 final class PhotoUploadServiceTests: XCTestCase {
     
     var photoUploadService: PhotoUploadService!
-    var mockEXIFService: MockEXIFValidationService!
     var testImageData: Data!
     
     override func setUpWithError() throws {
-        mockEXIFService = MockEXIFValidationService()
-        photoUploadService = PhotoUploadService(exifValidationService: mockEXIFService)
+        photoUploadService = PhotoUploadService()
         testImageData = createTestImageData()
     }
     
     override func tearDownWithError() throws {
         photoUploadService = nil
-        mockEXIFService = nil
         testImageData = nil
     }
     
@@ -54,40 +51,6 @@ final class PhotoUploadServiceTests: XCTestCase {
         XCTAssertGreaterThan(photoSizes.highRes.count, 0)
     }
     
-    // MARK: - EXIF Integration Tests
-    
-    func testExtractEXIFData() async throws {
-        // Given
-        let expectedMetadata = PhotoMetadata(
-            dateTaken: Date(),
-            cameraModel: "iPhone 15 Pro"
-        )
-        mockEXIFService.mockMetadata = expectedMetadata
-        
-        // When
-        let metadata = try await photoUploadService.extractEXIFData(testImageData)
-        
-        // Then
-        XCTAssertEqual(metadata.cameraModel, expectedMetadata.cameraModel)
-        XCTAssertTrue(mockEXIFService.extractEXIFDataCalled)
-    }
-    
-    func testValidatePhotoFreshness() async throws {
-        // Given
-        let recentMetadata = PhotoMetadata(
-            dateTaken: Date().addingTimeInterval(-3600), // 1 hour ago
-            cameraModel: "iPhone 15 Pro"
-        )
-        mockEXIFService.mockValidationResult = true
-        
-        // When
-        let isValid = try await photoUploadService.validatePhotoFreshness(recentMetadata)
-        
-        // Then
-        XCTAssertTrue(isValid)
-        XCTAssertTrue(mockEXIFService.validatePhotoFreshnessCalled)
-    }
-    
     // MARK: - Upload Progress Tests
     
     func testGetUploadProgress() async throws {
@@ -109,15 +72,6 @@ final class PhotoUploadServiceTests: XCTestCase {
     func testUploadPhotoFromUIImage() async throws {
         // Given
         let testImage = createTestUIImage()
-        let userId = "test-user-id"
-        
-        // Setup mock EXIF service
-        mockEXIFService.mockMetadata = PhotoMetadata(
-            dateTaken: Date(),
-            cameraModel: "iPhone 15 Pro"
-        )
-        mockEXIFService.mockValidationResult = true
-        mockEXIFService.mockSanitizedData = testImageData
         
         // When/Then - This would require Firebase setup for full integration test
         // For unit test, we verify the image data conversion
@@ -128,44 +82,6 @@ final class PhotoUploadServiceTests: XCTestCase {
         
         XCTAssertNotNil(imageData)
         XCTAssertGreaterThan(imageData.count, 0)
-    }
-    
-    // MARK: - Error Handling Tests
-    
-    func testUploadPhotoWithInvalidEXIF() async {
-        // Given
-        let userId = "test-user-id"
-        mockEXIFService.shouldThrowError = true
-        mockEXIFService.errorToThrow = AppError.invalidImageFormat
-        
-        // When/Then
-        do {
-            _ = try await photoUploadService.uploadPhoto(testImageData, for: userId)
-            XCTFail("Should have thrown an error for invalid EXIF")
-        } catch {
-            XCTAssertTrue(error is AppError)
-        }
-    }
-    
-    func testUploadPhotoWithOldPhoto() async {
-        // Given
-        let userId = "test-user-id"
-        let oldMetadata = PhotoMetadata(
-            dateTaken: Date().addingTimeInterval(-48 * 3600), // 48 hours ago
-            cameraModel: "iPhone 15 Pro"
-        )
-        
-        mockEXIFService.mockMetadata = oldMetadata
-        mockEXIFService.mockValidationResult = false
-        mockEXIFService.shouldThrowValidationError = true
-        
-        // When/Then
-        do {
-            _ = try await photoUploadService.uploadPhoto(testImageData, for: userId)
-            XCTFail("Should have thrown an error for old photo")
-        } catch {
-            XCTAssertTrue(mockEXIFService.validatePhotoFreshnessCalled)
-        }
     }
     
     // MARK: - Performance Tests
@@ -208,62 +124,6 @@ final class PhotoUploadServiceTests: XCTestCase {
             
             wait(for: [expectation], timeout: 5.0)
         }
-    }
-}
-
-// MARK: - Mock EXIF Validation Service
-class MockEXIFValidationService: EXIFValidationServiceProtocol {
-    
-    var mockMetadata: PhotoMetadata?
-    var mockValidationResult: Bool = true
-    var mockSanitizedData: Data?
-    var shouldThrowError: Bool = false
-    var shouldThrowValidationError: Bool = false
-    var errorToThrow: Error = AppError.invalidImageFormat
-    
-    var extractEXIFDataCalled: Bool = false
-    var validatePhotoFreshnessCalled: Bool = false
-    var detectScreenshotCalled: Bool = false
-    var sanitizeEXIFDataCalled: Bool = false
-    
-    func extractEXIFData(from imageData: Data) async throws -> PhotoMetadata {
-        extractEXIFDataCalled = true
-        
-        if shouldThrowError {
-            throw errorToThrow
-        }
-        
-        return mockMetadata ?? PhotoMetadata()
-    }
-    
-    func validatePhotoFreshness(_ metadata: PhotoMetadata) throws -> Bool {
-        validatePhotoFreshnessCalled = true
-        
-        if shouldThrowValidationError {
-            throw AppError.insufficientRatings
-        }
-        
-        return mockValidationResult
-    }
-    
-    func detectScreenshot(from imageData: Data) throws -> Bool {
-        detectScreenshotCalled = true
-        
-        if shouldThrowError {
-            throw errorToThrow
-        }
-        
-        return false // Assume not a screenshot for tests
-    }
-    
-    func sanitizeEXIFData(from imageData: Data) async throws -> Data {
-        sanitizeEXIFDataCalled = true
-        
-        if shouldThrowError {
-            throw errorToThrow
-        }
-        
-        return mockSanitizedData ?? imageData
     }
 }
 

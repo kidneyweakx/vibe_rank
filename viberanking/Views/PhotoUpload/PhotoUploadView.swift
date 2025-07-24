@@ -33,9 +33,7 @@ struct PhotoUploadView: View {
                             sourceSelectionSection
                         case .selecting:
                             loadingSection("選擇照片中...")
-                        case .validating:
-                            loadingSection("驗證照片中...")
-                        case .previewing(let image, _):
+                        case .previewing(let image):
                             photoPreviewSection(image: image)
                         case .uploading(let progress):
                             uploadProgressSection(progress: progress)
@@ -175,61 +173,6 @@ private extension PhotoUploadView {
             }
             .buttonStyle(PlainButtonStyle())
             
-            // Requirements info
-            requirementsInfoSection
-        }
-    }
-    
-    /// Requirements information
-    var requirementsInfoSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "info.circle.fill")
-                    .foregroundColor(.blue)
-                Text("照片要求")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                Spacer()
-            }
-            
-            VStack(alignment: .leading, spacing: 8) {
-                requirementRow(
-                    icon: "clock.fill",
-                    text: "24小時內拍攝",
-                    color: .green
-                )
-                
-                requirementRow(
-                    icon: "camera.fill",
-                    text: "使用相機拍攝（非螢幕截圖）",
-                    color: .blue
-                )
-                
-                requirementRow(
-                    icon: "checkmark.shield.fill",
-                    text: "包含完整EXIF資料",
-                    color: .orange
-                )
-            }
-        }
-        .padding(16)
-        .background(Color(.secondarySystemGroupedBackground))
-        .cornerRadius(12)
-    }
-    
-    /// Individual requirement row
-    func requirementRow(icon: String, text: String, color: Color) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.caption)
-                .foregroundColor(color)
-                .frame(width: 16)
-            
-            Text(text)
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            Spacer()
         }
     }
     
@@ -257,63 +200,22 @@ private extension PhotoUploadView {
                 .frame(maxHeight: 300)
                 .cornerRadius(12)
                 .shadow(radius: 4)
-            
-            // Validation status
-            validationStatusSection
-            
+
             // Upload button
-            if viewModel.canStartUpload {
-                Button(action: viewModel.uploadPhoto) {
-                    HStack {
-                        Image(systemName: "icloud.and.arrow.up.fill")
-                        Text("開始上傳")
-                    }
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.blue)
-                    .cornerRadius(12)
+            Button(action: viewModel.uploadPhoto) {
+                HStack {
+                    Image(systemName: "icloud.and.arrow.up.fill")
+                    Text("開始上傳")
                 }
-                .buttonStyle(PlainButtonStyle())
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.blue)
+                .cornerRadius(12)
             }
+            .buttonStyle(PlainButtonStyle())
         }
-    }
-    
-    /// Validation status section
-    var validationStatusSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: viewModel.isValidationPassed ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                    .foregroundColor(viewModel.isValidationPassed ? .green : .orange)
-                
-                Text("驗證結果")
-                    .font(.headline)
-                
-                Spacer()
-            }
-            
-            Text(viewModel.validationMessage)
-                .font(.body)
-                .foregroundColor(.primary)
-                .multilineTextAlignment(.leading)
-        }
-        .padding(16)
-        .background(
-            viewModel.isValidationPassed ? 
-            Color.green.opacity(0.1) : 
-            Color.orange.opacity(0.1)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(
-                    viewModel.isValidationPassed ? 
-                    Color.green.opacity(0.3) : 
-                    Color.orange.opacity(0.3),
-                    lineWidth: 1
-                )
-        )
-        .cornerRadius(12)
     }
     
     /// Upload progress section

@@ -18,64 +18,48 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
     // MARK: - Dependencies
     private let storage = Storage.storage()
     private let firestore = Firestore.firestore()
-    private let exifValidationService: EXIFValidationServiceProtocol
     private let webpConverter = WebPConverter.shared
     
     // MARK: - Upload Management
     private var activeUploads: [String: UploadTask] = [:]
     
     // MARK: - Initialization
-    nonisolated init(exifValidationService: EXIFValidationServiceProtocol) {
-        self.exifValidationService = exifValidationService
-    }
-    
-    convenience init() {
-        self.init(exifValidationService: EXIFValidationService())
+    init() {
+        // No-op
     }
     
     // MARK: - Public Methods
     
-    /// Upload photo with EXIF validation and WebP conversion
-    func uploadPhoto(_ imageData: Data, for userId: String) async throws -> Photo {
+    /// Upload photo with WebP conversion
+    func uploadPhoto(_ image: UIImage, for userId: String) async throws -> Photo {
         let photoId = UUID().uuidString
         let uploadTask = UploadTask(photoId: photoId, userId: userId)
         activeUploads[photoId] = uploadTask
         
+        guard let imageData = image.jpegData(compressionQuality: 1.0) else {
+            throw AppError.invalidImageFormat
+        }
+        
         do {
-            // Step 1: Extract and validate EXIF data
-            updateUploadStatus(photoId: photoId, status: .preparing)
-            let metadata = try await exifValidationService.extractEXIFData(from: imageData)
-            
-            // Step 2: Validate photo freshness
-            _ = try exifValidationService.validatePhotoFreshness(metadata)
-            
-            // Step 3: Check for screenshots
-            _ = try exifValidationService.detectScreenshot(from: imageData)
-            
-            // Step 4: Sanitize EXIF data
-            let sanitizedData = try await exifValidationService.sanitizeEXIFData(from: imageData)
-            
-            // Step 5: Generate photo sizes with WebP conversion
+            // Step 1: Generate photo sizes with WebP conversion
             updateUploadStatus(photoId: photoId, status: .processing)
-            let photoSizes = try await generateThumbnails(sanitizedData)
+            let photoSizes = try await generateThumbnails(imageData)
             
-            // Step 6: Upload to Firebase Storage
+            // Step 2: Upload to Firebase Storage
             updateUploadStatus(photoId: photoId, status: .uploading(progress: 0.0))
             let imageURL = try await uploadToFirebaseStorage(photoSizes: photoSizes, photoId: photoId)
             
-            // Step 7: Create Photo object
+            // Step 3: Create Photo object
             let photo = Photo(
                 id: photoId,
                 userId: userId,
-                imageURL: imageURL,
-                dateTaken: metadata.dateTaken,
-                metadata: metadata
+                imageURL: imageURL
             )
             
-            // Step 8: Save to Firestore
+            // Step 4: Save to Firestore
             try await savePhotoToFirestore(photo)
             
-            // Step 9: Complete upload
+            // Step 5: Complete upload
             updateUploadStatus(photoId: photoId, status: .completed)
             activeUploads.removeValue(forKey: photoId)
             
@@ -88,14 +72,6 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
         }
     }
     
-    /// Upload photo from UIImage
-    func uploadPhoto(_ image: UIImage, for userId: String) async throws -> Photo {
-        guard let imageData = image.jpegData(compressionQuality: 1.0) else {
-            throw AppError.invalidImageFormat
-        }
-        return try await uploadPhoto(imageData, for: userId)
-    }
-    
     /// Convert image to WebP format using WebPConverter
     func convertToWebP(_ imageData: Data, quality: Float) async throws -> Data {
         return try await webpConverter.convertToWebP(imageData, quality: quality)
@@ -104,16 +80,6 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
     /// Generate thumbnails at different sizes using WebP conversion
     func generateThumbnails(_ imageData: Data) async throws -> PhotoSizes {
         return try await webpConverter.generateThumbnails(imageData)
-    }
-    
-    /// Extract EXIF data from image data
-    func extractEXIFData(_ imageData: Data) async throws -> PhotoMetadata {
-        return try await exifValidationService.extractEXIFData(from: imageData)
-    }
-    
-    /// Validate photo freshness
-    func validatePhotoFreshness(_ metadata: PhotoMetadata) async throws -> Bool {
-        return try exifValidationService.validatePhotoFreshness(metadata)
     }
     
     /// Get upload progress for a photo
