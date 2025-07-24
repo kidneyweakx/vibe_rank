@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 // MARK: - Authentication Service Protocol
 protocol AuthenticationServiceProtocol {
@@ -25,12 +26,32 @@ protocol PhotoRatingServiceProtocol {
 
 // MARK: - Photo Upload Service Protocol
 protocol PhotoUploadServiceProtocol {
+    /// Upload photo with EXIF validation and WebP conversion
     func uploadPhoto(_ imageData: Data, for userId: String) async throws -> Photo
+    
+    /// Convert image to WebP format
     func convertToWebP(_ imageData: Data, quality: Float) async throws -> Data
+    
+    /// Generate thumbnails at different sizes
     func generateThumbnails(_ imageData: Data) async throws -> PhotoSizes
+    
+    /// Extract EXIF data from image data
     func extractEXIFData(_ imageData: Data) async throws -> PhotoMetadata
+    
+    /// Validate photo freshness
     func validatePhotoFreshness(_ metadata: PhotoMetadata) async throws -> Bool
+    
+    /// Get upload progress for a photo
     func getUploadProgress(for photoId: String) async throws -> UploadProgress
+    
+    /// Upload photo from UIImage
+    func uploadPhoto(_ image: UIImage, for userId: String) async throws -> Photo
+    
+    /// Get upload status for multiple photos
+    func getUploadStatuses(for photoIds: [String]) async throws -> [String: UploadProgress]
+    
+    /// Cancel upload for a specific photo
+    func cancelUpload(for photoId: String) async throws
 }
 
 // MARK: - Style Analysis Service Protocol
@@ -76,5 +97,34 @@ struct IncentiveStatus: Codable {
         self.nextAcceleratedRatingAt = 10
         self.evolutionAnalysisUnlocked = false
         self.shareRewardsUnlocked = false
+    }
+}
+
+// MARK: - Upload Status
+enum UploadStatus {
+    case preparing
+    case uploading(progress: Double)
+    case processing
+    case completed
+    case failed(Error)
+    case cancelled
+}
+
+// MARK: - Upload Task
+struct UploadTask {
+    let id: String
+    let photoId: String
+    let userId: String
+    var status: UploadStatus
+    var progress: Double
+    let createdAt: Date
+    
+    init(photoId: String, userId: String) {
+        self.id = UUID().uuidString
+        self.photoId = photoId
+        self.userId = userId
+        self.status = .preparing
+        self.progress = 0.0
+        self.createdAt = Date()
     }
 }
