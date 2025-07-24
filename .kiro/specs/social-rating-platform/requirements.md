@@ -20,14 +20,14 @@
 
 ### Requirement 2
 
-**User Story:** 作為新用戶，我想要先評分其他人的照片，這樣我就能了解平台的運作方式並解鎖上傳功能。
+**User Story:** 作為新用戶，我想要先評分其他人的照片，這樣我就能了解平台的運作方式並解鎖 CTA 分析。
 
 #### Acceptance Criteria
 
 1. WHEN 用戶完成登入 THEN 系統 SHALL 顯示滑圖評分介面
 2. WHEN 用戶進入評分模式 THEN 系統 SHALL 顯示進度條「還需評分 X 張照片解鎖上傳功能」
 3. WHEN 用戶評分一張照片 THEN 系統 SHALL 更新進度條並記錄用戶偏好數據
-4. WHEN 用戶完成少於 20 張照片評分 THEN 系統 SHALL 阻止用戶訪問上傳功能
+4. WHEN 用戶完成少於 20 張照片評分 THEN 系統 SHALL 阻止用戶訪問其他功能
 5. WHEN 用戶完成 20 張照片評分 THEN 系統 SHALL 解鎖上傳功能並顯示 CTA
 
 ### Requirement 3

@@ -431,21 +431,33 @@ class AuthenticationService: NSObject, AuthenticationServiceProtocol, ASAuthoriz
     
     // MARK: - User Profile Management
     
+    private let userRepository = UserRepository()
+    
     /// Creates or updates a user profile in Firestore
     private func createOrUpdateUserProfile(_ user: User) async throws {
         print("🔄 Creating/updating user profile for \(user.id) in Firestore")
         
-        // This would be implemented with actual Firestore code
-        // For now, we'll just simulate the operation
-        
-        // In a real implementation, we would:
-        // 1. Check if the user exists in Firestore
-        // 2. If not, create a new user document
-        // 3. If yes, update the existing document with any new information
-        
-        // Simulate a delay for the operation
-        try await Task.sleep(nanoseconds: 500_000_000)
-        print("✅ User profile operation completed")
+        do {
+            let savedUser = try await userRepository.createOrUpdateUserProfile(user)
+            print("✅ User profile saved successfully: \(savedUser.name)")
+            
+            // Try to update last activity, but don't fail if offline
+            do {
+                try await userRepository.updateLastActivity(userId: savedUser.id)
+            } catch {
+                print("⚠️ Could not update last activity (offline mode): \(error.localizedDescription)")
+                // Continue without failing
+            }
+            
+        } catch {
+            print("⚠️ Failed to create/update user profile (offline mode): \(error.localizedDescription)")
+            // In offline mode, don't throw error - allow authentication to continue
+            if error.localizedDescription.contains("offline") || error.localizedDescription.contains("network") {
+                print("📱 Continuing authentication in offline mode")
+                return
+            }
+            throw error
+        }
     }
     
     // MARK: - Sign Out

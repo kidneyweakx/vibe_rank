@@ -338,7 +338,7 @@ struct ScaleButtonStyle: ButtonStyle {
     }
 }
 
-// MARK: - Color Extension
+// MARK: - Color Extension (if not already defined elsewhere)
 extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -371,48 +371,40 @@ struct LoginViewPreview: PreviewProvider {
         Group {
             // Light Mode Preview
             LoginView()
-                .environmentObject(PreviewAuthenticationViewModel())
+                .environmentObject(LoginPreviewAuthenticationViewModel())
                 .preferredColorScheme(.light)
                 .previewDisplayName("Light Mode")
             
             // Dark Mode Preview
             LoginView()
-                .environmentObject(PreviewAuthenticationViewModel())
+                .environmentObject(LoginPreviewAuthenticationViewModel())
                 .preferredColorScheme(.dark)
                 .previewDisplayName("Dark Mode")
             
             // Loading State Preview
             LoginView()
-                .environmentObject(PreviewAuthenticationViewModel(isLoading: true))
+                .environmentObject(LoginPreviewAuthenticationViewModel(isLoading: true))
                 .previewDisplayName("Loading State")
             
             // Error State Preview
             LoginView()
-                .environmentObject(PreviewAuthenticationViewModel(errorMessage: "登入失敗，請檢查網路連接並重試"))
+                .environmentObject(LoginPreviewAuthenticationViewModel(errorMessage: "登入失敗，請檢查網路連接並重試"))
                 .previewDisplayName("Error State")
         }
     }
 }
 
-// Preview helper class that doesn't use @MainActor
-class PreviewAuthenticationViewModel: AuthenticationViewModel {
-    override nonisolated init(authenticationService: AuthenticationServiceProtocol = MockAuthenticationService()) {
-        super.init(authenticationService: authenticationService)
-        
-        // For preview purposes, we'll set properties directly
-        Task { @MainActor in
-            self.isAuthenticated = false
-            self.authState = .signedOut
-        }
-    }
-    
-    nonisolated convenience init(isLoading: Bool = false, errorMessage: String? = nil) {
-        self.init()
+// Preview helper class
+class LoginPreviewAuthenticationViewModel: AuthenticationViewModel {
+    nonisolated init(isLoading: Bool = false, errorMessage: String? = nil) {
+        super.init(authenticationService: MockAuthenticationService())
         
         // For preview purposes, we'll set properties directly
         Task { @MainActor in
             self.isLoading = isLoading
             self.errorMessage = errorMessage
+            self.isAuthenticated = false
+            self.authState = .signedOut
         }
     }
 }

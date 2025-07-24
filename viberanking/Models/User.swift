@@ -15,6 +15,7 @@ struct User: Codable, Identifiable {
     let profileImageURL: String?
     let gender: Gender?
     let createdAt: Date
+    var lastActivityAt: Date?
     var ratingProgress: RatingProgress
     var uploadedPhotos: [Photo]
     
@@ -25,8 +26,21 @@ struct User: Codable, Identifiable {
         self.profileImageURL = profileImageURL
         self.gender = gender
         self.createdAt = Date()
+        self.lastActivityAt = Date()
         self.ratingProgress = RatingProgress()
         self.uploadedPhotos = []
+    }
+    
+    /// Update last activity timestamp
+    mutating func updateLastActivity() {
+        lastActivityAt = Date()
+    }
+    
+    /// Check if user was active recently (within last 24 hours)
+    var isRecentlyActive: Bool {
+        guard let lastActivity = lastActivityAt else { return false }
+        let twentyFourHoursAgo = Date().addingTimeInterval(-24 * 60 * 60)
+        return lastActivity >= twentyFourHoursAgo
     }
 }
 
