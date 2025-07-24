@@ -40,7 +40,7 @@ struct MainTabView: View {
                         Label("上傳", systemImage: "square.and.arrow.up")
                     }
             } else {
-                Text("上傳")
+                PhotoUploadTabView()
                     .tabItem {
                         Label("上傳", systemImage: "square.and.arrow.up")
                     }
@@ -84,6 +84,29 @@ struct PhotoRatingTabView: View {
                         .padding()
                     
                     Text("請先登入以使用評分功能")
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.secondary)
+                        .padding()
+                }
+            }
+        }
+    }
+}
+
+struct PhotoUploadTabView: View {
+    @EnvironmentObject private var viewModel: AuthenticationViewModel
+    
+    var body: some View {
+        Group {
+            if let currentUser = viewModel.user {
+                PhotoUploadView()
+            } else {
+                VStack {
+                    Text("📸 上傳功能")
+                        .font(.title2)
+                        .padding()
+                    
+                    Text("請先登入以使用上傳功能")
                         .multilineTextAlignment(.center)
                         .foregroundColor(.secondary)
                         .padding()
