@@ -36,13 +36,12 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
         let uploadTask = UploadTask(photoId: photoId, userId: userId)
         activeUploads[photoId] = uploadTask
         
-        guard let imageData = image.jpegData(compressionQuality: 1.0) else {
-            throw AppError.invalidImageFormat
-        }
-        
         do {
             // Step 1: Generate photo sizes with WebP conversion
             updateUploadStatus(photoId: photoId, status: .processing)
+            guard let imageData = image.pngData() else {
+                throw AppError.invalidImageFormat
+            }
             let photoSizes = try await generateThumbnails(imageData)
             
             // Step 2: Upload to Firebase Storage
