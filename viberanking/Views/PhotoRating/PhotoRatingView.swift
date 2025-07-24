@@ -51,6 +51,11 @@ struct PhotoRatingView: View {
                     ratingFeedbackOverlay
                 }
                 
+                // Unlock Celebration Overlay
+                if viewModel.showUnlockCelebration {
+                    unlockCelebrationOverlay
+                }
+                
                 // Image Preloader
                 ImagePreloader(urls: preloadUrls)
             }
@@ -87,16 +92,44 @@ private extension PhotoRatingView {
     // Progress Section
     var progressSection: some View {
         VStack(spacing: 12) {
-            // Progress Text
-            Text(viewModel.progressText)
-                .font(.headline)
-                .foregroundColor(viewModel.ratingProgress.hasUnlockedUpload ? .green : .primary)
-                .multilineTextAlignment(.center)
+            // Progress Text with Lock Icon
+            HStack(spacing: 8) {
+                // Lock/Unlock Icon
+                Image(systemName: viewModel.ratingProgress.hasUnlockedUpload ? "lock.open.fill" : "lock.fill")
+                    .font(.title2)
+                    .foregroundColor(viewModel.ratingProgress.hasUnlockedUpload ? .green : .orange)
+                    .scaleEffect(viewModel.ratingProgress.hasUnlockedUpload ? 1.2 : 1.0)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.6), value: viewModel.ratingProgress.hasUnlockedUpload)
+                
+                Text(viewModel.progressText)
+                    .font(.headline)
+                    .foregroundColor(viewModel.ratingProgress.hasUnlockedUpload ? .green : .primary)
+                    .multilineTextAlignment(.center)
+            }
             
-            // Progress Bar
-            ProgressView(value: viewModel.progressPercentage)
-                .progressViewStyle(LinearProgressViewStyle(tint: viewModel.ratingProgress.hasUnlockedUpload ? .green : .blue))
-                .scaleEffect(y: 2)
+            // Progress Bar with Lock Indicator
+            ZStack(alignment: .trailing) {
+                ProgressView(value: viewModel.progressPercentage)
+                    .progressViewStyle(LinearProgressViewStyle(tint: viewModel.ratingProgress.hasUnlockedUpload ? .green : .blue))
+                    .scaleEffect(y: 2)
+                    .animation(.easeInOut(duration: 0.3), value: viewModel.progressPercentage)
+                
+                // Small lock icon on the progress bar
+                HStack {
+                    Spacer()
+                    Image(systemName: viewModel.ratingProgress.hasUnlockedUpload ? "checkmark.circle.fill" : "lock.circle.fill")
+                        .font(.caption)
+                        .foregroundColor(viewModel.ratingProgress.hasUnlockedUpload ? .green : .orange)
+                        .background(Color.white)
+                        .clipShape(Circle())
+                        .scaleEffect(viewModel.ratingProgress.hasUnlockedUpload ? 1.3 : 1.0)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.6), value: viewModel.ratingProgress.hasUnlockedUpload)
+                        // Add a subtle pulse animation when close to completion
+                        .scaleEffect(viewModel.progressPercentage > 0.8 && !viewModel.ratingProgress.hasUnlockedUpload ? 1.1 : 1.0)
+                        .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: viewModel.progressPercentage > 0.8 && !viewModel.ratingProgress.hasUnlockedUpload)
+                }
+                .padding(.trailing, 4)
+            }
             
             // Progress Numbers
             HStack {
@@ -369,6 +402,56 @@ private extension PhotoRatingView {
             }
             .scaleEffect(1.2)
             .animation(.spring(response: 0.5, dampingFraction: 0.6), value: viewModel.showRatingFeedback)
+        }
+        .transition(.opacity)
+    }
+    
+    // Unlock Celebration Overlay
+    var unlockCelebrationOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 30) {
+                // Animated unlock icon
+                Image(systemName: "lock.open.fill")
+                    .font(.system(size: 100))
+                    .foregroundColor(.green)
+                    .scaleEffect(viewModel.showUnlockCelebration ? 1.3 : 0.8)
+                    .animation(.spring(response: 0.6, dampingFraction: 0.5), value: viewModel.showUnlockCelebration)
+                
+                VStack(spacing: 10) {
+                    Text("🎉 恭喜解鎖！")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.green)
+                    
+                    Text("報告圖表功能已解鎖")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                }
+                
+                // Confetti effect
+                HStack(spacing: 20) {
+                    ForEach(0..<5, id: \.self) { index in
+                        Text("✨")
+                            .font(.title)
+                            .offset(
+                                x: viewModel.showUnlockCelebration ? CGFloat.random(in: -50...50) : 0,
+                                y: viewModel.showUnlockCelebration ? CGFloat.random(in: -30...30) : 0
+                            )
+                            .animation(
+                                .spring(response: 0.8, dampingFraction: 0.6)
+                                .delay(Double(index) * 0.1),
+                                value: viewModel.showUnlockCelebration
+                            )
+                    }
+                }
+            }
+            .scaleEffect(viewModel.showUnlockCelebration ? 1.0 : 0.5)
+            .opacity(viewModel.showUnlockCelebration ? 1.0 : 0.0)
+            .animation(.spring(response: 0.7, dampingFraction: 0.6), value: viewModel.showUnlockCelebration)
         }
         .transition(.opacity)
     }

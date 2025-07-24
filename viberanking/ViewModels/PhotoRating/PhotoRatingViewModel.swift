@@ -22,6 +22,7 @@ class PhotoRatingViewModel: BaseViewModel {
     @Published var rotationAngle: Double = 0
     @Published var showRatingFeedback: Bool = false
     @Published var lastRatingWasHot: Bool = false
+    @Published var showUnlockCelebration: Bool = false
     
     // MARK: - Private Properties
     private let photoRatingService: PhotoRatingServiceProtocol
@@ -49,9 +50,9 @@ class PhotoRatingViewModel: BaseViewModel {
     var progressText: String {
         let remaining = ratingProgress.remainingRatings
         if remaining > 0 {
-            return "還需評分 \(remaining) 張照片解鎖上傳功能"
+            return "還需評分 \(remaining) 張照片解鎖報告圖表功能"
         } else {
-            return "已解鎖上傳功能！"
+            return "已解鎖報告圖表功能！"
         }
     }
     
@@ -127,11 +128,30 @@ class PhotoRatingViewModel: BaseViewModel {
             // Submit rating through photo rating service
             try await self.photoRatingService.submitRating(rating)
             
+            // Check if this will unlock the feature
+            let wasLocked = !self.ratingProgress.hasUnlockedUpload
+            
             // Update progress through rating progress service
             self.ratingProgress = try await self.ratingProgressService.updateRatingProgress(
                 userId: self.currentUserId, 
                 rating: rating
             )
+            
+            // Show unlock celebration if just unlocked
+            if wasLocked && self.ratingProgress.hasUnlockedUpload {
+                self.showUnlockCelebration = true
+                
+                // Provide haptic feedback for unlock
+                #if canImport(UIKit)
+                let notificationFeedback = UINotificationFeedbackGenerator()
+                notificationFeedback.notificationOccurred(.success)
+                #endif
+                
+                // Hide celebration after delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    self.showUnlockCelebration = false
+                }
+            }
             
             // Update local state
             self.userRatings.append(rating)
