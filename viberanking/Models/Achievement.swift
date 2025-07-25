@@ -8,7 +8,7 @@
 import Foundation
 
 // MARK: - Achievement Model
-struct Achievement: Codable, Identifiable {
+struct Achievement: Codable, Identifiable, Equatable {
     let id: String
     let title: String
     let description: String
@@ -52,7 +52,7 @@ enum AchievementCategory: String, CaseIterable, Codable {
 }
 
 // MARK: - Achievement Requirement
-struct AchievementRequirement: Codable {
+struct AchievementRequirement: Codable, Equatable {
     let type: RequirementType
     let target: Int
     let current: Int
@@ -87,7 +87,7 @@ enum RequirementType: String, CaseIterable, Codable {
 }
 
 // MARK: - Achievement Reward
-struct AchievementReward: Codable {
+struct AchievementReward: Codable, Equatable {
     let type: RewardType
     let value: Int
     let description: String
@@ -112,7 +112,7 @@ enum RewardType: String, CaseIterable, Codable {
 }
 
 // MARK: - User Achievement Progress
-struct UserAchievementProgress: Codable {
+struct UserAchievementProgress: Codable, Equatable {
     let userId: String
     var achievements: [Achievement]
     var totalUnlocked: Int
