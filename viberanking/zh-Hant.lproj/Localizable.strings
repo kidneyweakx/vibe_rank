@@ -163,6 +163,125 @@
 "settings.language.system_desc" = "跟隨系統語言";
 "settings.language.restart_note" = "語言變更會立即生效";
 
+// MARK: - Progress Messages
+"progress.rating_needed" = "還需評分 %d 張照片解鎖上傳功能";
+"progress.upload_unlocked" = "已解鎖上傳功能！";
+"progress.report_unlocked" = "報告已解鎖！";
+"progress.waiting_for_ratings" = "等待評分中";
+"progress.congratulations" = "恭喜！你的照片已獲得足夠評分，風格報告已解鎖";
+"progress.photo_being_rated" = "你的照片正在接受其他用戶評分，請耐心等待";
+"progress.completed_percentage" = "%d%% 完成";
+"progress.rated" = "已評分";
+"progress.remaining" = "剩餘";
+"progress.photo_info" = "照片資訊";
+"progress.photo_id" = "照片ID";
+"progress.upload_time" = "上傳時間";
+"progress.status" = "狀態";
+"progress.completed" = "已完成";
+"progress.rating_in_progress" = "評分中";
+"progress.view_style_report" = "查看風格報告";
+"progress.want_faster_rating" = "想要加速獲得評分？";
+"progress.rate_other_photos" = "去評分其他照片";
+"progress.tips" = "小貼士";
+"progress.rating_usually_complete" = "評分通常在24小時內完成";
+"progress.rating_others_speeds_up" = "評分其他照片可以加速你的評分進度";
+"progress.notification_at_50" = "達到50個評分時會收到通知";
+
+// MARK: - User Profile
+"profile.title" = "個人檔案";
+"profile.joined_on" = "加入於 %@";
+"profile.rating_progress_title" = "評分進度";
+"profile.ratings_completed" = "%d / %d 評分完成";
+"profile.upload_unlocked" = "已解鎖上傳";
+"profile.need_more_ratings" = "還需 %d 個評分";
+"profile.account_management" = "帳戶管理";
+"profile.refresh_data" = "重新整理資料";
+"profile.sign_out_title" = "登出";
+"profile.processing" = "處理中...";
+"profile.test_user" = "測試用戶";
+"profile.confirm_sign_out" = "確認登出";
+"profile.sign_out_message" = "您確定要登出嗎？";
+"profile.delete_account_title" = "刪除帳戶";
+"profile.delete_account_message" = "此操作將永久刪除您的帳戶和所有相關資料，且無法復原。您確定要繼續嗎？";
+"profile.delete" = "刪除";
+
+// MARK: - Authentication
+"auth.google_sign_in_hint" = "點擊以使用 Google 帳戶登入";
+
+// MARK: - Gamification
+"gamification.title" = "遊戲化系統";
+"gamification.progress" = "進度";
+"gamification.achievement_unlocked" = "我解鎖了新成就！";
+"gamification.achievement_share_text" = "我在數位頂尖社交評價平台解鎖了「%@」成就！快來一起評分吧！";
+"gamification.style_report_title" = "我的風格分析報告";
+"gamification.style_report_description" = "查看我在數位頂尖社交評價平台的風格分析";
+"gamification.style_report_share_text" = "快來數位頂尖社交評價平台看看我的風格分析報告！";
+
+// MARK: - Style Analysis
+"style.elegant.keywords" = "優雅, 精緻, 氣質, 品味";
+"style.casual.keywords" = "休閒, 自然, 舒適, 親和";
+"style.trendy.keywords" = "時尚, 潮流, 前衛, 流行";
+"style.classic.keywords" = "經典, 永恆, 傳統, 穩重";
+"style.sporty.keywords" = "運動, 活力, 健康, 動感";
+"style.artistic.keywords" = "藝術, 創意, 獨特, 個性";
+
+"style.elegant.advice" = "你的優雅風格深受喜愛！繼續保持精緻的搭配，可以嘗試更多經典單品。";
+"style.casual.advice" = "你的休閒風格很受歡迎！可以嘗試加入一些時尚元素來提升整體造型。";
+"style.trendy.advice" = "你的時尚嗅覺很敏銳！繼續關注最新潮流，但也要保持個人特色。";
+"style.classic.advice" = "你的經典風格永不過時！可以嘗試加入一些現代元素來增加新鮮感。";
+"style.sporty.advice" = "你的運動風格充滿活力！可以嘗試運動休閒混搭來增加造型層次。";
+"style.artistic.advice" = "你的藝術風格很獨特！繼續發揮創意，展現你的個人品味。";
+"style.streetwear.advice" = "你的街頭風格很有態度！可以嘗試更多品牌混搭來展現個性。";
+"style.minimalist.advice" = "你的極簡風格很有品味！可以通過質感和剪裁來提升造型精緻度。";
+"style.edgy.advice" = "你的前衛風格很吸睛！繼續大膽嘗試，但要注意整體平衡。";
+"style.formal.advice" = "你的正式風格很專業！可以嘗試加入一些個人化元素來增加親和力。";
+"style.colorful.advice" = "你的色彩搭配很有活力！可以學習色彩理論來讓搭配更和諧。";
+
+"style.score.high" = "你的造型獲得了很高的評價！繼續保持這種風格，你已經找到了適合自己的路線。";
+"style.score.good" = "你的風格獲得不錯的反響！可以嘗試更多細節上的優化來提升整體效果。";
+"style.score.average" = "你的風格還有很大提升空間！建議多觀察高分造型，學習搭配技巧。";
+"style.score.low" = "建議重新審視你的風格定位，可以嘗試不同的搭配方向來找到更適合的風格。";
+
+"style.diversity.focused" = "你的風格很專一！可以嘗試融入其他風格元素來增加造型的豐富度。";
+"style.diversity.balanced" = "你擅長多種風格的融合！這種多樣性讓你的造型更有層次感。";
+"style.diversity.scattered" = "你嘗試了很多不同風格！建議專注於2-3種最適合的風格來建立個人特色。";
+
+"style.gender.balanced" = "你的風格在不同性別中都很受歡迎！這種平衡的魅力很難得。";
+"style.gender.female_preferred" = "你的風格特別受女性喜愛！如果想要更廣泛的吸引力，可以加入一些中性元素。";
+"style.gender.male_preferred" = "你的風格特別受男性喜愛！如果想要更廣泛的吸引力，可以嘗試更多精緻的細節。";
+
+"style.rating.high_taste" = "你很懂得欣賞好的風格！你的品味和大眾喜好很一致，繼續相信自己的判斷。";
+"style.rating.balanced_view" = "你的審美觀點很平衡！可以更多關注那些你評為'Hot'的風格特點。";
+"style.rating.unique_view" = "你有獨特的審美觀點！可以嘗試更多主流風格來擴展你的造型選擇。";
+
+"style.error.user_not_found" = "找不到用戶資料";
+"style.error.no_photos_uploaded" = "用戶尚未上傳任何照片";
+
+// MARK: - CTA Messages
+"cta.checking_status" = "正在檢查狀態...";
+"cta.ready_to_upload" = "準備好上傳照片了！";
+"cta.need_more_ratings" = "還需要完成更多評分才能解鎖上傳功能";
+"cta.analyzing_preferences" = "正在分析你的風格偏好...";
+"cta.identifying_style" = "正在識別你的主要風格...";
+"cta.preparing" = "準備中...";
+
+// MARK: - Achievements
+"achievement.style_star.title" = "風格新星";
+"achievement.style_star.description" = "首次獲得風格報告";
+"achievement.style_star.reward" = "風格新星徽章";
+"achievement.charm_master.title" = "魅力達人";
+"achievement.charm_master.description" = "吸引力分數達到80%以上";
+"achievement.charm_master.reward" = "5次加速評分機會";
+"achievement.style_master.title" = "風格大師";
+"achievement.style_master.description" = "在三個不同風格類型中都獲得高分";
+"achievement.style_master.reward" = "風格大師徽章";
+"achievement.popularity_king.title" = "人氣王";
+"achievement.popularity_king.description" = "獲得超過100個評分";
+"achievement.popularity_king.reward" = "解鎖風格演變分析";
+
+// MARK: - Guest User
+"guest.user_name" = "訪客";
+
 // MARK: - Common
 "common.loading" = "載入中...";
 "common.error" = "錯誤";

@@ -93,17 +93,17 @@ private extension SamplePhotoService {
     func generateStyleTags(for style: StyleType) -> [String] {
         switch style {
         case .elegant:
-            return ["優雅", "精緻", "氣質", "品味"]
+            return "style.elegant.keywords".localized.components(separatedBy: ", ")
         case .casual:
-            return ["休閒", "自然", "舒適", "親和"]
+            return "style.casual.keywords".localized.components(separatedBy: ", ")
         case .trendy:
-            return ["時尚", "潮流", "前衛", "流行"]
+            return "style.trendy.keywords".localized.components(separatedBy: ", ")
         case .classic:
-            return ["經典", "永恆", "傳統", "穩重"]
+            return "style.classic.keywords".localized.components(separatedBy: ", ")
         case .sporty:
-            return ["運動", "活力", "健康", "動感"]
+            return "style.sporty.keywords".localized.components(separatedBy: ", ")
         case .artistic:
-            return ["藝術", "創意", "獨特", "個性"]
+            return "style.artistic.keywords".localized.components(separatedBy: ", ")
         default:
             return []
         }

@@ -295,7 +295,7 @@ struct GoogleSignInButton: View {
             isPressed = pressing
         }, perform: {})
         .accessibilityLabel("auth.sign_in_google".localized)
-        .accessibilityHint("點擊以使用 Google 帳戶登入")
+        .accessibilityHint("auth.google_sign_in_hint".localized)
     }
 }
 

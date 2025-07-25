@@ -289,27 +289,27 @@ class StyleAnalysisService: StyleAnalysisServiceProtocol {
     private func generateDominantStyleRecommendation(_ style: StyleType) -> String {
         switch style {
         case .elegant:
-            return "你的優雅風格深受喜愛！繼續保持精緻的搭配，可以嘗試更多經典單品。"
+            return "style.elegant.advice".localized
         case .casual:
-            return "你的休閒風格很受歡迎！可以嘗試加入一些時尚元素來提升整體造型。"
+            return "style.casual.advice".localized
         case .trendy:
-            return "你的時尚嗅覺很敏銳！繼續關注最新潮流，但也要保持個人特色。"
+            return "style.trendy.advice".localized
         case .classic:
-            return "你的經典風格永不過時！可以嘗試加入一些現代元素來增加新鮮感。"
+            return "style.classic.advice".localized
         case .sporty:
-            return "你的運動風格充滿活力！可以嘗試運動休閒混搭來增加造型層次。"
+            return "style.sporty.advice".localized
         case .artistic:
-            return "你的藝術風格很獨特！繼續發揮創意，展現你的個人品味。"
+            return "style.artistic.advice".localized
         case .streetwear:
-            return "你的街頭風格很有態度！可以嘗試更多品牌混搭來展現個性。"
+            return "style.streetwear.advice".localized
         case .minimalist:
-            return "你的極簡風格很有品味！可以通過質感和剪裁來提升造型精緻度。"
+            return "style.minimalist.advice".localized
         case .edgy:
-            return "你的前衛風格很吸睛！繼續大膽嘗試，但要注意整體平衡。"
+            return "style.edgy.advice".localized
         case .formal:
-            return "你的正式風格很專業！可以嘗試加入一些個人化元素來增加親和力。"
+            return "style.formal.advice".localized
         case .colorful:
-            return "你的色彩搭配很有活力！可以學習色彩理論來讓搭配更和諧。"
+            return "style.colorful.advice".localized
         }
     }
     
@@ -317,13 +317,13 @@ class StyleAnalysisService: StyleAnalysisServiceProtocol {
     private func generateAttractivenessRecommendation(_ score: Double) -> String {
         switch score {
         case 80...:
-            return "你的造型獲得了很高的評價！繼續保持這種風格，你已經找到了適合自己的路線。"
+            return "style.score.high".localized
         case 60..<80:
-            return "你的風格獲得不錯的反響！可以嘗試更多細節上的優化來提升整體效果。"
+            return "style.score.good".localized
         case 40..<60:
-            return "你的風格還有很大提升空間！建議多觀察高分造型，學習搭配技巧。"
+            return "style.score.average".localized
         default:
-            return "建議重新審視你的風格定位，可以嘗試不同的搭配方向來找到更適合的風格。"
+            return "style.score.low".localized
         }
     }
     
@@ -333,11 +333,11 @@ class StyleAnalysisService: StyleAnalysisServiceProtocol {
         
         switch significantStyles {
         case 1:
-            return "你的風格很專一！可以嘗試融入其他風格元素來增加造型的豐富度。"
+            return "style.diversity.focused".localized
         case 2...3:
-            return "你擅長多種風格的融合！這種多樣性讓你的造型更有層次感。"
+            return "style.diversity.balanced".localized
         default:
-            return "你嘗試了很多不同風格！建議專注於2-3種最適合的風格來建立個人特色。"
+            return "style.diversity.scattered".localized
         }
     }
     
@@ -348,11 +348,11 @@ class StyleAnalysisService: StyleAnalysisServiceProtocol {
         let difference = abs(femaleScore - maleScore)
         
         if difference < 10 {
-            return "你的風格在不同性別中都很受歡迎！這種平衡的魅力很難得。"
+            return "style.gender.balanced".localized
         } else if femaleScore > maleScore {
-            return "你的風格特別受女性喜愛！如果想要更廣泛的吸引力，可以加入一些中性元素。"
+            return "style.gender.female_preferred".localized
         } else {
-            return "你的風格特別受男性喜愛！如果想要更廣泛的吸引力，可以嘗試更多精緻的細節。"
+            return "style.gender.male_preferred".localized
         }
     }
     
@@ -362,11 +362,11 @@ class StyleAnalysisService: StyleAnalysisServiceProtocol {
         
         switch hotPercentage {
         case 70...:
-            return "你很懂得欣賞好的風格！你的品味和大眾喜好很一致，繼續相信自己的判斷。"
+            return "style.rating.high_taste".localized
         case 50..<70:
-            return "你的審美觀點很平衡！可以更多關注那些你評為'Hot'的風格特點。"
+            return "style.rating.balanced_view".localized
         default:
-            return "你有獨特的審美觀點！可以嘗試更多主流風格來擴展你的造型選擇。"
+            return "style.rating.unique_view".localized
         }
     }
     
@@ -424,9 +424,9 @@ enum StyleAnalysisError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .userNotFound:
-            return "找不到用戶資料"
+            return "style.error.user_not_found".localized
         case .noPhotosUploaded:
-            return "用戶尚未上傳任何照片"
+            return "style.error.no_photos_uploaded".localized
         case .insufficientRatings(let current, let required):
             return "評分數量不足：目前 \(current) 個，需要 \(required) 個"
         case .analysisProcessingError:

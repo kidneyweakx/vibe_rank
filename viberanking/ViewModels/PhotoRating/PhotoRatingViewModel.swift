@@ -50,9 +50,9 @@ class PhotoRatingViewModel: BaseViewModel {
     var progressText: String {
         let remaining = ratingProgress.remainingRatings
         if remaining > 0 {
-            return "還需評分 \(remaining) 張照片解鎖報告圖表功能"
+            return "progress.rating_needed".localized(with: remaining)
         } else {
-            return "已解鎖報告圖表功能！"
+            return "progress.upload_unlocked".localized
         }
     }
     

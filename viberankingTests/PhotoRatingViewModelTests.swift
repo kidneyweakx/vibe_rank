@@ -68,7 +68,7 @@ struct PhotoRatingViewModelTests {
         let progressText = viewModel.progressText
         
         // Then
-        #expect(progressText == "還需評分 15 張照片解鎖上傳功能")
+        #expect(progressText == "progress.rating_needed".localized(with: 15))
     }
     
     @Test func progressTextWhenUnlocked() {
@@ -79,7 +79,7 @@ struct PhotoRatingViewModelTests {
         let progressText = viewModel.progressText
         
         // Then
-        #expect(progressText == "已解鎖上傳功能！")
+        #expect(progressText == "progress.upload_unlocked".localized)
     }
 }
 

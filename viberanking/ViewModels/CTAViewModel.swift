@@ -176,26 +176,26 @@ extension CTAViewModel {
     /// Get user-friendly status message
     var statusMessage: String {
         guard let conditions = triggerConditions else {
-            return "正在檢查狀態..."
+            return "cta.checking_status".localized
         }
         
         if conditions.shouldShowCTA {
-            return "準備好上傳照片了！"
+            return "cta.ready_to_upload".localized
         }
         
         if !conditions.hasUnlockedUpload {
-            return "還需要完成更多評分才能解鎖上傳功能"
+            return "cta.need_more_ratings".localized
         }
         
         if !conditions.userPreferencesAnalyzed {
-            return "正在分析你的風格偏好..."
+            return "cta.analyzing_preferences".localized
         }
         
         if !conditions.dominantStyleIdentified {
-            return "正在識別你的主要風格..."
+            return "cta.identifying_style".localized
         }
         
-        return "準備中..."
+        return "cta.preparing".localized
     }
 }
 

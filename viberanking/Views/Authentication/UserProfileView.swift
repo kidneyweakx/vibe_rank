@@ -53,32 +53,32 @@ struct UserProfileView: View {
                 )
                 .ignoresSafeArea()
             )
-            .navigationTitle("個人檔案")
+            .navigationTitle("profile.title".localized)
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完成") {
+                    Button("common.done".localized) {
                         dismiss()
                     }
                     .foregroundColor(.blue)
                 }
             }
         }
-        .alert("確認登出", isPresented: $showingSignOutConfirmation) {
-            Button("取消", role: .cancel) { }
-            Button("登出", role: .destructive) {
+        .alert("profile.confirm_sign_out".localized, isPresented: $showingSignOutConfirmation) {
+            Button("common.cancel".localized, role: .cancel) { }
+            Button("profile.sign_out_title".localized, role: .destructive) {
                 authViewModel.signOut()
             }
         } message: {
-            Text("您確定要登出嗎？")
+            Text("profile.sign_out_message".localized)
         }
-        .alert("刪除帳戶", isPresented: $showingDeleteConfirmation) {
-            Button("取消", role: .cancel) { }
-            Button("刪除", role: .destructive) {
+        .alert("profile.delete_account_title".localized, isPresented: $showingDeleteConfirmation) {
+            Button("common.cancel".localized, role: .cancel) { }
+            Button("profile.delete".localized, role: .destructive) {
                 authViewModel.deleteAccount()
             }
         } message: {
-            Text("此操作將永久刪除您的帳戶和所有相關資料，且無法復原。您確定要繼續嗎？")
+            Text("profile.delete_account_message".localized)
         }
         .overlay {
             if authViewModel.isLoading {

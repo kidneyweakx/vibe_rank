@@ -180,7 +180,7 @@ class AuthenticationViewModel: ObservableObject {
         
         let guestUser = User(
             id: "guest_\(UUID().uuidString)",
-            name: "訪客",
+            name: "guest.user_name".localized,
             email: "guest@example.com"
         )
         self.user = guestUser

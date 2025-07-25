@@ -163,6 +163,125 @@
 "settings.language.system_desc" = "Follow system language";
 "settings.language.restart_note" = "Language changes take effect immediately";
 
+// MARK: - Progress Messages
+"progress.rating_needed" = "Need to rate %d more photos to unlock upload feature";
+"progress.upload_unlocked" = "Upload feature unlocked!";
+"progress.report_unlocked" = "Report unlocked!";
+"progress.waiting_for_ratings" = "Waiting for ratings";
+"progress.congratulations" = "Congratulations! Your photo has received enough ratings, style report unlocked";
+"progress.photo_being_rated" = "Your photo is being rated by other users, please be patient";
+"progress.completed_percentage" = "%d%% Complete";
+"progress.rated" = "Rated";
+"progress.remaining" = "Remaining";
+"progress.photo_info" = "Photo Info";
+"progress.photo_id" = "Photo ID";
+"progress.upload_time" = "Upload Time";
+"progress.status" = "Status";
+"progress.completed" = "Completed";
+"progress.rating_in_progress" = "Rating in Progress";
+"progress.view_style_report" = "View Style Report";
+"progress.want_faster_rating" = "Want to speed up ratings?";
+"progress.rate_other_photos" = "Rate Other Photos";
+"progress.tips" = "Tips";
+"progress.rating_usually_complete" = "Ratings usually complete within 24 hours";
+"progress.rating_others_speeds_up" = "Rating other photos can speed up your rating progress";
+"progress.notification_at_50" = "You'll receive a notification when you reach 50 ratings";
+
+// MARK: - User Profile
+"profile.title" = "Profile";
+"profile.joined_on" = "Joined on %@";
+"profile.rating_progress_title" = "Rating Progress";
+"profile.ratings_completed" = "%d / %d ratings completed";
+"profile.upload_unlocked" = "Upload Unlocked";
+"profile.need_more_ratings" = "Need %d more ratings";
+"profile.account_management" = "Account Management";
+"profile.refresh_data" = "Refresh Data";
+"profile.sign_out_title" = "Sign Out";
+"profile.processing" = "Processing...";
+"profile.test_user" = "Test User";
+"profile.confirm_sign_out" = "Confirm Sign Out";
+"profile.sign_out_message" = "Are you sure you want to sign out?";
+"profile.delete_account_title" = "Delete Account";
+"profile.delete_account_message" = "This action will permanently delete your account and all related data, and cannot be undone. Are you sure you want to continue?";
+"profile.delete" = "Delete";
+
+// MARK: - Authentication
+"auth.google_sign_in_hint" = "Tap to sign in with Google account";
+
+// MARK: - Gamification
+"gamification.title" = "Gamification System";
+"gamification.progress" = "Progress";
+"gamification.achievement_unlocked" = "I unlocked a new achievement!";
+"gamification.achievement_share_text" = "I unlocked the \"%@\" achievement on Digital Premium Social Rating Platform! Come join the rating!";
+"gamification.style_report_title" = "My Style Analysis Report";
+"gamification.style_report_description" = "Check out my style analysis on Digital Premium Social Rating Platform";
+"gamification.style_report_share_text" = "Come check out my style analysis report on Digital Premium Social Rating Platform!";
+
+// MARK: - Style Analysis
+"style.elegant.keywords" = "Elegant, Refined, Classy, Tasteful";
+"style.casual.keywords" = "Casual, Natural, Comfortable, Friendly";
+"style.trendy.keywords" = "Fashionable, Trendy, Avant-garde, Popular";
+"style.classic.keywords" = "Classic, Timeless, Traditional, Stable";
+"style.sporty.keywords" = "Sporty, Energetic, Healthy, Dynamic";
+"style.artistic.keywords" = "Artistic, Creative, Unique, Individual";
+
+"style.elegant.advice" = "Your elegant style is deeply loved! Continue to maintain refined combinations, you can try more classic pieces.";
+"style.casual.advice" = "Your casual style is very popular! You can try adding some fashion elements to enhance the overall look.";
+"style.trendy.advice" = "Your fashion sense is very sharp! Continue to follow the latest trends, but also maintain personal characteristics.";
+"style.classic.advice" = "Your classic style never goes out of fashion! You can try adding some modern elements to add freshness.";
+"style.sporty.advice" = "Your sporty style is full of energy! You can try sports-casual mix to add styling layers.";
+"style.artistic.advice" = "Your artistic style is very unique! Continue to be creative and show your personal taste.";
+"style.streetwear.advice" = "Your street style has great attitude! You can try more brand mixing to show personality.";
+"style.minimalist.advice" = "Your minimalist style is very tasteful! You can enhance styling refinement through texture and tailoring.";
+"style.edgy.advice" = "Your avant-garde style is very eye-catching! Continue to experiment boldly, but pay attention to overall balance.";
+"style.formal.advice" = "Your formal style is very professional! You can try adding some personalized elements to increase affinity.";
+"style.colorful.advice" = "Your color matching is very energetic! You can learn color theory to make matching more harmonious.";
+
+"style.score.high" = "Your styling received very high praise! Continue to maintain this style, you have found the right path for yourself.";
+"style.score.good" = "Your style received good response! You can try more detail optimization to enhance the overall effect.";
+"style.score.average" = "Your style has great room for improvement! It's recommended to observe high-scoring styles more and learn matching techniques.";
+"style.score.low" = "It's recommended to re-examine your style positioning, you can try different matching directions to find a more suitable style.";
+
+"style.diversity.focused" = "Your style is very focused! You can try incorporating other style elements to increase styling richness.";
+"style.diversity.balanced" = "You're good at blending multiple styles! This diversity makes your styling more layered.";
+"style.diversity.scattered" = "You've tried many different styles! It's recommended to focus on 2-3 most suitable styles to build personal characteristics.";
+
+"style.gender.balanced" = "Your style is popular with both genders! This balanced charm is rare.";
+"style.gender.female_preferred" = "Your style is especially loved by women! If you want broader appeal, you can add some neutral elements.";
+"style.gender.male_preferred" = "Your style is especially loved by men! If you want broader appeal, you can try more refined details.";
+
+"style.rating.high_taste" = "You know how to appreciate good style! Your taste is very consistent with public preference, continue to trust your judgment.";
+"style.rating.balanced_view" = "Your aesthetic viewpoint is very balanced! You can pay more attention to the style characteristics you rate as 'Hot'.";
+"style.rating.unique_view" = "You have a unique aesthetic viewpoint! You can try more mainstream styles to expand your styling choices.";
+
+"style.error.user_not_found" = "User data not found";
+"style.error.no_photos_uploaded" = "User has not uploaded any photos yet";
+
+// MARK: - CTA Messages
+"cta.checking_status" = "Checking status...";
+"cta.ready_to_upload" = "Ready to upload photos!";
+"cta.need_more_ratings" = "Need to complete more ratings to unlock upload feature";
+"cta.analyzing_preferences" = "Analyzing your style preferences...";
+"cta.identifying_style" = "Identifying your main style...";
+"cta.preparing" = "Preparing...";
+
+// MARK: - Achievements
+"achievement.style_star.title" = "Style Star";
+"achievement.style_star.description" = "First time getting style report";
+"achievement.style_star.reward" = "Style Star Badge";
+"achievement.charm_master.title" = "Charm Master";
+"achievement.charm_master.description" = "Attractiveness score reaches 80% or above";
+"achievement.charm_master.reward" = "5 accelerated rating opportunities";
+"achievement.style_master.title" = "Style Master";
+"achievement.style_master.description" = "Achieve high scores in three different style types";
+"achievement.style_master.reward" = "Style Master Badge";
+"achievement.popularity_king.title" = "Popularity King";
+"achievement.popularity_king.description" = "Receive over 100 ratings";
+"achievement.popularity_king.reward" = "Unlock style evolution analysis";
+
+// MARK: - Guest User
+"guest.user_name" = "Guest";
+
 // MARK: - Common
 "common.loading" = "Loading...";
 "common.error" = "Error";

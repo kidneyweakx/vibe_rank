@@ -27,21 +27,21 @@ class StyleReportViewModel: ObservableObject {
         Task {
             do {
                 // Simulate progress updates
-                await updateProgress(0.2, message: "分析用戶偏好...")
+                await updateProgress(0.2, message: "cta.analyzing_preferences".localized)
                 
                 let userPreferences = try await styleAnalysisService.getUserPreferences(for: userId)
-                await updateProgress(0.4, message: "計算風格分數...")
+                await updateProgress(0.4, message: "cta.analyzing_progress".localized)
                 
-                await updateProgress(0.6, message: "生成個性化建議...")
+                await updateProgress(0.6, message: "cta.analyzing_progress".localized)
                 
                 let report = try await styleAnalysisService.generateStyleReport(for: userId)
-                await updateProgress(0.8, message: "檢查新成就...")
+                await updateProgress(0.8, message: "cta.analyzing_progress".localized)
                 
                 // Check for newly unlocked achievements
                 let achievements = try await gamificationService.checkAchievements(for: userId)
                 let newAchievements = achievements.filter { $0.isUnlocked && !$0.wasNotified }
                 
-                await updateProgress(1.0, message: "完成！")
+                await updateProgress(1.0, message: "common.done".localized)
                 
                 // Update UI on main thread
                 await MainActor.run {
@@ -65,7 +65,7 @@ class StyleReportViewModel: ObservableObject {
                 }
             } catch {
                 await MainActor.run {
-                    self.errorMessage = "報告生成失敗：\(error.localizedDescription)"
+                    self.errorMessage = "report.error".localized + ": \(error.localizedDescription)"
                     self.isLoading = false
                     self.reportProgress = 0.0
                 }
@@ -150,36 +150,36 @@ extension StyleReportViewModel {
     func getMockAchievements() -> [Achievement] {
         return [
             Achievement(
-                title: "風格新星",
-                description: "首次獲得風格報告",
+                title: "achievement.style_star.title".localized,
+                description: "achievement.style_star.description".localized,
                 iconName: "star.fill",
                 category: .milestone,
                 requirement: AchievementRequirement(type: .styleReportsGenerated, target: 1),
-                reward: AchievementReward(type: .specialBadge, value: 1, description: "風格新星徽章")
+                reward: AchievementReward(type: .specialBadge, value: 1, description: "achievement.style_star.reward".localized)
             ),
             Achievement(
-                title: "魅力達人",
-                description: "吸引力分數達到80%以上",
+                title: "achievement.charm_master.title".localized,
+                description: "achievement.charm_master.description".localized,
                 iconName: "heart.fill",
                 category: .style,
                 requirement: AchievementRequirement(type: .attractivenessScore, target: 80),
-                reward: AchievementReward(type: .acceleratedRating, value: 5, description: "5次加速評分機會")
+                reward: AchievementReward(type: .acceleratedRating, value: 5, description: "achievement.charm_master.reward".localized)
             ),
             Achievement(
-                title: "風格大師",
-                description: "在三個不同風格類型中都獲得高分",
+                title: "achievement.style_master.title".localized,
+                description: "achievement.style_master.description".localized,
                 iconName: "crown.fill",
                 category: .style,
                 requirement: AchievementRequirement(type: .multipleStyleMastery, target: 3),
-                reward: AchievementReward(type: .specialBadge, value: 1, description: "風格大師徽章")
+                reward: AchievementReward(type: .specialBadge, value: 1, description: "achievement.style_master.reward".localized)
             ),
             Achievement(
-                title: "人氣王",
-                description: "獲得超過100個評分",
+                title: "achievement.popularity_king.title".localized,
+                description: "achievement.popularity_king.description".localized,
                 iconName: "person.3.fill",
                 category: .milestone,
                 requirement: AchievementRequirement(type: .ratingsReceived, target: 100),
-                reward: AchievementReward(type: .evolutionAnalysis, value: 1, description: "解鎖風格演變分析")
+                reward: AchievementReward(type: .evolutionAnalysis, value: 1, description: "achievement.popularity_king.reward".localized)
             )
         ]
     }
