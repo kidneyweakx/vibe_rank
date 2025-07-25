@@ -81,7 +81,7 @@ enum StyleType: String, CaseIterable, Codable {
 }
 
 // MARK: - Style Report Model
-struct StyleReport: Codable, Identifiable {
+struct StyleReport: Codable, Identifiable, Equatable {
     let id: String
     let userId: String
     let dominantStyle: StyleType
@@ -90,14 +90,30 @@ struct StyleReport: Codable, Identifiable {
     let recommendations: [String]
     let generatedAt: Date
     
+    static func == (lhs: StyleReport, rhs: StyleReport) -> Bool {
+        return lhs.id == rhs.id &&
+               lhs.userId == rhs.userId &&
+               lhs.dominantStyle == rhs.dominantStyle &&
+               lhs.styleBreakdown == rhs.styleBreakdown &&
+               lhs.ranking == rhs.ranking &&
+               lhs.recommendations == rhs.recommendations &&
+               lhs.generatedAt == rhs.generatedAt
+    }
 }
 
 // MARK: - Style Ranking Model
-struct StyleRanking: Codable {
+struct StyleRanking: Codable, Equatable {
     let overallAttractiveness: Double
     let totalVotes: Int
     let femaleAttractiveness: Double
     let maleAttractiveness: Double
+    
+    static func == (lhs: StyleRanking, rhs: StyleRanking) -> Bool {
+        return lhs.overallAttractiveness == rhs.overallAttractiveness &&
+               lhs.totalVotes == rhs.totalVotes &&
+               lhs.femaleAttractiveness == rhs.femaleAttractiveness &&
+               lhs.maleAttractiveness == rhs.maleAttractiveness
+    }
 }
 
 // MARK: - CTA Message Model

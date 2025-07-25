@@ -189,6 +189,8 @@ struct RewardBadge: View {
             return "star.fill"
         case .priorityQueue:
             return "arrow.up.circle.fill"
+        default:
+            return "bolt.fill"
         }
     }
 }

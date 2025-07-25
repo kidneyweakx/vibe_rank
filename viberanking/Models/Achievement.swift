@@ -18,6 +18,7 @@ struct Achievement: Codable, Identifiable, Equatable {
     let reward: AchievementReward?
     let isUnlocked: Bool
     let unlockedAt: Date?
+    var wasNotified: Bool
     
     init(id: String = UUID().uuidString,
          title: String,
@@ -25,7 +26,10 @@ struct Achievement: Codable, Identifiable, Equatable {
          iconName: String,
          category: AchievementCategory,
          requirement: AchievementRequirement,
-         reward: AchievementReward? = nil) {
+         reward: AchievementReward? = nil,
+         isUnlocked: Bool = false,
+         unlockedAt: Date? = nil,
+         wasNotified: Bool = false) {
         self.id = id
         self.title = title
         self.description = description
@@ -33,8 +37,9 @@ struct Achievement: Codable, Identifiable, Equatable {
         self.category = category
         self.requirement = requirement
         self.reward = reward
-        self.isUnlocked = false
-        self.unlockedAt = nil
+        self.isUnlocked = isUnlocked
+        self.unlockedAt = unlockedAt
+        self.wasNotified = wasNotified
     }
 }
 
@@ -80,6 +85,8 @@ enum RequirementType: String, CaseIterable, Codable {
     case hotRatingsReceived = "獲得Hot評分數量"
     case consecutiveDays = "連續使用天數"
     case styleReportsGenerated = "生成風格報告數量"
+    case attractivenessScore = "吸引力分數"
+    case multipleStyleMastery = "多風格掌握"
     
     var displayName: String {
         return self.rawValue
@@ -105,6 +112,7 @@ enum RewardType: String, CaseIterable, Codable {
     case bonusAnalysis = "額外分析功能"
     case specialBadge = "特殊徽章"
     case priorityQueue = "優先評分隊列"
+    case evolutionAnalysis = "風格演變分析"
     
     var displayName: String {
         return self.rawValue

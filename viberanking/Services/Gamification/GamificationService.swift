@@ -158,6 +158,17 @@ class GamificationService: ObservableObject, GamificationServiceProtocol {
         // Record share action for analytics
         try await recordShareAnalytics(userId: userId, shareType: shareType)
     }
+    
+    /// Mark achievement as notified to prevent duplicate notifications
+    func markAchievementAsNotified(achievementId: String) async throws {
+        // Implementation would update the achievement in Firebase
+        print("Marking achievement \(achievementId) as notified")
+        
+        // Update local achievements list
+        if let index = userAchievements.firstIndex(where: { $0.id == achievementId }) {
+            userAchievements[index].wasNotified = true
+        }
+    }
 }
 
 // MARK: - Private Methods
@@ -201,6 +212,8 @@ private extension GamificationService {
         case .ratingsReceived, .hotRatingsReceived, .consecutiveDays:
             // These require additional data not in UserProgress
             return false
+        default:
+            return false
         }
     }
     
@@ -234,6 +247,8 @@ private extension GamificationService {
             status.evolutionAnalysisUnlocked = true
         case .specialBadge, .priorityQueue:
             // These rewards are handled by the achievement system itself
+            break
+        default:
             break
         }
         
