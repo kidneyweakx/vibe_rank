@@ -65,44 +65,14 @@ struct StyleReport: Codable, Identifiable {
     let recommendations: [String]
     let generatedAt: Date
     
-    init(userId: String, dominantStyle: StyleType, styleBreakdown: [StyleType: Double], ranking: StyleRanking, recommendations: [String]) {
-        self.id = UUID().uuidString
-        self.userId = userId
-        self.dominantStyle = dominantStyle
-        self.styleBreakdown = Dictionary(uniqueKeysWithValues: styleBreakdown.map { ($0.key.rawValue, $0.value) })
-        self.ranking = ranking
-        self.recommendations = recommendations
-        self.generatedAt = Date()
-    }
-    
-    /// Get style breakdown with StyleType keys
-    var styleBreakdownTyped: [StyleType: Double] {
-        return Dictionary(uniqueKeysWithValues: styleBreakdown.compactMap { key, value in
-            guard let styleType = StyleType(rawValue: key) else { return nil }
-            return (styleType, value)
-        })
-    }
 }
 
 // MARK: - Style Ranking Model
 struct StyleRanking: Codable {
-    let overallScore: Double
-    let percentile: Double
-    let categoryRankings: [String: Int] // category -> rank
-    
-    init(overallScore: Double, percentile: Double, categoryRankings: [StyleType: Int]) {
-        self.overallScore = overallScore
-        self.percentile = percentile
-        self.categoryRankings = Dictionary(uniqueKeysWithValues: categoryRankings.map { ($0.key.rawValue, $0.value) })
-    }
-    
-    /// Get category rankings with StyleType keys
-    var categoryRankingsTyped: [StyleType: Int] {
-        return Dictionary(uniqueKeysWithValues: categoryRankings.compactMap { key, value in
-            guard let styleType = StyleType(rawValue: key) else { return nil }
-            return (styleType, value)
-        })
-    }
+    let overallAttractiveness: Double
+    let totalVotes: Int
+    let femaleAttractiveness: Double
+    let maleAttractiveness: Double
 }
 
 // MARK: - CTA Message Model
