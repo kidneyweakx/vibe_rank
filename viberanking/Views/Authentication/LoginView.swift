@@ -37,14 +37,14 @@ struct LoginView: View {
                         .padding(.bottom, 10)
                     
                     // App title with dynamic text styling
-                    Text("數位頂尖社交評價平台")
+                    Text("auth.title".localized)
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundColor(colorScheme == .dark ? .white : Color(hex: "333333"))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                     
                     // App subtitle
-                    Text("登入以開始評分和獲取個人風格分析")
+                    Text("auth.subtitle".localized)
                         .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundColor(colorScheme == .dark ? Color(hex: "CCCCCC") : Color(hex: "666666"))
                         .multilineTextAlignment(.center)
@@ -72,7 +72,7 @@ struct LoginView: View {
             }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("登入畫面")
+        .accessibilityLabel("auth.screen_label".localized)
     }
 }
 
@@ -133,7 +133,7 @@ struct AuthButtonsView: View {
             }
             .frame(height: 54)
             .cornerRadius(12)
-            .accessibilityLabel("使用 Google 登入")
+            .accessibilityLabel("auth.sign_in_google".localized)
             
             // Apple Sign In Button - Using official ASAuthorizationAppleIDButton
             AppleSignInButton(
@@ -146,7 +146,7 @@ struct AuthButtonsView: View {
             }
             .frame(height: 54)
             .cornerRadius(12)
-            .accessibilityLabel("使用 Apple 登入")
+            .accessibilityLabel("auth.sign_in_apple".localized)
             
             // Guest mode button
             Button(action: {
@@ -154,14 +154,14 @@ struct AuthButtonsView: View {
                     viewModel.signInAsGuest()
                 }
             }) {
-                Text("以訪客模式繼續")
+                Text("auth.continue_guest".localized)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(colorScheme == .dark ? Color(hex: "AAAAAA") : Color(hex: "666666"))
                     .underline()
                     .padding(.top, 8)
             }
             .buttonStyle(ScaleButtonStyle())
-            .accessibilityLabel("以訪客模式繼續")
+            .accessibilityLabel("auth.continue_guest".localized)
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 20)
@@ -201,7 +201,7 @@ struct LoadingView: View {
                     )
             }
             
-            Text("登入中...")
+            Text("auth.signing_in".localized)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(colorScheme == .dark ? .white : Color(hex: "333333"))
         }
@@ -244,7 +244,7 @@ struct ErrorMessageView: View {
         .onAppear {
             isShowing = true
         }
-        .accessibilityLabel("錯誤訊息: \(message)")
+        .accessibilityLabel("auth.error_message".localized(with: message))
     }
 }
 
@@ -261,7 +261,7 @@ struct GoogleSignInButton: View {
                 GoogleLogoView()
                     .frame(width: 20, height: 20)
                 
-                Text("使用 Google 登入")
+                Text("auth.sign_in_google".localized)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(colorScheme == .dark ? .white : Color(hex: "3C4043"))
                 
@@ -294,7 +294,7 @@ struct GoogleSignInButton: View {
         .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
             isPressed = pressing
         }, perform: {})
-        .accessibilityLabel("使用 Google 登入")
+        .accessibilityLabel("auth.sign_in_google".localized)
         .accessibilityHint("點擊以使用 Google 帳戶登入")
     }
 }
@@ -388,7 +388,7 @@ struct LoginViewPreview: PreviewProvider {
             
             // Error State Preview
             LoginView()
-                .environmentObject(LoginPreviewAuthenticationViewModel(errorMessage: "登入失敗，請檢查網路連接並重試"))
+                .environmentObject(LoginPreviewAuthenticationViewModel(errorMessage: "auth.login_failed".localized))
                 .previewDisplayName("Error State")
         }
     }

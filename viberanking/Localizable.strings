@@ -1,0 +1,174 @@
+/* 
+  Localizable.strings (English)
+  viberanking
+  
+  Created by Kiro on 2025/07/25.
+*/
+
+// MARK: - Tab Bar
+"tab.rating" = "Rating";
+"tab.upload" = "Upload";
+"tab.report" = "Report";
+"tab.profile" = "Profile";
+"tab.test" = "Test";
+
+// MARK: - Authentication
+"auth.title" = "Digital Premium Social Rating Platform";
+"auth.subtitle" = "Sign in to start rating and get personal style analysis";
+"auth.sign_in_google" = "Sign in with Google";
+"auth.sign_in_apple" = "Sign in with Apple";
+"auth.continue_guest" = "Continue as Guest";
+"auth.signing_in" = "Signing in...";
+"auth.login_failed" = "Login failed, please check your network connection and try again";
+"auth.screen_label" = "Login Screen";
+"auth.error_message" = "Error message: %@";
+
+// MARK: - Main Features
+"feature.rating" = "🎯 Rating Feature";
+"feature.upload" = "📸 Upload Feature";
+"feature.style_report" = "📊 Style Report";
+
+// MARK: - Guest Mode
+"guest.mode" = "Guest Mode";
+"guest.login_required" = "Login required to use %@";
+"guest.feature_unavailable" = "This feature is not available in guest mode";
+"guest.sign_in_now" = "Sign In Now";
+"guest.exit_guest_mode" = "Exit Guest Mode";
+"guest.progress_not_saved" = "⚠️ Progress will not be saved in guest mode";
+
+// MARK: - Login Requirements
+"login.required.rating" = "Please sign in to use the rating feature";
+"login.required.upload" = "Please sign in to use the upload feature";
+"login.required.report" = "Please sign in to view style report";
+
+// MARK: - Photo Upload
+"upload.title" = "Upload Photo";
+"upload.share_style" = "Share Your Style";
+"upload.description" = "Upload a photo taken within 24 hours to get ratings from other users and personal style analysis";
+"upload.take_photo" = "Take New Photo";
+"upload.take_photo_desc" = "Use camera to take a brand new photo";
+"upload.choose_library" = "Choose from Library";
+"upload.choose_library_desc" = "Select a recent photo from your library";
+"upload.selecting" = "Selecting photo...";
+"upload.start_upload" = "Start Upload";
+"upload.cancel_upload" = "Cancel Upload";
+"upload.uploading" = "Uploading photo...";
+"upload.progress" = "%d%% Complete";
+"upload.success" = "Upload Successful!";
+"upload.success_desc" = "Your photo has been uploaded successfully, now waiting for other users to rate it";
+"upload.failed" = "Upload Failed";
+"upload.unknown_error" = "Unknown error";
+"upload.retry" = "Retry";
+"upload.reselect" = "Reselect";
+"upload.done" = "Done";
+"upload.cancel" = "Cancel";
+"upload.photo_id" = "Photo ID:";
+"upload.upload_time" = "Upload Time:";
+
+// MARK: - Photo Rating
+"rating.title" = "Photo Rating";
+"rating.subtitle" = "Rate photos to unlock upload feature";
+"rating.loading" = "Loading photos...";
+"rating.no_photos" = "No photos available for rating";
+"rating.try_later" = "Please try again later or contact support";
+"rating.reload" = "Reload";
+"rating.hot" = "Hot";
+"rating.not" = "Not";
+
+// MARK: - Sample Photos
+"sample.using_sample_photos" = "Using Sample Photos";
+"sample.description" = "Currently no other user photos available, using sample photos for rating practice";
+
+// MARK: - Profile
+"profile.rating_progress" = "Rating Progress";
+"profile.completed_ratings" = "Completed: %d";
+"profile.target_ratings" = "Target: %d";
+"profile.sign_out" = "Sign Out";
+
+// MARK: - Style Report
+"report.loading" = "Loading Report...";
+"report.error" = "Error";
+"report.title" = "Style Analysis Report";
+"report.no_report" = "No Report Available";
+"report.complete_more" = "Complete more ratings to unlock your style report.";
+"report.overall_trend" = "Overall Attractiveness Trend";
+"report.current" = "Current";
+"report.last_week" = "Last Week";
+"report.total_votes" = "Total Votes: %d";
+"report.gender_analysis" = "Gender Analysis";
+"report.female_attractiveness" = "Female Attractiveness";
+"report.male_attractiveness" = "Male Attractiveness";
+"report.style_performance" = "Style Performance";
+"report.achievements" = "Achievements";
+"report.unlocked" = "Unlocked";
+"report.locked" = "Locked";
+"report.ai_insights" = "AI Insights";
+"report.unlock_achievement" = "Unlock Achievement";
+"report.achievement_unlocked" = "Achievement Unlocked!";
+"report.celebrate" = "Celebrate!";
+
+// MARK: - User Profile
+"profile.unknown_user" = "Unknown User";
+"profile.delete_account" = "Delete Account";
+
+// MARK: - Upload Progress
+"upload.rating_completion_time" = "Ratings usually complete within 24 hours";
+
+// MARK: - Achievements
+"achievement.hot_streak" = "Hot Streak";
+"achievement.hot_streak_desc" = "Rate 10 photos in a row as 'Hot'";
+"achievement.style_king" = "Style King";
+"achievement.style_king_desc" = "Achieve a 90% or higher overall attractiveness score";
+"achievement.rising_star" = "Rising Star";
+"achievement.rising_star_desc" = "Get 100 votes on your photos";
+"achievement.legend" = "Legend";
+"achievement.legend_desc" = "Get 1000 votes on your photos";
+"achievement.trendsetter" = "Trendsetter";
+"achievement.trendsetter_desc" = "Be the first to wear a new style";
+"achievement.diamond" = "Diamond";
+"achievement.diamond_desc" = "Achieve a 95% or higher overall attractiveness score";
+
+// MARK: - Firebase Test
+"firebase.test_title" = "Firebase Storage Test";
+
+// MARK: - Motivational Messages
+"motivational.wait" = "Wait!";
+"motivational.upload_now" = "OK, I want to upload!";
+"motivational.really_skip" = "I really want to skip";
+"motivational.benefit_1" = "Get detailed personal style analysis report";
+"motivational.benefit_2" = "Understand how others view your style";
+"motivational.benefit_3" = "Receive personalized style improvement suggestions";
+"motivational.benefit_4" = "Unlock more platform features and rewards";
+
+// MARK: - Style Messages
+"style.elegant.message" = "Your elegant taste deserves to be seen by more people! Upload a photo to let everyone appreciate your refined style and get an exclusive style analysis report.";
+"style.casual.message" = "Your natural charm is most touching! Share a real photo to see how people rate your affinity and discover more style secrets about yourself.";
+"style.trendy.message" = "You are the fashion expert! Show off your trendy taste, let others see your fashion sense, and get personalized style advice.";
+"style.classic.message" = "Classic never goes out of style! Your timeless taste deserves to be recorded. Upload photos to get professional style analysis and discover your classic charm.";
+"style.sporty.message" = "Energetic you are the most charming! Share your positive energy, let everyone feel your healthy vitality, and get an exclusive style report.";
+"style.artistic.message" = "The artist's vision is unique! Show your creative style, let others appreciate your artistic taste, and discover more creative inspiration.";
+"style.default.message" = "Haven't decided yet";
+
+// MARK: - CTA Messages
+"cta.analyzing_preferences" = "Analyzing your style preferences";
+"cta.analyzing_progress" = "Analyzing your style preferences...";
+"cta.upload_photo" = "Upload Photo";
+"cta.later" = "Later";
+"cta.error_title" = "Error";
+"cta.ok" = "OK";
+
+// MARK: - Settings
+"settings.language.title" = "Language";
+"settings.language.available" = "Available Languages";
+"settings.language.system_desc" = "Follow system language";
+"settings.language.restart_note" = "Language changes take effect immediately";
+
+// MARK: - Common
+"common.loading" = "Loading...";
+"common.error" = "Error";
+"common.cancel" = "Cancel";
+"common.done" = "Done";
+"common.retry" = "Retry";
+"common.ok" = "OK";
+"common.yes" = "Yes";
+"common.no" = "No";

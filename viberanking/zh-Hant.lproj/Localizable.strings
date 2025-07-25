@@ -1,0 +1,174 @@
+/* 
+  Localizable.strings (Traditional Chinese)
+  viberanking
+  
+  Created by Kiro on 2025/07/25.
+*/
+
+// MARK: - Tab Bar
+"tab.rating" = "評分";
+"tab.upload" = "上傳";
+"tab.report" = "報告";
+"tab.profile" = "個人";
+"tab.test" = "Test";
+
+// MARK: - Authentication
+"auth.title" = "數位頂尖社交評價平台";
+"auth.subtitle" = "登入以開始評分和獲取個人風格分析";
+"auth.sign_in_google" = "使用 Google 登入";
+"auth.sign_in_apple" = "使用 Apple 登入";
+"auth.continue_guest" = "以訪客模式繼續";
+"auth.signing_in" = "登入中...";
+"auth.login_failed" = "登入失敗，請檢查網路連接並重試";
+"auth.screen_label" = "登入畫面";
+"auth.error_message" = "錯誤訊息: %@";
+
+// MARK: - Main Features
+"feature.rating" = "🎯 評分功能";
+"feature.upload" = "📸 上傳功能";
+"feature.style_report" = "📊 風格報告";
+
+// MARK: - Guest Mode
+"guest.mode" = "訪客模式";
+"guest.login_required" = "需要登入才能使用%@";
+"guest.feature_unavailable" = "訪客模式下此功能不可用";
+"guest.sign_in_now" = "立即登入";
+"guest.exit_guest_mode" = "退出訪客模式";
+"guest.progress_not_saved" = "⚠️ 訪客模式下進度不會被保存";
+
+// MARK: - Login Requirements
+"login.required.rating" = "請先登入以使用評分功能";
+"login.required.upload" = "請先登入以使用上傳功能";
+"login.required.report" = "請先登入以查看風格報告";
+
+// MARK: - Photo Upload
+"upload.title" = "上傳照片";
+"upload.share_style" = "分享你的風格";
+"upload.description" = "上傳一張24小時內拍攝的照片，獲得其他用戶的評分和個人風格分析";
+"upload.take_photo" = "拍攝新照片";
+"upload.take_photo_desc" = "使用相機拍攝全新照片";
+"upload.choose_library" = "從相簿選擇";
+"upload.choose_library_desc" = "選擇相簿中的近期照片";
+"upload.selecting" = "選擇照片中...";
+"upload.start_upload" = "開始上傳";
+"upload.cancel_upload" = "取消上傳";
+"upload.uploading" = "正在上傳照片...";
+"upload.progress" = "%d%% 完成";
+"upload.success" = "上傳成功！";
+"upload.success_desc" = "你的照片已成功上傳，現在等待其他用戶評分";
+"upload.failed" = "上傳失敗";
+"upload.unknown_error" = "未知錯誤";
+"upload.retry" = "重試";
+"upload.reselect" = "重新選擇";
+"upload.done" = "完成";
+"upload.cancel" = "取消";
+"upload.photo_id" = "照片ID:";
+"upload.upload_time" = "上傳時間:";
+
+// MARK: - Photo Rating
+"rating.title" = "照片評分";
+"rating.subtitle" = "為照片評分來解鎖上傳功能";
+"rating.loading" = "載入照片中...";
+"rating.no_photos" = "沒有可評分的照片";
+"rating.try_later" = "請稍後再試或聯繫客服";
+"rating.reload" = "重新載入";
+"rating.hot" = "Hot";
+"rating.not" = "Not";
+
+// MARK: - Sample Photos
+"sample.using_sample_photos" = "使用示例照片";
+"sample.description" = "目前沒有其他用戶照片，正在使用示例照片供你評分練習";
+
+// MARK: - Profile
+"profile.rating_progress" = "評分進度";
+"profile.completed_ratings" = "已評分: %d";
+"profile.target_ratings" = "目標: %d";
+"profile.sign_out" = "登出";
+
+// MARK: - Style Report
+"report.loading" = "載入報告中...";
+"report.error" = "錯誤";
+"report.title" = "風格分析報告";
+"report.no_report" = "無可用報告";
+"report.complete_more" = "完成更多評分以解鎖你的風格報告";
+"report.overall_trend" = "整體吸引力趨勢";
+"report.current" = "目前";
+"report.last_week" = "上週";
+"report.total_votes" = "總票數: %d";
+"report.gender_analysis" = "性別分析";
+"report.female_attractiveness" = "女性吸引力";
+"report.male_attractiveness" = "男性吸引力";
+"report.style_performance" = "風格表現";
+"report.achievements" = "成就";
+"report.unlocked" = "已解鎖";
+"report.locked" = "已鎖定";
+"report.ai_insights" = "AI 洞察";
+"report.unlock_achievement" = "解鎖成就";
+"report.achievement_unlocked" = "成就解鎖！";
+"report.celebrate" = "慶祝！";
+
+// MARK: - User Profile
+"profile.unknown_user" = "未知用戶";
+"profile.delete_account" = "刪除帳戶";
+
+// MARK: - Upload Progress
+"upload.rating_completion_time" = "評分通常在24小時內完成";
+
+// MARK: - Achievements
+"achievement.hot_streak" = "熱門連勝";
+"achievement.hot_streak_desc" = "連續將10張照片評為「Hot」";
+"achievement.style_king" = "風格之王";
+"achievement.style_king_desc" = "達到90%或更高的整體吸引力分數";
+"achievement.rising_star" = "新星崛起";
+"achievement.rising_star_desc" = "你的照片獲得100票";
+"achievement.legend" = "傳奇";
+"achievement.legend_desc" = "你的照片獲得1000票";
+"achievement.trendsetter" = "潮流引領者";
+"achievement.trendsetter_desc" = "成為第一個穿著新風格的人";
+"achievement.diamond" = "鑽石";
+"achievement.diamond_desc" = "達到95%或更高的整體吸引力分數";
+
+// MARK: - Firebase Test
+"firebase.test_title" = "Firebase 儲存測試";
+
+// MARK: - Motivational Messages
+"motivational.wait" = "等等！";
+"motivational.upload_now" = "好的，我要上傳！";
+"motivational.really_skip" = "我真的要跳過";
+"motivational.benefit_1" = "獲得詳細的個人風格分析報告";
+"motivational.benefit_2" = "了解別人如何看待你的風格";
+"motivational.benefit_3" = "收到個性化的風格改進建議";
+"motivational.benefit_4" = "解鎖更多平台功能和獎勵";
+
+// MARK: - Style Messages
+"style.elegant.message" = "你的優雅品味值得被更多人看見！上傳一張照片，讓大家欣賞你的精緻風格，並獲得專屬的風格分析報告。";
+"style.casual.message" = "你的自然魅力最打動人心！分享一張真實的照片，看看大家如何評價你的親和力，並發現更多關於自己的風格秘密。";
+"style.trendy.message" = "時尚達人就是你！展示你的潮流品味，讓其他人見識你的時尚嗅覺，並獲得個性化的風格建議。";
+"style.classic.message" = "經典永不過時！你的永恆品味值得被記錄，上傳照片獲得專業的風格分析，發現你的經典魅力。";
+"style.sporty.message" = "活力四射的你最有魅力！分享你的正能量，讓大家感受你的健康活力，並獲得專屬的風格報告。";
+"style.artistic.message" = "藝術家的眼光獨一無二！展現你的創意風格，讓其他人欣賞你的藝術品味，並發現更多創意靈感。";
+"style.default.message" = "還沒想好";
+
+// MARK: - CTA Messages
+"cta.analyzing_preferences" = "分析你的風格偏好";
+"cta.analyzing_progress" = "正在分析你的風格偏好...";
+"cta.upload_photo" = "上傳照片";
+"cta.later" = "稍後再說";
+"cta.error_title" = "錯誤";
+"cta.ok" = "確定";
+
+// MARK: - Settings
+"settings.language.title" = "語言";
+"settings.language.available" = "可用語言";
+"settings.language.system_desc" = "跟隨系統語言";
+"settings.language.restart_note" = "語言變更會立即生效";
+
+// MARK: - Common
+"common.loading" = "載入中...";
+"common.error" = "錯誤";
+"common.cancel" = "取消";
+"common.done" = "完成";
+"common.retry" = "重試";
+"common.ok" = "確定";
+"common.yes" = "是";
+"common.no" = "否";

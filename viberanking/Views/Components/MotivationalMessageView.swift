@@ -94,7 +94,7 @@ private extension MotivationalMessageView {
                 .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: animateEmoji)
             
             // Title
-            Text("等等！")
+            Text("motivational.wait".localized)
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(.primary)
@@ -154,7 +154,7 @@ private extension MotivationalMessageView {
                     Image(systemName: "camera.fill")
                         .font(.title3)
                     
-                    Text("好的，我要上傳！")
+                    Text("motivational.upload_now".localized)
                         .font(.headline)
                         .fontWeight(.semibold)
                 }
@@ -172,7 +172,7 @@ private extension MotivationalMessageView {
                 onSkipConfirmed()
                 dismissView()
             }) {
-                Text("我真的要跳過")
+                Text("motivational.really_skip".localized)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -205,30 +205,29 @@ private extension MotivationalMessageView {
     var motivationalMessage: String {
         switch dominantStyle {
         case .elegant:
-            return "你的優雅品味值得被更多人看見！上傳一張照片，讓大家欣賞你的精緻風格，並獲得專屬的風格分析報告。"
+            return "style.elegant.message".localized
         case .casual:
-            return "你的自然魅力最打動人心！分享一張真實的照片，看看大家如何評價你的親和力，並發現更多關於自己的風格秘密。"
+            return "style.casual.message".localized
         case .trendy:
-            return "時尚達人就是你！展示你的潮流品味，讓其他人見識你的時尚嗅覺，並獲得個性化的風格建議。"
+            return "style.trendy.message".localized
         case .classic:
-            return "經典永不過時！你的永恆品味值得被記錄，上傳照片獲得專業的風格分析，發現你的經典魅力。"
+            return "style.classic.message".localized
         case .sporty:
-            return "活力四射的你最有魅力！分享你的正能量，讓大家感受你的健康活力，並獲得專屬的風格報告。"
+            return "style.sporty.message".localized
         case .artistic:
-            return "藝術家的眼光獨一無二！展現你的創意風格，讓其他人欣賞你的藝術品味，並發現更多創意靈感。"
+            return "style.artistic.message".localized
         default:
-            return "還沒想好"
+            return "style.default.message".localized
         }
-        
     }
     
     /// Get benefits list
     var benefits: [String] {
         return [
-            "獲得詳細的個人風格分析報告",
-            "了解別人如何看待你的風格",
-            "收到個性化的風格改進建議",
-            "解鎖更多平台功能和獎勵"
+            "motivational.benefit_1".localized,
+            "motivational.benefit_2".localized,
+            "motivational.benefit_3".localized,
+            "motivational.benefit_4".localized
         ]
     }
 }

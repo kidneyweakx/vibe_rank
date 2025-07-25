@@ -67,12 +67,12 @@ private extension PhotoRatingDemoView {
     /// Header view
     var headerView: some View {
         VStack(spacing: 8) {
-            Text("照片評分")
+            Text("rating.title".localized)
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(.primary)
             
-            Text("為照片評分來解鎖上傳功能")
+            Text("rating.subtitle".localized)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
@@ -208,7 +208,7 @@ private extension PhotoRatingDemoView {
             ProgressView()
                 .scaleEffect(1.5)
             
-            Text("載入照片中...")
+            Text("rating.loading".localized)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
@@ -222,15 +222,15 @@ private extension PhotoRatingDemoView {
                 .font(.system(size: 60))
                 .foregroundColor(.gray)
             
-            Text("沒有可評分的照片")
+            Text("rating.no_photos".localized)
                 .font(.headline)
                 .foregroundColor(.primary)
             
-            Text("請稍後再試或聯繫客服")
+            Text("rating.try_later".localized)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
             
-            Button("重新載入") {
+            Button("rating.reload".localized) {
                 Task {
                     await loadPhotos()
                 }

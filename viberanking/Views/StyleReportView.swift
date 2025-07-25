@@ -13,10 +13,10 @@ struct StyleReportView: View {
     var body: some View {
         Group {
             if viewModel.isLoading {
-                ProgressView("Loading Report...")
+                ProgressView("report.loading".localized)
             } else if let errorMessage = viewModel.errorMessage {
                 VStack {
-                    Text("Error")
+                    Text("report.error".localized)
                         .font(.largeTitle)
                     Text(errorMessage)
                         .font(.body)
@@ -25,14 +25,14 @@ struct StyleReportView: View {
             } else if let styleReport = viewModel.styleReport {
                 ScrollView {
                     VStack(spacing: 20) {
-                        Text("Style Analysis Report")
+                        Text("report.title".localized)
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .padding(.top, 20)
 
                         // Overall Attractiveness
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("Overall Attractiveness Trend")
+                            Text("report.overall_trend".localized)
                                 .font(.title2)
                                 .fontWeight(.semibold)
                             
@@ -41,7 +41,7 @@ struct StyleReportView: View {
                             
                             HStack {
                                 VStack(alignment: .leading) {
-                                    Text("Current")
+                                    Text("report.current".localized)
                                         .font(.headline)
                                     Text("\(styleReport.ranking.overallAttractiveness, specifier: "%.0f")%")
                                         .font(.system(size: 40, weight: .bold))
@@ -49,7 +49,7 @@ struct StyleReportView: View {
                                 }
                                 Spacer()
                                 VStack(alignment: .leading) {
-                                    Text("Last Week")
+                                    Text("report.last_week".localized)
                                         .font(.headline)
                                     Text("50%")
                                         .font(.system(size: 40, weight: .bold))
@@ -57,7 +57,7 @@ struct StyleReportView: View {
                                 }
                             }
                             
-                            Text("Total Votes: \(styleReport.ranking.totalVotes)")
+                            Text("report.total_votes".localized(with: styleReport.ranking.totalVotes))
                                 .font(.headline)
                         }
                         .padding()
@@ -67,12 +67,12 @@ struct StyleReportView: View {
 
                         // Gender Analysis
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("Gender Analysis")
+                            Text("report.gender_analysis".localized)
                                 .font(.title2)
                                 .fontWeight(.semibold)
                             HStack {
                                 VStack(alignment: .leading) {
-                                    Text("Female Attractiveness")
+                                    Text("report.female_attractiveness".localized)
                                         .font(.headline)
                                     Text("\(styleReport.ranking.femaleAttractiveness, specifier: "%.0f")%")
                                         .font(.system(size: 40, weight: .bold))
@@ -80,7 +80,7 @@ struct StyleReportView: View {
                                 }
                                 Spacer()
                                 VStack(alignment: .leading) {
-                                    Text("Male Attractiveness")
+                                    Text("report.male_attractiveness".localized)
                                         .font(.headline)
                                     Text("\(styleReport.ranking.maleAttractiveness, specifier: "%.0f")%")
                                         .font(.system(size: 40, weight: .bold))
@@ -95,7 +95,7 @@ struct StyleReportView: View {
 
                         // Style Performance
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("Style Performance")
+                            Text("report.style_performance".localized)
                                 .font(.title2)
                                 .fontWeight(.semibold)
                             ForEach(styleReport.styleBreakdown.sorted(by: { $0.value > $1.value }), id: \.key) { style, score in
@@ -120,7 +120,7 @@ struct StyleReportView: View {
 
                         // Achievements
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("Achievements")
+                            Text("report.achievements".localized)
                                 .font(.title2)
                                 .fontWeight(.semibold)
                             
@@ -128,7 +128,7 @@ struct StyleReportView: View {
                             let lockedAchievements = mockAchievements.filter { !$0.isUnlocked }
 
                             if !unlockedAchievements.isEmpty {
-                                Text("Unlocked")
+                                Text("report.unlocked".localized)
                                     .font(.headline)
                                 ForEach(unlockedAchievements, id: \.id) { achievement in
                                     AchievementView(achievement: achievement)
@@ -136,7 +136,7 @@ struct StyleReportView: View {
                             }
                             
                             if !lockedAchievements.isEmpty {
-                                Text("Locked")
+                                Text("report.locked".localized)
                                     .font(.headline)
                                 ForEach(lockedAchievements, id: \.id) { achievement in
                                     AchievementView(achievement: achievement)
@@ -150,7 +150,7 @@ struct StyleReportView: View {
 
                         // AI Insights
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("AI Insights")
+                            Text("report.ai_insights".localized)
                                 .font(.title2)
                                 .fontWeight(.semibold)
                             ForEach(styleReport.recommendations, id: \.self) { recommendation in
@@ -167,15 +167,15 @@ struct StyleReportView: View {
                 }
             } else {
                 VStack {
-                    Text("No Report Available")
+                    Text("report.no_report".localized)
                         .font(.largeTitle)
-                    Text("Complete more ratings to unlock your style report.")
+                    Text("report.complete_more".localized)
                         .font(.body)
                         .foregroundColor(.secondary)
                 }
             }
         }
-        .navigationTitle("Style Report")
+        .navigationTitle("report.title".localized)
         .onAppear {
             viewModel.fetchStyleReport(for: userId)
         }
@@ -183,14 +183,14 @@ struct StyleReportView: View {
             Group {
                 if let achievement = newlyUnlockedAchievement {
                     VStack {
-                        Text("Achievement Unlocked!")
+                        Text("report.achievement_unlocked".localized)
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .foregroundColor(.yellow)
                         
                         AchievementView(achievement: achievement)
                         
-                        Button("Celebrate!") {
+                        Button("report.celebrate".localized) {
                             newlyUnlockedAchievement = nil
                         }
                         .padding()
@@ -207,7 +207,7 @@ struct StyleReportView: View {
         )
         // Temporary button to simulate unlocking an achievement
         .safeAreaInset(edge: .bottom) {
-            Button("Unlock Achievement") {
+            Button("report.unlock_achievement".localized) {
                 withAnimation {
                     newlyUnlockedAchievement = mockAchievements.first(where: { !$0.isUnlocked })
                 }
@@ -225,12 +225,12 @@ struct StyleReportView_Previews: PreviewProvider {
 }
 
 let mockAchievements = [
-    Achievement(title: "Hot Streak", description: "Rate 10 photos in a row as 'Hot'", iconName: "flame.fill", category: .rating, requirement: .init(type: .consecutiveDays, target: 10), reward: .init(type: .acceleratedRating, value: 1, description: "1")),
-    Achievement(title: "Style King", description: "Achieve a 90% or higher overall attractiveness score", iconName: "crown.fill", category: .style, requirement: .init(type: .hotRatingsReceived, target: 100), reward: .init(type: .specialBadge, value: 1, description: "1")),
-    Achievement(title: "Rising Star", description: "Get 100 votes on your photos", iconName: "star.fill", category: .milestone, requirement: .init(type: .ratingsReceived, target: 100)),
-    Achievement(title: "Legend", description: "Get 1000 votes on your photos", iconName: "star.leading.half.filled", category: .milestone, requirement: .init(type: .ratingsReceived, target: 1000)),
-    Achievement(title: "Trendsetter", description: "Be the first to wear a new style", iconName: "paintbrush.fill", category: .style, requirement: .init(type: .styleReportsGenerated, target: 1)),
-    Achievement(title: "Diamond", description: "Achieve a 95% or higher overall attractiveness score", iconName: "diamond.fill", category: .style, requirement: .init(type: .hotRatingsReceived, target: 500))
+    Achievement(title: "achievement.hot_streak".localized, description: "achievement.hot_streak_desc".localized, iconName: "flame.fill", category: .rating, requirement: .init(type: .consecutiveDays, target: 10), reward: .init(type: .acceleratedRating, value: 1, description: "1")),
+    Achievement(title: "achievement.style_king".localized, description: "achievement.style_king_desc".localized, iconName: "crown.fill", category: .style, requirement: .init(type: .hotRatingsReceived, target: 100), reward: .init(type: .specialBadge, value: 1, description: "1")),
+    Achievement(title: "achievement.rising_star".localized, description: "achievement.rising_star_desc".localized, iconName: "star.fill", category: .milestone, requirement: .init(type: .ratingsReceived, target: 100)),
+    Achievement(title: "achievement.legend".localized, description: "achievement.legend_desc".localized, iconName: "star.leading.half.filled", category: .milestone, requirement: .init(type: .ratingsReceived, target: 1000)),
+    Achievement(title: "achievement.trendsetter".localized, description: "achievement.trendsetter_desc".localized, iconName: "paintbrush.fill", category: .style, requirement: .init(type: .styleReportsGenerated, target: 1)),
+    Achievement(title: "achievement.diamond".localized, description: "achievement.diamond_desc".localized, iconName: "diamond.fill", category: .style, requirement: .init(type: .hotRatingsReceived, target: 500))
 ]
 
 let mockReport = StyleReport(

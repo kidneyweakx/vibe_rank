@@ -54,8 +54,8 @@ struct CTAView: View {
                 await viewModel.loadCTAMessage()
             }
         }
-        .alert("錯誤", isPresented: .constant(viewModel.error != nil)) {
-            Button("確定") {
+        .alert("cta.error_title".localized, isPresented: .constant(viewModel.error != nil)) {
+            Button("cta.ok".localized) {
                 viewModel.clearError()
             }
         } message: {
@@ -136,7 +136,7 @@ private extension CTAView {
             }
             
             // Title
-            Text(viewModel.ctaMessage?.title ?? "分析你的風格偏好")
+            Text(viewModel.ctaMessage?.title ?? "cta.analyzing_preferences".localized)
                 .font(.title2)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
@@ -193,7 +193,7 @@ private extension CTAView {
             ProgressView()
                 .scaleEffect(1.2)
             
-            Text("正在分析你的風格偏好...")
+            Text("cta.analyzing_progress".localized)
                 .font(.body)
                 .foregroundColor(.secondary)
         }
@@ -212,7 +212,7 @@ private extension CTAView {
                     Image(systemName: "camera.fill")
                         .font(.title3)
                     
-                    Text(viewModel.ctaMessage?.buttonText ?? "上傳照片")
+                    Text(viewModel.ctaMessage?.buttonText ?? "cta.upload_photo".localized)
                         .font(.headline)
                         .fontWeight(.semibold)
                 }
@@ -249,7 +249,7 @@ private extension CTAView {
         Button(action: {
             showMotivationalMessage = true
         }) {
-            Text("稍後再說")
+            Text("cta.later".localized)
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.8))
                 .padding(.horizontal, 24)

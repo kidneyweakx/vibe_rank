@@ -32,7 +32,7 @@ struct PhotoUploadView: View {
                         case .idle:
                             sourceSelectionSection
                         case .selecting:
-                            loadingSection("選擇照片中...")
+                            loadingSection("upload.selecting".localized)
                         case .previewing(let image):
                             photoPreviewSection(image: image)
                         case .uploading(let progress):
@@ -47,18 +47,18 @@ struct PhotoUploadView: View {
                     .padding(.vertical, 16)
                 }
             }
-            .navigationTitle("上傳照片")
+            .navigationTitle("upload.title".localized)
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("取消") {
+                    Button("upload.cancel".localized) {
                         dismiss()
                     }
                 }
                 
                 if case .previewing = viewModel.uploadState {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("重選") {
+                        Button("upload.reselect".localized) {
                             viewModel.resetUpload()
                         }
                     }
@@ -90,11 +90,11 @@ private extension PhotoUploadView {
                 .font(.system(size: 48))
                 .foregroundColor(.blue)
             
-            Text("分享你的風格")
+            Text("upload.share_style".localized)
                 .font(.title2)
                 .fontWeight(.bold)
             
-            Text("上傳一張24小時內拍攝的照片，獲得其他用戶的評分和個人風格分析")
+            Text("upload.description".localized)
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -113,11 +113,11 @@ private extension PhotoUploadView {
                         .foregroundColor(.white)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("拍攝新照片")
+                        Text("upload.take_photo".localized)
                             .font(.headline)
                             .foregroundColor(.white)
                         
-                        Text("使用相機拍攝全新照片")
+                        Text("upload.take_photo_desc".localized)
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.8))
                     }
@@ -148,11 +148,11 @@ private extension PhotoUploadView {
                         .foregroundColor(.blue)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("從相簿選擇")
+                        Text("upload.choose_library".localized)
                             .font(.headline)
                             .foregroundColor(.primary)
                         
-                        Text("選擇相簿中的近期照片")
+                        Text("upload.choose_library_desc".localized)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -205,7 +205,7 @@ private extension PhotoUploadView {
             Button(action: viewModel.uploadPhoto) {
                 HStack {
                     Image(systemName: "icloud.and.arrow.up.fill")
-                    Text("開始上傳")
+                    Text("upload.start_upload".localized)
                 }
                 .font(.headline)
                 .foregroundColor(.white)
@@ -227,18 +227,18 @@ private extension PhotoUploadView {
                     .progressViewStyle(LinearProgressViewStyle(tint: .blue))
                     .scaleEffect(y: 2)
                 
-                Text("\(Int(progress * 100))% 完成")
+                Text("upload.progress".localized(with: Int(progress * 100)))
                     .font(.headline)
                     .foregroundColor(.primary)
                 
-                Text("正在上傳照片...")
+                Text("upload.uploading".localized)
                     .font(.body)
                     .foregroundColor(.secondary)
             }
             .padding(.vertical, 20)
             
             // Cancel button
-            Button("取消上傳") {
+            Button("upload.cancel_upload".localized) {
                 viewModel.cancelUpload()
             }
             .font(.body)
@@ -258,11 +258,11 @@ private extension PhotoUploadView {
                 .font(.system(size: 64))
                 .foregroundColor(.green)
             
-            Text("上傳成功！")
+            Text("upload.success".localized)
                 .font(.title2)
                 .fontWeight(.bold)
             
-            Text("你的照片已成功上傳，現在等待其他用戶評分")
+            Text("upload.success_desc".localized)
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -270,7 +270,7 @@ private extension PhotoUploadView {
             // Photo info
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("照片ID:")
+                    Text("upload.photo_id".localized)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Text(photo.id.prefix(8) + "...")
@@ -280,7 +280,7 @@ private extension PhotoUploadView {
                 }
                 
                 HStack {
-                    Text("上傳時間:")
+                    Text("upload.upload_time".localized)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Text(DateFormatter.localizedString(from: photo.uploadedAt, dateStyle: .short, timeStyle: .short))
@@ -294,7 +294,7 @@ private extension PhotoUploadView {
             .cornerRadius(8)
             
             // Done button
-            Button("完成") {
+            Button("upload.done".localized) {
                 dismiss()
             }
             .font(.headline)
@@ -318,11 +318,11 @@ private extension PhotoUploadView {
                 .font(.system(size: 48))
                 .foregroundColor(.red)
             
-            Text("上傳失敗")
+            Text("upload.failed".localized)
                 .font(.title2)
                 .fontWeight(.bold)
             
-            Text(error.errorDescription ?? "未知錯誤")
+            Text(error.errorDescription ?? "upload.unknown_error".localized)
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -337,7 +337,7 @@ private extension PhotoUploadView {
             
             // Action buttons
             HStack(spacing: 12) {
-                Button("重試") {
+                Button("upload.retry".localized) {
                     viewModel.retryUpload()
                 }
                 .font(.body)
@@ -347,7 +347,7 @@ private extension PhotoUploadView {
                 .background(Color.blue.opacity(0.1))
                 .cornerRadius(8)
                 
-                Button("重新選擇") {
+                Button("upload.reselect".localized) {
                     viewModel.resetUpload()
                 }
                 .font(.body)

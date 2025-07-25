@@ -18,6 +18,7 @@ struct ContentView: View {
                 LoginView()
             }
         }
+        .localized()
     }
 }
 
@@ -30,33 +31,33 @@ struct MainTabView: View {
             // Rating tab - available for all users
             PhotoRatingTabView()
                 .tabItem {
-                    Label("評分", systemImage: "star.fill")
+                    Label("tab.rating".localized, systemImage: "star.fill")
                 }
             
             // Upload tab - restricted for guests
             if viewModel.isGuest {
-                GuestRestrictedView(feature: "上傳照片")
+                GuestRestrictedView(feature: "tab.upload".localized)
                     .tabItem {
-                        Label("上傳", systemImage: "square.and.arrow.up")
+                        Label("tab.upload".localized, systemImage: "square.and.arrow.up")
                     }
             } else {
                 PhotoUploadTabView()
                     .tabItem {
-                        Label("上傳", systemImage: "square.and.arrow.up")
+                        Label("tab.upload".localized, systemImage: "square.and.arrow.up")
                     }
             }
             
             
             // Report tab - restricted for guests
             if viewModel.isGuest {
-                GuestRestrictedView(feature: "風格報告")
+                GuestRestrictedView(feature: "tab.report".localized)
                     .tabItem {
-                        Label("報告", systemImage: "chart.bar.fill")
+                        Label("tab.report".localized, systemImage: "chart.bar.fill")
                     }
             } else {
                 StyleReportTabView()
                     .tabItem {
-                        Label("報告", systemImage: "chart.bar.fill")
+                        Label("tab.report".localized, systemImage: "chart.bar.fill")
                     }
             }
             
@@ -64,14 +65,22 @@ struct MainTabView: View {
             // Profile tab - shows guest info or regular profile
             ProfilePlaceholderView()
                 .tabItem {
-                    Label("個人", systemImage: "person.fill")
+                    Label("tab.profile".localized, systemImage: "person.fill")
                 }
             
             // Firebase Test Tab
             FirebaseTestView()
                 .tabItem {
-                    Label("Test", systemImage: "arrow.up.circle.fill")
+                    Label("tab.test".localized, systemImage: "arrow.up.circle.fill")
                 }
+            
+            // Localization Test Tab (for development)
+            #if DEBUG
+            LocalizationTestView()
+                .tabItem {
+                    Label("Language", systemImage: "globe")
+                }
+            #endif
         }
     }
 }
@@ -85,11 +94,11 @@ struct PhotoRatingTabView: View {
                 PhotoRatingView(userId: currentUser.id)
             } else {
                 VStack {
-                    Text("🎯 評分功能")
+                    Text("feature.rating".localized)
                         .font(.title2)
                         .padding()
                     
-                    Text("請先登入以使用評分功能")
+                    Text("login.required.rating".localized)
                         .multilineTextAlignment(.center)
                         .foregroundColor(.secondary)
                         .padding()
@@ -108,11 +117,11 @@ struct PhotoUploadTabView: View {
                 PhotoUploadView()
             } else {
                 VStack {
-                    Text("📸 上傳功能")
+                    Text("feature.upload".localized)
                         .font(.title2)
                         .padding()
                     
-                    Text("請先登入以使用上傳功能")
+                    Text("login.required.upload".localized)
                         .multilineTextAlignment(.center)
                         .foregroundColor(.secondary)
                         .padding()
@@ -131,11 +140,11 @@ struct StyleReportTabView: View {
                 StyleReportView(userId: currentUser.id)
             } else {
                 VStack {
-                    Text("📊 風格報告")
+                    Text("feature.style_report".localized)
                         .font(.title2)
                         .padding()
                     
-                    Text("請先登入以查看風格報告")
+                    Text("login.required.report".localized)
                         .multilineTextAlignment(.center)
                         .foregroundColor(.secondary)
                         .padding()
@@ -157,16 +166,16 @@ struct GuestRestrictedView: View {
                 .frame(width: 60, height: 60)
                 .foregroundColor(.secondary)
             
-            Text("需要登入才能使用\(feature)")
+            Text("guest.login_required".localized(with: feature))
                 .font(.headline)
                 .multilineTextAlignment(.center)
             
-            Text("訪客模式下此功能不可用")
+            Text("guest.feature_unavailable".localized)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             
-            Button("立即登入") {
+            Button("guest.sign_in_now".localized) {
                 viewModel.signOut() // This will return to login screen
             }
             .buttonStyle(.borderedProminent)
@@ -194,7 +203,7 @@ struct ProfilePlaceholderView: View {
                     .fontWeight(.semibold)
                 
                 if viewModel.isGuest {
-                    Text("訪客模式")
+                    Text("guest.mode".localized)
                         .font(.caption)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
@@ -209,14 +218,14 @@ struct ProfilePlaceholderView: View {
                 
                 // Rating progress
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("評分進度")
+                    Text("profile.rating_progress".localized)
                         .font(.headline)
                         .padding(.top)
                     
                     HStack {
-                        Text("已評分: \(user.ratingProgress.completedRatings)")
+                        Text("profile.completed_ratings".localized(with: user.ratingProgress.completedRatings))
                         Spacer()
-                        Text("目標: \(user.ratingProgress.requiredRatings)")
+                        Text("profile.target_ratings".localized(with: user.ratingProgress.requiredRatings))
                     }
                     .font(.subheadline)
                     
@@ -224,7 +233,7 @@ struct ProfilePlaceholderView: View {
                         .progressViewStyle(LinearProgressViewStyle())
                     
                     if viewModel.isGuest {
-                        Text("⚠️ 訪客模式下進度不會被保存")
+                        Text("guest.progress_not_saved".localized)
                             .font(.caption)
                             .foregroundColor(.orange)
                     }
@@ -237,7 +246,7 @@ struct ProfilePlaceholderView: View {
             Spacer()
             
             // Sign out button
-            Button(viewModel.isGuest ? "退出訪客模式" : "登出") {
+            Button(viewModel.isGuest ? "guest.exit_guest_mode".localized : "profile.sign_out".localized) {
                 viewModel.signOut()
             }
             .foregroundColor(.red)
@@ -255,7 +264,7 @@ struct SplashScreenView: View {
                 .frame(width: 100, height: 100)
                 .foregroundColor(.blue)
             
-            Text("數位頂尖社交評價平台")
+            Text("auth.title".localized)
                 .font(.title2)
                 .padding()
             

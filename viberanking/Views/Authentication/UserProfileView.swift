@@ -117,7 +117,7 @@ struct ProfileHeaderView: View {
             
             // User Info
             VStack(spacing: 4) {
-                Text(user?.name ?? "Unknown User")
+                Text(user?.name ?? "profile.unknown_user".localized)
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundColor(colorScheme == .dark ? .white : .black)
@@ -252,7 +252,7 @@ struct AccountActionsSection: View {
                 
                 // Delete Account Button
                 ActionButton(
-                    title: "刪除帳戶",
+                    title: "profile.delete_account".localized,
                     icon: "trash",
                     action: onDeleteAccount,
                     style: .destructive
