@@ -23,13 +23,15 @@ struct BuildTest {
         print("Rating created: \(rating.id)")
         
         // Test StyleReport model
-        let ranking = StyleRanking(from: <#any Decoder#>, overallScore: 95.5, percentile: 90.0, categoryRankings: [.elegant: 1, .classic: 2])
+        let ranking = StyleRanking(overallAttractiveness: 95.5, totalVotes: 100, femaleAttractiveness: 90.0, maleAttractiveness: 80.0)
         let styleReport = StyleReport(
+            id: "test",
             userId: "test",
             dominantStyle: .elegant,
-            styleBreakdown: [.elegant: 0.8, .classic: 0.2],
+            styleBreakdown: [StyleType.elegant.rawValue: 0.8, StyleType.classic.rawValue: 0.2],
             ranking: ranking,
-            recommendations: ["Test recommendation"]
+            recommendations: ["Test recommendation"],
+            generatedAt: Date()
         )
         print("StyleReport created: \(styleReport.id)")
         

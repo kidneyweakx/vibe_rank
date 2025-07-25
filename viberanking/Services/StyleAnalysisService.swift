@@ -39,4 +39,9 @@ class StyleAnalysisService: StyleAnalysisServiceProtocol {
 
         return styleReport
     }
+
+    func getUserPreferences(for userId: String) async throws -> UserPreferences {
+        // Dummy data for now
+        return UserPreferences(userId: userId)
+    }
 }
