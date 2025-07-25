@@ -104,6 +104,8 @@ private extension SamplePhotoService {
             return ["運動", "活力", "健康", "動感"]
         case .artistic:
             return ["藝術", "創意", "獨特", "個性"]
+        default:
+            return []
         }
     }
 }

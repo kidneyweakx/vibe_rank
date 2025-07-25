@@ -315,6 +315,8 @@ private extension CTAView {
             return [Color.blue.opacity(0.6), Color.cyan.opacity(0.4)]
         case .artistic:
             return [Color.indigo.opacity(0.6), Color.purple.opacity(0.4)]
+        default:
+            return [Color.accentColor.opacity(0.6), Color.blue.opacity(0.4)]
         }
     }
 }

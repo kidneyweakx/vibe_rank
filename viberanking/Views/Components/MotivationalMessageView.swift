@@ -216,7 +216,10 @@ private extension MotivationalMessageView {
             return "活力四射的你最有魅力！分享你的正能量，讓大家感受你的健康活力，並獲得專屬的風格報告。"
         case .artistic:
             return "藝術家的眼光獨一無二！展現你的創意風格，讓其他人欣賞你的藝術品味，並發現更多創意靈感。"
+        default:
+            return "還沒想好"
         }
+        
     }
     
     /// Get benefits list

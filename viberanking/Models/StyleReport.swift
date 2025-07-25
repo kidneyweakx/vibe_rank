@@ -15,11 +15,16 @@ enum StyleType: String, CaseIterable, Codable {
     case classic = "經典"
     case sporty = "運動"
     case artistic = "藝術"
-    
+    case streetwear = "街頭"
+    case minimalist = "極簡"
+    case edgy = "前衛"
+    case formal = "正式"
+    case colorful = "繽紛"
+
     var displayName: String {
         return rawValue
     }
-    
+
     var description: String {
         switch self {
         case .elegant:
@@ -34,9 +39,19 @@ enum StyleType: String, CaseIterable, Codable {
             return "運動活力的風格，展現健康活力"
         case .artistic:
             return "藝術創意的風格，獨特且富有創意"
+        case .streetwear:
+            return "街頭潮流的風格，展現個性與態度"
+        case .minimalist:
+            return "極簡主義的風格，簡單卻不失品味"
+        case .edgy:
+            return "前衛獨特的風格，敢於挑戰傳統"
+        case .formal:
+            return "正式場合的風格，展現專業與莊重"
+        case .colorful:
+            return "繽紛多彩的風格，充滿活力與創意"
         }
     }
-    
+
     var emoji: String {
         switch self {
         case .elegant:
@@ -51,6 +66,16 @@ enum StyleType: String, CaseIterable, Codable {
             return "💪"
         case .artistic:
             return "🎨"
+        case .streetwear:
+            return "🛹"
+        case .minimalist:
+            return "⚪️"
+        case .edgy:
+            return "🎸"
+        case .formal:
+            return "👔"
+        case .colorful:
+            return "🌈"
         }
     }
 }
@@ -65,44 +90,14 @@ struct StyleReport: Codable, Identifiable {
     let recommendations: [String]
     let generatedAt: Date
     
-    init(userId: String, dominantStyle: StyleType, styleBreakdown: [StyleType: Double], ranking: StyleRanking, recommendations: [String]) {
-        self.id = UUID().uuidString
-        self.userId = userId
-        self.dominantStyle = dominantStyle
-        self.styleBreakdown = Dictionary(uniqueKeysWithValues: styleBreakdown.map { ($0.key.rawValue, $0.value) })
-        self.ranking = ranking
-        self.recommendations = recommendations
-        self.generatedAt = Date()
-    }
-    
-    /// Get style breakdown with StyleType keys
-    var styleBreakdownTyped: [StyleType: Double] {
-        return Dictionary(uniqueKeysWithValues: styleBreakdown.compactMap { key, value in
-            guard let styleType = StyleType(rawValue: key) else { return nil }
-            return (styleType, value)
-        })
-    }
 }
 
 // MARK: - Style Ranking Model
 struct StyleRanking: Codable {
-    let overallScore: Double
-    let percentile: Double
-    let categoryRankings: [String: Int] // category -> rank
-    
-    init(overallScore: Double, percentile: Double, categoryRankings: [StyleType: Int]) {
-        self.overallScore = overallScore
-        self.percentile = percentile
-        self.categoryRankings = Dictionary(uniqueKeysWithValues: categoryRankings.map { ($0.key.rawValue, $0.value) })
-    }
-    
-    /// Get category rankings with StyleType keys
-    var categoryRankingsTyped: [StyleType: Int] {
-        return Dictionary(uniqueKeysWithValues: categoryRankings.compactMap { key, value in
-            guard let styleType = StyleType(rawValue: key) else { return nil }
-            return (styleType, value)
-        })
-    }
+    let overallAttractiveness: Double
+    let totalVotes: Int
+    let femaleAttractiveness: Double
+    let maleAttractiveness: Double
 }
 
 // MARK: - CTA Message Model

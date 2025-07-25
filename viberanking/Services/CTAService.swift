@@ -206,6 +206,16 @@ private extension CTAService {
             elements.append("你展現活力健康的生活態度")
         case .artistic:
             elements.append("你具有獨特的藝術眼光")
+        case .streetwear:
+            elements.append("你具有獨特的藝術眼光")
+        case .minimalist:
+            elements.append("你具有獨特的藝術眼光")
+        case .edgy:
+            elements.append("你具有獨特的藝術眼光")
+        case .formal:
+            elements.append("你具有獨特的藝術眼光")
+        case .colorful:
+            elements.append("你具有獨特的藝術眼光")
         }
         
         return elements
@@ -257,6 +267,13 @@ private extension CTAService {
             
         case .artistic:
             return (
+                title: "分享你的藝術眼光！",
+                subtitle: "你具有獨特的藝術品味，這種創意和個性最難得。讓大家欣賞你的藝術風格！",
+                buttonText: "上傳我的藝術照片",
+                motivationalText: "藝術家的眼光獨一無二，展現你的創意魅力！"
+            )
+        default:
+            return(
                 title: "分享你的藝術眼光！",
                 subtitle: "你具有獨特的藝術品味，這種創意和個性最難得。讓大家欣賞你的藝術風格！",
                 buttonText: "上傳我的藝術照片",
