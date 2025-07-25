@@ -54,7 +54,7 @@ struct MainTabView: View {
                         Label("報告", systemImage: "chart.bar.fill")
                     }
             } else {
-                Text("報告")
+                StyleReportTabView()
                     .tabItem {
                         Label("報告", systemImage: "chart.bar.fill")
                     }
@@ -113,6 +113,29 @@ struct PhotoUploadTabView: View {
                         .padding()
                     
                     Text("請先登入以使用上傳功能")
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.secondary)
+                        .padding()
+                }
+            }
+        }
+    }
+}
+
+struct StyleReportTabView: View {
+    @EnvironmentObject private var viewModel: AuthenticationViewModel
+    
+    var body: some View {
+        Group {
+            if let currentUser = viewModel.user {
+                StyleReportView(userId: currentUser.id)
+            } else {
+                VStack {
+                    Text("📊 風格報告")
+                        .font(.title2)
+                        .padding()
+                    
+                    Text("請先登入以查看風格報告")
                         .multilineTextAlignment(.center)
                         .foregroundColor(.secondary)
                         .padding()

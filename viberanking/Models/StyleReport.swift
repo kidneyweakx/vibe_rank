@@ -15,11 +15,16 @@ enum StyleType: String, CaseIterable, Codable {
     case classic = "經典"
     case sporty = "運動"
     case artistic = "藝術"
-    
+    case streetwear = "街頭"
+    case minimalist = "極簡"
+    case edgy = "前衛"
+    case formal = "正式"
+    case colorful = "繽紛"
+
     var displayName: String {
         return rawValue
     }
-    
+
     var description: String {
         switch self {
         case .elegant:
@@ -34,9 +39,19 @@ enum StyleType: String, CaseIterable, Codable {
             return "運動活力的風格，展現健康活力"
         case .artistic:
             return "藝術創意的風格，獨特且富有創意"
+        case .streetwear:
+            return "街頭潮流的風格，展現個性與態度"
+        case .minimalist:
+            return "極簡主義的風格，簡單卻不失品味"
+        case .edgy:
+            return "前衛獨特的風格，敢於挑戰傳統"
+        case .formal:
+            return "正式場合的風格，展現專業與莊重"
+        case .colorful:
+            return "繽紛多彩的風格，充滿活力與創意"
         }
     }
-    
+
     var emoji: String {
         switch self {
         case .elegant:
@@ -51,6 +66,16 @@ enum StyleType: String, CaseIterable, Codable {
             return "💪"
         case .artistic:
             return "🎨"
+        case .streetwear:
+            return "🛹"
+        case .minimalist:
+            return "⚪️"
+        case .edgy:
+            return "🎸"
+        case .formal:
+            return "👔"
+        case .colorful:
+            return "🌈"
         }
     }
 }

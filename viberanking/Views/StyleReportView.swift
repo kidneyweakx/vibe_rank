@@ -238,12 +238,12 @@ let mockReport = StyleReport(
     userId: "123",
     dominantStyle: .streetwear,
     styleBreakdown: [
-        .streetwear: 85,
-        .minimalist: 78,
-        .edgy: 72,
-        .formal: 65,
-        .colorful: 58
-    ].reduce(into: [:]) { $0[$1.key.rawValue] = $1.value },
+        StyleType.streetwear.rawValue: 85,
+        StyleType.minimalist.rawValue: 78,
+        StyleType.edgy.rawValue: 72,
+        StyleType.formal.rawValue: 65,
+        StyleType.colorful.rawValue: 58
+    ],
     ranking: StyleRanking(
         overallAttractiveness: 73,
         totalVotes: 156,
