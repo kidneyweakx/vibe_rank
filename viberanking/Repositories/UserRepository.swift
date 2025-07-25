@@ -14,6 +14,15 @@ class UserRepository: UserRepositoryProtocol {
     private let usersCollection = "users"
     private let preferencesCollection = "userPreferences"
     
+    // MARK: - Private Helper Methods
+    
+    /// Validates that the user ID is not empty or blank
+    private func validateUserId(_ id: String) throws {
+        guard !id.isEmpty, !id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw AppError.firebaseError(.firestoreError("User ID cannot be empty"))
+        }
+    }
+    
     // MARK: - CRUD Operations
     func create(_ entity: User) async throws -> User {
         print("🔄 Creating user profile in Firestore: \(entity.id)")
@@ -36,11 +45,14 @@ class UserRepository: UserRepositoryProtocol {
     }
     
     func read(id: String) async throws -> User? {
+        try validateUserId(id)
         return try await getUser(by: id)
     }
     
     func update(_ entity: User) async throws -> User {
         print("🔄 Updating user profile in Firestore: \(entity.id)")
+        
+        try validateUserId(entity.id)
         
         do {
             let userRef = db.collection(usersCollection).document(entity.id)
@@ -56,6 +68,8 @@ class UserRepository: UserRepositoryProtocol {
     
     func delete(id: String) async throws {
         print("🔄 Deleting user profile from Firestore: \(id)")
+        
+        try validateUserId(id)
         
         do {
             let userRef = db.collection(usersCollection).document(id)
@@ -102,6 +116,9 @@ class UserRepository: UserRepositoryProtocol {
     // MARK: - User-specific Operations
     func getUser(by id: String) async throws -> User? {
         print("🔄 Getting user by id from Firestore: \(id)")
+        
+        // Validate user ID
+        try validateUserId(id)
         
         do {
             let userRef = db.collection(usersCollection).document(id)
@@ -153,6 +170,8 @@ class UserRepository: UserRepositoryProtocol {
     func updateRatingProgress(userId: String, progress: RatingProgress) async throws {
         print("🔄 Updating rating progress for user: \(userId)")
         
+        try validateUserId(userId)
+        
         do {
             let userRef = db.collection(usersCollection).document(userId)
             try await userRef.updateData([
@@ -171,6 +190,8 @@ class UserRepository: UserRepositoryProtocol {
     
     func getUserPreferences(userId: String) async throws -> UserPreferences? {
         print("🔄 Getting user preferences from Firestore: \(userId)")
+        
+        try validateUserId(userId)
         
         do {
             let preferencesRef = db.collection(preferencesCollection).document(userId)
@@ -194,6 +215,8 @@ class UserRepository: UserRepositoryProtocol {
     
     func updateUserPreferences(_ preferences: UserPreferences) async throws {
         print("🔄 Updating user preferences in Firestore: \(preferences.userId)")
+        
+        try validateUserId(preferences.userId)
         
         do {
             let preferencesRef = db.collection(preferencesCollection).document(preferences.userId)
@@ -238,6 +261,8 @@ class UserRepository: UserRepositoryProtocol {
     func userExists(id: String) async throws -> Bool {
         print("🔄 Checking if user exists: \(id)")
         
+        try validateUserId(id)
+        
         do {
             let userRef = db.collection(usersCollection).document(id)
             let document = try await userRef.getDocument()
@@ -254,6 +279,8 @@ class UserRepository: UserRepositoryProtocol {
     /// Updates user's last activity timestamp
     func updateLastActivity(userId: String) async throws {
         print("🔄 Updating last activity for user: \(userId)")
+        
+        try validateUserId(userId)
         
         do {
             let userRef = db.collection(usersCollection).document(userId)

@@ -51,6 +51,14 @@ class UserProfileService: ObservableObject {
         isLoading = true
         error = nil
         
+        // Validate Firebase user UID
+        guard !firebaseUser.uid.isEmpty, !firebaseUser.uid.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            print("⚠️ Firebase user UID is empty")
+            error = AppError.firebaseError(.firestoreError("Invalid user ID"))
+            isLoading = false
+            return
+        }
+        
         do {
             // Try to load existing user profile
             if let existingUser = try await userRepository.getUser(by: firebaseUser.uid) {
@@ -239,6 +247,14 @@ class UserProfileService: ObservableObject {
         print("🔄 Refreshing user data: \(currentUser.id)")
         isLoading = true
         error = nil
+        
+        // Validate current user ID
+        guard !currentUser.id.isEmpty, !currentUser.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            print("⚠️ Current user ID is empty")
+            self.error = AppError.firebaseError(.firestoreError("Invalid user ID"))
+            isLoading = false
+            throw AppError.firebaseError(.firestoreError("Invalid user ID"))
+        }
         
         do {
             if let refreshedUser = try await userRepository.getUser(by: currentUser.id) {

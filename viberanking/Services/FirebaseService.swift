@@ -103,6 +103,17 @@ class FirebaseService: ObservableObject {
         if let firebaseUser = Auth.auth().currentUser {
             print("✅ Firebase user found: \(firebaseUser.uid)")
             
+            // Validate Firebase user UID
+            guard !firebaseUser.uid.isEmpty, !firebaseUser.uid.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                print("⚠️ Firebase user UID is empty, switching to guest mode")
+                await MainActor.run {
+                    self.isGuestMode = true
+                    self.isAuthenticated = false
+                    self.currentUser = nil
+                }
+                return
+            }
+            
             do {
                 // Load user profile from Firestore
                 if let user = try await userRepository.getUser(by: firebaseUser.uid) {
