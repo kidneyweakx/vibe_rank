@@ -105,3 +105,32 @@ xcuserdata
 **/xcshareddata/WorkspaceSettings.xcsettings
 
 # End of https://www.toptal.com/developers/gitignore/api/swift,swiftpackagemanager,xcode
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# iOS
+*.ipa
+*.app
+
+# Xcode additional
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+
+# Firebase
+GoogleService-Info.plist
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# IDE
+.vscode/
+.idea/

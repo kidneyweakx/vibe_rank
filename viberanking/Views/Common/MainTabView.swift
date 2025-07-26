@@ -156,6 +156,7 @@ struct TabItemView: View {
                     }
                 }
             }
+            .offset(y: isCenter ? -10 : 0)
             
             if !isCenter {
                 Text(title)
