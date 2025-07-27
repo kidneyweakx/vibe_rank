@@ -11,6 +11,9 @@
 "tab.report" = "Report";
 "tab.profile" = "Profile";
 "tab.test" = "Test";
+"tab.main.profile" = "Profile";
+"tab.main.rating" = "Rating";
+"tab.main.upload" = "Upload";
 
 // MARK: - Authentication
 "auth.title" = "Digital Premium Social Rating Platform";

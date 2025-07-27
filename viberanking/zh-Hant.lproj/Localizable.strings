@@ -11,6 +11,9 @@
 "tab.report" = "報告";
 "tab.profile" = "個人";
 "tab.test" = "Test";
+"tab.main.profile" = "個人";
+"tab.main.rating" = "評分";
+"tab.main.upload" = "上傳";
 
 // MARK: - Authentication
 "auth.title" = "數位頂尖社交評價平台";
@@ -415,20 +418,3 @@
 "common.ok" = "確定";
 "common.yes" = "是";
 "common.no" = "否";
-"common.view_all" = "查看全部";
-"style.primary" = "主要風格";
-"style.secondary" = "次要風格";
-"settings.title" = "設定";
-"settings.notifications" = "通知設定";
-"settings.help_and_support" = "幫助與支援";
-"upload.locked_title" = "功能尚未解鎖";
-"upload.select_photos" = "選擇照片上傳";
-"upload.select_photos_description" = "點擊選擇或拖拽照片到此處";
-"upload.selected_photos" = "已選擇的照片 (%d)";
-"upload.clear_all" = "清除全部";
-"upload.guidelines_title" = "上傳須知";
-"upload.guideline_clear_photo" = "照片需清晰，光線充足";
-"upload.guideline_person_photo" = "建議上傳人物照片";
-"upload.guideline_max_5_photos" = "每次最多上傳 5 張照片";
-"upload.guideline_no_inappropriate_content" = "不得上傳不當內容";
-"upload.guideline_for_rating_system" = "上傳的照片將用於評分系統";
