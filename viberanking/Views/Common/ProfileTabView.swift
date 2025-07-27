@@ -42,6 +42,9 @@ struct ProfileTabView: View {
                         // Achievement Section
                         achievementSection
                         
+                        // Style Report Section
+                        styleReportSection
+
                         // Settings Section
                         settingsSection
                         
@@ -50,10 +53,13 @@ struct ProfileTabView: View {
                     .padding(.horizontal, AppTheme.Spacing.md)
                 }
             }
-            .navigationTitle("個人檔案")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Text("profile.title".localized)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(themeManager.currentTheme.colors.text)
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         showingSettings = true
@@ -65,7 +71,7 @@ struct ProfileTabView: View {
                                 .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
                             
                             Image(systemName: "gearshape.fill")
-                                .foregroundColor(.white)
+                                .foregroundColor(themeManager.currentTheme.colors.text)
                                 .font(.system(size: 16, weight: .semibold))
                         }
                     }
@@ -122,26 +128,26 @@ private extension ProfileTabView {
                 } else {
                     Text(String(authViewModel.user?.name.prefix(1) ?? "U").uppercased())
                         .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
+                        .foregroundColor(themeManager.currentTheme.colors.text)
                         .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
                 }
             }
             
             // User Info with glass morphism
             VStack(spacing: AppTheme.Spacing.xs) {
-                Text(authViewModel.user?.name ?? "訪客用戶")
+                Text(authViewModel.user?.name ?? "guest.user_name".localized)
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(themeManager.currentTheme.colors.text)
                     .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
                 
                 if authViewModel.isGuest {
                     HStack(spacing: AppTheme.Spacing.xs) {
                         Image(systemName: "person.crop.circle.badge.questionmark")
-                            .foregroundColor(.orange)
-                        Text("訪客模式")
+                            .foregroundColor(themeManager.currentTheme.colors.accent)
+                        Text("guest.mode".localized)
                             .font(AppTheme.Typography.caption)
                             .fontWeight(.semibold)
-                            .foregroundColor(.orange)
+                            .foregroundColor(themeManager.currentTheme.colors.accent)
                     }
                     .padding(.horizontal, AppTheme.Spacing.md)
                     .padding(.vertical, AppTheme.Spacing.xs)
@@ -175,7 +181,7 @@ private extension ProfileTabView {
     var statsSection: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             HStack {
-                Text("統計數據")
+                Text("profile.rating_progress_title".localized)
                     .font(AppTheme.Typography.headline)
                     .foregroundColor(themeManager.currentTheme.colors.text)
                 Spacer()
@@ -187,28 +193,28 @@ private extension ProfileTabView {
             ], spacing: AppTheme.Spacing.md) {
                 StatCard(
                     icon: "star.fill",
-                    title: "完成評分",
+                    title: "profile.completed_ratings".localized,
                     value: "\(authViewModel.user?.ratingProgress.completedRatings ?? 0)",
                     color: themeManager.currentTheme.colors.accent
                 )
                 
                 StatCard(
                     icon: "target",
-                    title: "目標評分",
+                    title: "profile.target_ratings".localized,
                     value: "\(authViewModel.user?.ratingProgress.requiredRatings ?? 0)",
                     color: themeManager.currentTheme.colors.primary
                 )
                 
                 StatCard(
                     icon: "chart.line.uptrend.xyaxis",
-                    title: "進度",
+                    title: "gamification.progress".localized,
                     value: "\(Int((authViewModel.user?.ratingProgress.progressPercentage ?? 0) * 100))%",
-                    color: .green
+                    color: themeManager.currentTheme.colors.accent
                 )
                 
                 StatCard(
                     icon: "photo.stack",
-                    title: "上傳照片",
+                    title: "feature.upload".localized,
                     value: "0", // TODO: Add photo count
                     color: themeManager.currentTheme.colors.secondary
                 )
@@ -219,11 +225,11 @@ private extension ProfileTabView {
     var achievementSection: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             HStack {
-                Text("成就")
+                Text("report.achievements".localized)
                     .font(AppTheme.Typography.headline)
                     .foregroundColor(themeManager.currentTheme.colors.text)
                 Spacer()
-                Button("查看全部") {
+                Button("common.view_all".localized) {
                     // TODO: Navigate to achievements
                 }
                 .font(AppTheme.Typography.caption)
@@ -234,25 +240,25 @@ private extension ProfileTabView {
                 HStack(spacing: AppTheme.Spacing.md) {
                     AchievementBadge(
                         icon: "star.fill",
-                        title: "首次評分",
+                        title: "achievement.rating_novice.title".localized,
                         isUnlocked: (authViewModel.user?.ratingProgress.completedRatings ?? 0) > 0
                     )
                     
                     AchievementBadge(
                         icon: "flame.fill",
-                        title: "連續評分",
+                        title: "achievement.hot_streak".localized,
                         isUnlocked: (authViewModel.user?.ratingProgress.completedRatings ?? 0) > 10
                     )
                     
                     AchievementBadge(
                         icon: "crown.fill",
-                        title: "評分達人",
+                        title: "achievement.rating_pro.title".localized,
                         isUnlocked: (authViewModel.user?.ratingProgress.completedRatings ?? 0) > 50
                     )
                     
                     AchievementBadge(
                         icon: "lock.open.fill",
-                        title: "解鎖上傳",
+                        title: "achievement.first_upload.title".localized,
                         isUnlocked: authViewModel.user?.ratingProgress.hasUnlockedUpload ?? false
                     )
                 }
@@ -262,10 +268,109 @@ private extension ProfileTabView {
         .cardStyle()
     }
     
+    var styleReportSection: some View {
+        VStack(spacing: AppTheme.Spacing.md) {
+            HStack {
+                Text("report.title".localized)
+                    .font(AppTheme.Typography.headline)
+                    .foregroundColor(themeManager.currentTheme.colors.text)
+                Spacer()
+            }
+
+            if authViewModel.user?.styleReport != nil {
+                styleReportCard
+            } else {
+                lockedStyleReportCard
+            }
+        }
+    }
+
+    var lockedStyleReportCard: some View {
+        VStack(spacing: AppTheme.Spacing.md) {
+            Image(systemName: "lock.fill")
+                .font(.largeTitle)
+                .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.5))
+            Text("report.complete_more".localized)
+                .font(AppTheme.Typography.body)
+                .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
+                .multilineTextAlignment(.center)
+        }
+        .cardStyle()
+        .grayscale(1.0)
+    }
+
+    var styleReportCard: some View {
+        VStack(spacing: AppTheme.Spacing.lg) {
+            HStack {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+                    Text("gamification.style_report_title".localized)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(themeManager.currentTheme.colors.text)
+                    Text("gamification.style_report_description".localized)
+                        .font(.subheadline)
+                        .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.title3)
+                    .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.5))
+            }
+
+            // Apple Fitness-like Rings
+            ZStack {
+                activityRing(progress: 0.8, color: themeManager.currentTheme.colors.primary, size: 150)
+                activityRing(progress: 0.6, color: themeManager.currentTheme.colors.secondary, size: 120)
+                activityRing(progress: 0.4, color: themeManager.currentTheme.colors.accent, size: 90)
+            }
+            .padding(.vertical)
+
+            // Key Metrics
+            HStack(spacing: AppTheme.Spacing.lg) {
+                metricView(value: "7.8", label: "report.overall_trend".localized, color: themeManager.currentTheme.colors.primary)
+                metricView(value: "style.elegant.display_name".localized, label: "style.primary".localized, color: themeManager.currentTheme.colors.secondary)
+                metricView(value: "style.streetwear.display_name".localized, label: "style.secondary".localized, color: themeManager.currentTheme.colors.accent)
+            }
+        }
+        .padding()
+        .background(themeManager.currentTheme.colors.background)
+        .cornerRadius(AppTheme.CornerRadius.lg)
+        .shadow(radius: 5)
+    }
+
+    func activityRing(progress: Double, color: Color, size: CGFloat) -> some View {
+        ZStack {
+            Circle()
+                .stroke(lineWidth: 12.0)
+                .opacity(0.3)
+                .foregroundColor(color)
+
+            Circle()
+                .trim(from: 0.0, to: CGFloat(min(progress, 1.0)))
+                .stroke(style: StrokeStyle(lineWidth: 12.0, lineCap: .round, lineJoin: .round))
+                .foregroundColor(color)
+                .rotationEffect(Angle(degrees: 270.0))
+                .animation(.linear, value: progress)
+        }
+        .frame(width: size, height: size)
+    }
+
+    func metricView(value: String, label: String, color: Color) -> some View {
+        VStack {
+            Text(value)
+                .font(.title)
+                .fontWeight(.bold)
+                .foregroundColor(color)
+            Text(label)
+                .font(.caption)
+                .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
+        }
+    }
+
     var settingsSection: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             HStack {
-                Text("設定")
+                Text("settings.title".localized)
                     .font(AppTheme.Typography.headline)
                     .foregroundColor(themeManager.currentTheme.colors.text)
                 Spacer()
@@ -274,7 +379,7 @@ private extension ProfileTabView {
             VStack(spacing: 0) {
                 SettingRow(
                     icon: "globe",
-                    title: "語言設定",
+                    title: "settings.language.title".localized,
                     action: {
                         // TODO: Navigate to language settings
                     }
@@ -284,7 +389,7 @@ private extension ProfileTabView {
                 
                 SettingRow(
                     icon: "bell.fill",
-                    title: "通知設定",
+                    title: "settings.notifications".localized,
                     action: {
                         // TODO: Navigate to notification settings
                     }
@@ -294,7 +399,7 @@ private extension ProfileTabView {
                 
                 SettingRow(
                     icon: "questionmark.circle.fill",
-                    title: "幫助與支援",
+                    title: "settings.help_and_support".localized,
                     action: {
                         // TODO: Navigate to help
                     }
@@ -305,7 +410,7 @@ private extension ProfileTabView {
                     
                     SettingRow(
                         icon: "rectangle.portrait.and.arrow.right",
-                        title: "登出",
+                        title: "profile.sign_out_title".localized,
                         isDestructive: true,
                         action: {
                             authViewModel.signOut()
@@ -316,7 +421,7 @@ private extension ProfileTabView {
                     
                     SettingRow(
                         icon: "person.crop.circle.fill.badge.plus",
-                        title: "註冊帳號",
+                        title: "guest.sign_in_now".localized,
                         action: {
                             authViewModel.signOut() // Return to login
                         }
