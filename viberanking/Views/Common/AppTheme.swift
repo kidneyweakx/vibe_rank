@@ -27,6 +27,34 @@ struct AppTheme {
         static let subheadline = Font.system(size: 15, weight: .regular, design: .default)
         static let footnote = Font.system(size: 13, weight: .regular, design: .default)
         static let caption = Font.system(size: 12, weight: .regular, design: .default)
+        
+        // Enhanced text colors for better contrast in dark mode
+        static func primaryText(for theme: Theme) -> Color {
+            switch theme {
+            case .dark:
+                return Color.white
+            default:
+                return Color.black
+            }
+        }
+        
+        static func secondaryText(for theme: Theme) -> Color {
+            switch theme {
+            case .dark:
+                return Color.white.opacity(0.8)
+            default:
+                return Color.black.opacity(0.7)
+            }
+        }
+        
+        static func tertiaryText(for theme: Theme) -> Color {
+            switch theme {
+            case .dark:
+                return Color.white.opacity(0.6)
+            default:
+                return Color.black.opacity(0.5)
+            }
+        }
     }
     
     // MARK: - Spacing
@@ -37,6 +65,34 @@ struct AppTheme {
         static let lg: CGFloat = 24
         static let xl: CGFloat = 32
         static let xxl: CGFloat = 48
+        
+        // Enhanced spacing for better readability in dark mode
+        static func cardPadding(for theme: Theme) -> CGFloat {
+            switch theme {
+            case .dark:
+                return 20 // Slightly more padding for dark mode
+            default:
+                return 16
+            }
+        }
+        
+        static func textSpacing(for theme: Theme) -> CGFloat {
+            switch theme {
+            case .dark:
+                return 6 // More spacing between text elements in dark mode
+            default:
+                return 4
+            }
+        }
+        
+        static func sectionSpacing(for theme: Theme) -> CGFloat {
+            switch theme {
+            case .dark:
+                return 28 // More spacing between sections in dark mode
+            default:
+                return 24
+            }
+        }
     }
     
     // MARK: - Corner Radius
@@ -67,17 +123,21 @@ struct PrimaryButtonStyle: ButtonStyle {
     
     func makeBody(configuration: Configuration) -> some View {
         let colors = themeManager.currentTheme.colors
+        let theme = themeManager.currentTheme
         
         configuration.label
             .font(AppTheme.Typography.headline)
-            .foregroundColor(colors.text)
+            .foregroundColor(
+                isDestructive ? Color.white : 
+                (theme == .dark ? Color.black : Color.white)
+            )
             .padding(.horizontal, AppTheme.Spacing.lg)
             .padding(.vertical, AppTheme.Spacing.md)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.CornerRadius.lg)
                     .fill(
                         isDestructive ?
-                        LinearGradient(colors: [Color.red], startPoint: .leading, endPoint: .trailing) :
+                        LinearGradient(colors: [Color.red.opacity(0.9), Color.red], startPoint: .leading, endPoint: .trailing) :
                         LinearGradient(colors: [colors.primary, colors.secondary], startPoint: .leading, endPoint: .trailing)
                     )
             )
@@ -91,6 +151,7 @@ struct SecondaryButtonStyle: ButtonStyle {
     
     func makeBody(configuration: Configuration) -> some View {
         let colors = themeManager.currentTheme.colors
+        let theme = themeManager.currentTheme
         
         configuration.label
             .font(AppTheme.Typography.headline)
@@ -99,10 +160,10 @@ struct SecondaryButtonStyle: ButtonStyle {
             .padding(.vertical, AppTheme.Spacing.md)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.CornerRadius.lg)
-                    .stroke(colors.primary, lineWidth: 2)
+                    .stroke(colors.primary, lineWidth: theme == .dark ? 1.5 : 2)
                     .background(
                         RoundedRectangle(cornerRadius: AppTheme.CornerRadius.lg)
-                            .fill(Color.clear)
+                            .fill(theme == .dark ? colors.cardBackground : Color.clear)
                     )
             )
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
@@ -126,8 +187,14 @@ struct CardStyle: ViewModifier {
             .padding(padding)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.CornerRadius.lg)
-                    .fill(LinearGradient(colors: [colors.background, colors.background.opacity(0.8)], startPoint: .top, endPoint: .bottom))
-                    .shadow(color: AppTheme.Shadow.light, radius: 8, x: 0, y: 4)
+                    .fill(colors.cardBackground)
+                    .shadow(
+                        color: themeManager.currentTheme == .dark ? 
+                            Color.white.opacity(0.05) : AppTheme.Shadow.light, 
+                        radius: themeManager.currentTheme == .dark ? 4 : 8, 
+                        x: 0, 
+                        y: themeManager.currentTheme == .dark ? 2 : 4
+                    )
             )
     }
 }
@@ -147,28 +214,36 @@ struct CustomTabBar: ViewModifier {
     func setupAppearance() {
         let appearance = UITabBarAppearance()
         let colors = themeManager.currentTheme.colors
+        let isDarkMode = themeManager.currentTheme == .dark
 
         // Use a transparent background to blend with the content
         appearance.configureWithTransparentBackground()
         
-        // A subtle background color that matches the theme
-        appearance.backgroundColor = UIColor(colors.background).withAlphaComponent(0.9)
+        // Enhanced background for dark mode
+        if isDarkMode {
+            appearance.backgroundColor = UIColor(colors.cardBackground).withAlphaComponent(0.95)
+        } else {
+            appearance.backgroundColor = UIColor(colors.background).withAlphaComponent(0.9)
+        }
 
-        // Add a blur effect for a modern, Instagram-like feel
-        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterial)
+        // Add a blur effect for a modern feel, adjusted for dark mode
+        let blurEffect = UIBlurEffect(style: isDarkMode ? .systemUltraThinMaterialDark : .systemUltraThinMaterial)
         appearance.backgroundEffect = blurEffect
 
-        // Add a subtle top shadow to separate the tab bar from the content
-        appearance.shadowColor = UIColor.black.withAlphaComponent(0.1)
+        // Enhanced shadow for better separation in dark mode
+        appearance.shadowColor = isDarkMode ? 
+            UIColor.white.withAlphaComponent(0.1) : 
+            UIColor.black.withAlphaComponent(0.1)
 
-        // Normal (unselected) state
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(colors.text.opacity(0.7))
+        // Normal (unselected) state with better contrast
+        let normalOpacity: Double = isDarkMode ? 0.8 : 0.7
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(colors.text.opacity(normalOpacity))
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
-            .foregroundColor: UIColor(colors.text.opacity(0.7)),
+            .foregroundColor: UIColor(colors.text.opacity(normalOpacity)),
             .font: UIFont.systemFont(ofSize: 10, weight: .regular)
         ]
 
-        // Selected state
+        // Selected state with enhanced visibility
         appearance.stackedLayoutAppearance.selected.iconColor = UIColor(colors.accent)
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
             .foregroundColor: UIColor(colors.accent),
@@ -193,5 +268,46 @@ extension View {
     
     func secondaryButton() -> some View {
         buttonStyle(SecondaryButtonStyle())
+    }
+    
+    // Enhanced text styling for better dark mode support
+    func primaryText() -> some View {
+        modifier(PrimaryTextStyle())
+    }
+    
+    func secondaryText() -> some View {
+        modifier(SecondaryTextStyle())
+    }
+    
+    func tertiaryText() -> some View {
+        modifier(TertiaryTextStyle())
+    }
+}
+
+// MARK: - Text Style Modifiers
+struct PrimaryTextStyle: ViewModifier {
+    @EnvironmentObject var themeManager: ThemeManager
+    
+    func body(content: Content) -> some View {
+        content
+            .foregroundColor(AppTheme.Typography.primaryText(for: themeManager.currentTheme))
+    }
+}
+
+struct SecondaryTextStyle: ViewModifier {
+    @EnvironmentObject var themeManager: ThemeManager
+    
+    func body(content: Content) -> some View {
+        content
+            .foregroundColor(AppTheme.Typography.secondaryText(for: themeManager.currentTheme))
+    }
+}
+
+struct TertiaryTextStyle: ViewModifier {
+    @EnvironmentObject var themeManager: ThemeManager
+    
+    func body(content: Content) -> some View {
+        content
+            .foregroundColor(AppTheme.Typography.tertiaryText(for: themeManager.currentTheme))
     }
 }

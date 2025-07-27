@@ -23,7 +23,7 @@ struct RatingTabView: View {
             
             VStack(spacing: 0) {
                 // Header with cute star
-                headerView
+//                headerView
                 
                 // Progress section
                 progressSection

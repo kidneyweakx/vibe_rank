@@ -195,14 +195,18 @@ struct StyleReportView: View {
             HStack {
                 Image(systemName: "chart.line.uptrend.xyaxis")
                     .foregroundColor(.blue)
-                Text("整體吸引力趨勢")
+                Text("7天吸引力趋势")
                     .font(.title2)
                     .fontWeight(.semibold)
             }
             
-            // Simulated trend data
-            LineChartView(data: generateTrendData(currentScore: styleReport.ranking.overallAttractiveness))
-                .frame(height: 120)
+            // Enhanced trend data with better simulation
+            EnhancedLineChartView(
+                data: generateEnhanced7DayTrendData(currentScore: styleReport.ranking.overallAttractiveness),
+                primaryColor: .blue,
+                secondaryColor: .purple
+            )
+            .frame(height: 140)
             
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
@@ -213,6 +217,19 @@ struct StyleReportView: View {
                         .font(.title)
                         .fontWeight(.bold)
                         .foregroundColor(.blue)
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .center, spacing: 4) {
+                    Text("7天變化")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    let weeklyChange = calculateWeeklyChange(currentScore: styleReport.ranking.overallAttractiveness)
+                    Text("\(weeklyChange > 0 ? "+" : "")\(weeklyChange, specifier: "%.1f")%")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(weeklyChange >= 0 ? .green : .red)
                 }
                 
                 Spacer()
@@ -259,9 +276,17 @@ struct StyleReportView: View {
                         .fontWeight(.bold)
                         .foregroundColor(.pink)
                     
-                    ProgressBar(
+                    // Weekly growth for female ratings
+                    let femaleGrowth = calculateGenderWeeklyGrowth(score: styleReport.ranking.femaleAttractiveness, isFemale: true)
+                    Text("\(femaleGrowth > 0 ? "+" : "")\(femaleGrowth, specifier: "%.1f")%")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(femaleGrowth >= 0 ? .green : .red)
+                    
+                    EnhancedProgressBar(
                         value: animateProgressBars ? styleReport.ranking.femaleAttractiveness : 0,
-                        maxValue: 100
+                        maxValue: 100,
+                        color: .pink
                     )
                     .frame(height: 8)
                     .animation(.easeInOut(duration: 1.0).delay(0.2), value: animateProgressBars)
@@ -284,9 +309,17 @@ struct StyleReportView: View {
                         .fontWeight(.bold)
                         .foregroundColor(.blue)
                     
-                    ProgressBar(
+                    // Weekly growth for male ratings
+                    let maleGrowth = calculateGenderWeeklyGrowth(score: styleReport.ranking.maleAttractiveness, isFemale: false)
+                    Text("\(maleGrowth > 0 ? "+" : "")\(maleGrowth, specifier: "%.1f")%")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(maleGrowth >= 0 ? .green : .red)
+                    
+                    EnhancedProgressBar(
                         value: animateProgressBars ? styleReport.ranking.maleAttractiveness : 0,
-                        maxValue: 100
+                        maxValue: 100,
+                        color: .blue
                     )
                     .frame(height: 8)
                     .animation(.easeInOut(duration: 1.0).delay(0.4), value: animateProgressBars)
@@ -304,7 +337,7 @@ struct StyleReportView: View {
             HStack {
                 Image(systemName: "paintbrush.fill")
                     .foregroundColor(.orange)
-                Text("風格分析")
+                Text("風格分析排名")
                     .font(.title2)
                     .fontWeight(.semibold)
             }
@@ -316,6 +349,17 @@ struct StyleReportView: View {
                 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
+                        // Ranking indicator
+                        Text("#\(index + 1)")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .frame(width: 24, height: 20)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(getRankingColor(for: index))
+                            )
+                        
                         // Find the StyleType enum case
                         if let styleType = StyleType.allCases.first(where: { $0.rawValue == styleName }) {
                             Text(styleType.emoji)
@@ -331,18 +375,32 @@ struct StyleReportView: View {
                         
                         Spacer()
                         
-                        Text("\(score, specifier: "%.0f")%")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text("\(score, specifier: "%.0f")%")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .foregroundColor(.primary)
+                            
+                            // Style trend indicator
+                            let trendChange = calculateStyleTrend(score: score, index: index)
+                            HStack(spacing: 2) {
+                                Image(systemName: trendChange >= 0 ? "arrow.up" : "arrow.down")
+                                    .font(.caption2)
+                                    .foregroundColor(trendChange >= 0 ? .green : .red)
+                                Text("\(abs(trendChange), specifier: "%.1f")%")
+                                    .font(.caption2)
+                                    .foregroundColor(trendChange >= 0 ? .green : .red)
+                            }
+                        }
                     }
                     
-                    ProgressBar(
+                    EnhancedProgressBar(
                         value: animateProgressBars ? score : 0,
-                        maxValue: 100
+                        maxValue: 100,
+                        color: getStyleColor(for: index)
                     )
                     .frame(height: 12)
-                    .animation(.easeInOut(duration: 1.0).delay(Double(index) * 0.1), value: animateProgressBars)
+                    .animation(.spring(response: 0.8, dampingFraction: 0.8).delay(Double(index) * 0.1), value: animateProgressBars)
                 }
             }
         }
@@ -560,6 +618,63 @@ struct StyleReportView: View {
         }
     }
     
+    private func generateEnhanced7DayTrendData(currentScore: Double) -> [TrendDataPoint] {
+        let baseScore = currentScore / 100.0
+        let calendar = Calendar.current
+        let today = Date()
+        
+        return (0..<7).map { dayOffset in
+            let date = calendar.date(byAdding: .day, value: -6 + dayOffset, to: today) ?? today
+            let progress = Double(dayOffset) / 6.0
+            
+            // Create more realistic trend with some volatility
+            let trendBase = baseScore * (0.7 + 0.3 * progress)
+            let dailyVariation = Double.random(in: -0.08...0.08)
+            let score = max(0.1, min(1.0, trendBase + dailyVariation))
+            
+            return TrendDataPoint(
+                date: date,
+                score: score,
+                votes: Int.random(in: 15...45)
+            )
+        }
+    }
+    
+    private func calculateWeeklyChange(currentScore: Double) -> Double {
+        // Simulate weekly change based on current score
+        let baseChange = Double.random(in: -5.0...8.0)
+        let scoreInfluence = (currentScore - 50) * 0.1
+        return baseChange + scoreInfluence
+    }
+    
+    private func calculateGenderWeeklyGrowth(score: Double, isFemale: Bool) -> Double {
+        // Simulate gender-specific weekly growth
+        let baseGrowth = Double.random(in: -3.0...6.0)
+        let genderModifier = isFemale ? 0.5 : -0.3
+        return baseGrowth + genderModifier
+    }
+    
+    private func calculateStyleTrend(score: Double, index: Int) -> Double {
+        // Simulate style trend based on ranking position
+        let baseTrend = Double.random(in: -2.0...3.0)
+        let rankingModifier = Double(5 - index) * 0.2
+        return baseTrend + rankingModifier
+    }
+    
+    private func getRankingColor(for index: Int) -> Color {
+        switch index {
+        case 0: return .yellow
+        case 1: return .orange
+        case 2: return .red
+        default: return .gray
+        }
+    }
+    
+    private func getStyleColor(for index: Int) -> Color {
+        let colors: [Color] = [.blue, .purple, .green, .orange, .pink, .cyan, .indigo]
+        return colors[index % colors.count]
+    }
+    
     private func calculateRanking(from score: Double) -> Int {
         // Simple ranking calculation based on score
         switch score {
@@ -584,6 +699,116 @@ struct StyleReportView: View {
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first {
             window.rootViewController?.present(activityVC, animated: true)
+        }
+    }
+}
+
+// MARK: - Enhanced Components
+struct TrendDataPoint {
+    let date: Date
+    let score: Double
+    let votes: Int
+}
+
+struct EnhancedLineChartView: View {
+    let data: [TrendDataPoint]
+    let primaryColor: Color
+    let secondaryColor: Color
+    
+    @State private var selectedPoint: TrendDataPoint?
+    @State private var animateChart = false
+    
+    var body: some View {
+        GeometryReader { geometry in
+            let chartData = data.map { $0.score }
+            let path = Path.quadCurvedPath(with: chartData, in: geometry.frame(in: .local))
+            
+            ZStack {
+                // Gradient fill
+                path
+                    .fill(
+                        LinearGradient(
+                            colors: [primaryColor.opacity(0.3), primaryColor.opacity(0.1), Color.clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .scaleEffect(y: animateChart ? 1.0 : 0.0, anchor: .bottom)
+                
+                // Main line
+                path
+                    .stroke(
+                        LinearGradient(
+                            colors: [primaryColor, secondaryColor],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        ),
+                        style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
+                    )
+                    .scaleEffect(y: animateChart ? 1.0 : 0.0, anchor: .bottom)
+                
+                // Data points
+                ForEach(Array(data.enumerated()), id: \.offset) { index, point in
+                    let x = CGFloat(index) * (geometry.size.width / CGFloat(data.count - 1))
+                    let y = (1 - CGFloat(point.score)) * geometry.size.height
+                    
+                    Circle()
+                        .fill(primaryColor)
+                        .frame(width: 8, height: 8)
+                        .position(x: x, y: y)
+                        .scaleEffect(animateChart ? 1.0 : 0.0)
+                        .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(Double(index) * 0.1), value: animateChart)
+                }
+            }
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.0)) {
+                animateChart = true
+            }
+        }
+    }
+}
+
+struct EnhancedProgressBar: View {
+    let value: Double
+    let maxValue: Double
+    let color: Color
+    
+    @State private var animatedValue: Double = 0
+    
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                // Background
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color(.systemGray5))
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                
+                // Progress fill with gradient
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(
+                        LinearGradient(
+                            colors: [color, color.opacity(0.7)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(
+                        width: min(CGFloat(animatedValue / maxValue) * geometry.size.width, geometry.size.width),
+                        height: geometry.size.height
+                    )
+                    .shadow(color: color.opacity(0.3), radius: 2, x: 0, y: 1)
+            }
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.8)) {
+                animatedValue = value
+            }
+        }
+        .onChange(of: value) { newValue in
+            withAnimation(.easeInOut(duration: 0.8)) {
+                animatedValue = newValue
+            }
         }
     }
 }
