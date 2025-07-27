@@ -29,6 +29,7 @@ class LocalizationManager: ObservableObject {
         case system = "system"
         case english = "en"
         case traditionalChinese = "zh-Hant"
+        case japanese = "ja"
         
         var displayName: String {
             switch self {
@@ -38,6 +39,8 @@ class LocalizationManager: ObservableObject {
                 return "English"
             case .traditionalChinese:
                 return "繁體中文"
+            case .japanese:
+                return "日本語"
             }
         }
         
@@ -49,6 +52,8 @@ class LocalizationManager: ObservableObject {
                 return "en"
             case .traditionalChinese:
                 return "zh-Hant"
+            case .japanese:
+                return "ja"
             }
         }
     }
@@ -65,8 +70,8 @@ class LocalizationManager: ObservableObject {
     
     // MARK: - Methods
     private func updateBundle() {
-        let languageCode = currentLanguage == .system ? 
-            (Locale.current.language.languageCode?.identifier ?? "en") : 
+        let languageCode = currentLanguage == .system ?
+            (Locale.current.language.languageCode?.identifier ?? "en") :
             currentLanguage.code
         
         if let path = Bundle.main.path(forResource: languageCode, ofType: "lproj"),

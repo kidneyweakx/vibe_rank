@@ -1,0 +1,293 @@
+/* 
+  Localizable.strings (Japanese)
+  viberanking
+  
+  Created by Kidney on 2025/07/25.
+*/
+
+// MARK: - Tab Bar
+"tab.rating" = "評価";
+"tab.upload" = "アップロード";
+"tab.report" = "レポート";
+"tab.profile" = "プロフィール";
+"tab.test" = "テスト";
+
+// MARK: - Authentication
+"auth.title" = "デジタルプレミアムソーシャル評価プラットフォーム";
+"auth.subtitle" = "サインインして評価を開始し、パーソナルスタイル分析を取得します";
+"auth.sign_in_google" = "Googleでサインイン";
+"auth.sign_in_apple" = "Appleでサインイン";
+"auth.continue_guest" = "ゲストとして続行";
+"auth.signing_in" = "サインイン中...";
+"auth.login_failed" = "ログインに失敗しました。ネットワーク接続を確認して再試行してください";
+"auth.screen_label" = "ログイン画面";
+"auth.error_message" = "エラーメッセージ: %@";
+
+// MARK: - Main Features
+"feature.rating" = "🎯 評価機能";
+"feature.upload" = "📸 アップロード機能";
+"feature.style_report" = "📊 スタイルレポート";
+
+// MARK: - Guest Mode
+"guest.mode" = "ゲストモード";
+"guest.login_required" = "％@を使用するにはログインが必要です";
+"guest.feature_unavailable" = "この機能はゲストモードでは利用できません";
+"guest.sign_in_now" = "今すぐサインイン";
+"guest.exit_guest_mode" = "ゲストモードを終了";
+"guest.progress_not_saved" = "⚠️ゲストモードでは進行状況は保存されません";
+
+// MARK: - Login Requirements
+"login.required.rating" = "評価機能を使用するにはサインインしてください";
+"login.required.upload" = "アップロード機能を使用するにはサインインしてください";
+"login.required.report" = "スタイルレポートを表示するにはサインインしてください";
+
+// MARK: - Photo Upload
+"upload.title" = "写真をアップロード";
+"upload.share_style" = "あなたのスタイルを共有";
+"upload.description" = "24時間以内に撮影した写真をアップロードして、他のユーザーからの評価とパーソナルスタイル分析を取得します";
+"upload.take_photo" = "新しい写真を撮る";
+"upload.take_photo_desc" = "カメラを使用して新しい写真を撮影します";
+"upload.choose_library" = "ライブラリから選択";
+"upload.choose_library_desc" = "ライブラリから最近の写真を選択します";
+"upload.selecting" = "写真を選択中...";
+"upload.start_upload" = "アップロードを開始";
+"upload.cancel_upload" = "アップロードをキャンセル";
+"upload.uploading" = "写真をアップロード中...";
+"upload.progress" = "%d%%完了";
+"upload.success" = "アップロード成功！";
+"upload.success_desc" = "あなたの写真は正常にアップロードされました。他のユーザーが評価するのを待っています";
+"upload.failed" = "アップロード失敗";
+"upload.unknown_error" = "不明なエラー";
+"upload.retry" = "再試行";
+"upload.reselect" = "再選択";
+"upload.done" = "完了";
+"upload.cancel" = "キャンセル";
+"upload.photo_id" = "写真ID:";
+"upload.upload_time" = "アップロード時間:";
+
+// MARK: - Photo Rating
+"rating.title" = "写真評価";
+"rating.subtitle" = "写真を評価してアップロード機能をアンロック";
+"rating.loading" = "写真を読み込み中...";
+"rating.no_photos" = "評価できる写真がありません";
+"rating.try_later" = "後でもう一度試すか、サポートに連絡してください";
+"rating.reload" = "再読み込み";
+"rating.hot" = "ホット";
+"rating.not" = "ノット";
+
+// MARK: - Sample Photos
+"sample.using_sample_photos" = "サンプル写真を使用中";
+"sample.description" = "現在、他のユーザーの写真が利用できないため、評価の練習用にサンプル写真を使用しています";
+
+// MARK: - Profile
+"profile.rating_progress" = "評価の進捗";
+"profile.completed_ratings" = "完了: %d";
+"profile.target_ratings" = "目標: %d";
+"profile.sign_out" = "サインアウト";
+
+// MARK: - Style Report
+"report.loading" = "レポートを読み込み中...";
+"report.error" = "エラー";
+"report.title" = "スタイル分析レポート";
+"report.no_report" = "利用可能なレポートはありません";
+"report.complete_more" = "評価を完了してスタイルレポートをアンロックしてください。";
+"report.overall_trend" = "総合的な魅力のトレンド";
+"report.current" = "現在";
+"report.last_week" = "先週";
+"report.total_votes" = "総投票数: %d";
+"report.gender_analysis" = "性別分析";
+"report.female_attractiveness" = "女性からの魅力";
+"report.male_attractiveness" = "男性からの魅力";
+"report.style_performance" = "スタイルパフォーマンス";
+"report.achievements" = "実績";
+"report.unlocked" = "アンロック済み";
+"report.locked" = "ロック中";
+"report.ai_insights" = "AIインサイト";
+"report.unlock_achievement" = "実績をアンロック";
+"report.achievement_unlocked" = "実績がアンロックされました！";
+"report.celebrate" = "お祝いしましょう！";
+
+// MARK: - User Profile
+"profile.unknown_user" = "不明なユーザー";
+"profile.delete_account" = "アカウントを削除";
+
+// MARK: - Upload Progress
+"upload.rating_completion_time" = "評価は通常24時間以内に完了します";
+
+// MARK: - Achievements
+"achievement.hot_streak" = "ホットストリーク";
+"achievement.hot_streak_desc" = "10枚の写真を連続で「ホット」と評価する";
+"achievement.style_king" = "スタイルキング";
+"achievement.style_king_desc" = "総合的な魅力スコアで90％以上を達成する";
+"achievement.rising_star" = "ライジングスター";
+"achievement.rising_star_desc" = "あなたの写真に100票が投じられる";
+"achievement.legend" = "レジェンド";
+"achievement.legend_desc" = "あなたの写真に1000票が投じられる";
+"achievement.trendsetter" = "トレンドセッター";
+"achievement.trendsetter_desc" = "新しいスタイルを最初に取り入れる";
+"achievement.diamond" = "ダイヤモンド";
+"achievement.diamond_desc" = "総合的な魅力スコアで95％以上を達成する";
+
+// MARK: - Firebase Test
+"firebase.test_title" = "Firebaseストレージテスト";
+
+// MARK: - Motivational Messages
+"motivational.wait" = "待って！";
+"motivational.upload_now" = "OK、アップロードしたい！";
+"motivational.really_skip" = "本当にスキップしたい";
+"motivational.benefit_1" = "詳細なパーソナルスタイル分析レポートを入手";
+"motivational.benefit_2" = "他の人があなたのスタイルをどう見ているかを理解する";
+"motivational.benefit_3" = "パーソナライズされたスタイル改善の提案を受け取る";
+"motivational.benefit_4" = "より多くのプラットフォーム機能と報酬をアンロック";
+
+// MARK: - Style Messages
+"style.elegant.message" = "あなたのエレガントなテイストは、もっと多くの人に見られるべきです！写真をアップロードして、洗練されたスタイルをみんなに鑑賞してもらい、特別なスタイル分析レポートを手に入れましょう。";
+"style.casual.message" = "あなたの自然な魅力が最も心に響きます！リアルな写真を共有して、人々があなたの親近感をどう評価するか見て、自分自身のさらなるスタイルの秘密を発見しましょう。";
+"style.trendy.message" = "あなたはファッションの専門家です！トレンディなテイストを披露し、他の人にあなたのファッションセンスを見てもらい、パーソナライズされたスタイルアドバイスを手に入れましょう。";
+"style.classic.message" = "クラシックは決して時代遅れになりません！あなたの時代を超越したテイストは記録されるべきです。写真をアップロードして、プロのスタイル分析を受け、あなたのクラシックな魅力を発見しましょう。";
+"style.sporty.message" = "エネルギッシュなあなたは最も魅力的です！ポジティブなエネルギーを共有し、みんなにあなたの健康的な活力を感じてもらい、特別なスタイルレポートを手に入れましょう。";
+"style.artistic.message" = "アーティストのビジョンはユニークです！クリエイティブなスタイルを披露し、他の人にあなたの芸術的なテイストを鑑賞してもらい、さらなるクリエイティブなインスピレーションを発見しましょう。";
+"style.default.message" = "まだ決めていません";
+
+// MARK: - CTA Messages
+"cta.analyzing_preferences" = "あなたのスタイルの好みを分析中";
+"cta.analyzing_progress" = "あなたのスタイルの好みを分析中...";
+"cta.upload_photo" = "写真をアップロード";
+"cta.later" = "後で";
+"cta.error_title" = "エラー";
+"cta.ok" = "OK";
+
+// MARK: - Settings
+"settings.language.title" = "言語";
+"settings.language.available" = "利用可能な言語";
+"settings.language.system_desc" = "システム言語に従う";
+"settings.language.restart_note" = "言語の変更はすぐに有効になります";
+
+// MARK: - Progress Messages
+"progress.rating_needed" = "アップロード機能をアンロックするには、あと%d枚の写真を評価する必要があります";
+"progress.upload_unlocked" = "アップロード機能がアンロックされました！";
+"progress.report_unlocked" = "レポートがアンロックされました！";
+"progress.waiting_for_ratings" = "評価を待っています";
+"progress.congratulations" = "おめでとうございます！あなたの写真は十分な評価を受け、スタイルレポートがアンロックされました";
+"progress.photo_being_rated" = "あなたの写真は他のユーザーによって評価されています。しばらくお待ちください";
+"progress.completed_percentage" = "%d%%完了";
+"progress.rated" = "評価済み";
+"progress.remaining" = "残り";
+"progress.photo_info" = "写真情報";
+"progress.photo_id" = "写真ID";
+"progress.upload_time" = "アップロード時間";
+"progress.status" = "ステータス";
+"progress.completed" = "完了";
+"progress.rating_in_progress" = "評価中";
+"progress.view_style_report" = "スタイルレポートを表示";
+"progress.want_faster_rating" = "評価をスピードアップしたいですか？";
+"progress.rate_other_photos" = "他の写真を評価する";
+"progress.tips" = "ヒント";
+"progress.rating_usually_complete" = "評価は通常24時間以内に完了します";
+"progress.rating_others_speeds_up" = "他の写真を評価すると、あなたの評価の進捗が速くなります";
+"progress.notification_at_50" = "評価数が50に達すると通知が届きます";
+
+// MARK: - User Profile
+"profile.title" = "プロフィール";
+"profile.joined_on" = "%@に参加";
+"profile.rating_progress_title" = "評価の進捗";
+"profile.ratings_completed" = "%d / %d件の評価が完了";
+"profile.upload_unlocked" = "アップロードがアンロックされました";
+"profile.need_more_ratings" = "あと%d件の評価が必要です";
+"profile.account_management" = "アカウント管理";
+"profile.refresh_data" = "データを更新";
+"profile.sign_out_title" = "サインアウト";
+"profile.processing" = "処理中...";
+"profile.test_user" = "テストユーザー";
+"profile.confirm_sign_out" = "サインアウトの確認";
+"profile.sign_out_message" = "本当にサインアウトしますか？";
+"profile.delete_account_title" = "アカウントを削除";
+"profile.delete_account_message" = "この操作はアカウントと関連するすべてのデータを永久に削除し、元に戻すことはできません。続行しますか？";
+"profile.delete" = "削除";
+
+// MARK: - Authentication
+"auth.google_sign_in_hint" = "タップしてGoogleアカウントでサインイン";
+
+// MARK: - Gamification
+"gamification.title" = "ゲーミフィケーションシステム";
+"gamification.progress" = "進捗";
+"gamification.achievement_unlocked" = "新しい実績をアンロックしました！";
+"gamification.achievement_share_text" = "デジタルプレミアムソーシャル評価プラットフォームで「%@」の実績をアンロックしました！評価に参加しましょう！";
+"gamification.style_report_title" = "マイスタイル分析レポート";
+"gamification.style_report_description" = "デジタルプレミアムソーシャル評価プラットフォームでの私のスタイル分析をチェック";
+"gamification.style_report_share_text" = "デジタルプレミアムソーシャル評価プラットフォームで私のスタイル分析レポートをチェックしに来てください！";
+
+// MARK: - Style Analysis
+"style.elegant.keywords" = "エレガント, 洗練された, 上品な, 品のある";
+"style.casual.keywords" = "カジュアル, ナチュラル, 快適な, フレンドリー";
+"style.trendy.keywords" = "ファッショナブル, トレンディ, アバンギャルド, 人気";
+"style.classic.keywords" = "クラシック, タイムレス, トラディショナル, 安定した";
+"style.sporty.keywords" = "スポーティ, エネルギッシュ, ヘルシー, ダイナミック";
+"style.artistic.keywords" = "芸術的, クリエイティブ, ユニーク, 個性的";
+
+"style.elegant.advice" = "あなたのエレガントなスタイルは深く愛されています！洗練された組み合わせを維持し続け、より多くのクラシックなアイテムを試すことができます。";
+"style.casual.advice" = "あなたのカジュアルなスタイルは非常に人気があります！全体的なルックを向上させるために、いくつかのファッション要素を追加してみてください。";
+"style.trendy.advice" = "あなたのファッションセンスは非常に鋭いです！最新のトレンドを追い続けながらも、個性を維持してください。";
+"style.classic.advice" = "あなたのクラシックなスタイルは決して時代遅れになりません！新鮮さを加えるために、いくつかのモダンな要素を追加してみてください。";
+"style.sporty.advice" = "あなたのスポーティなスタイルはエネルギーに満ちています！スタイリングのレイヤーを追加するために、スポーツカジュアルミックスを試すことができます。";
+"style.artistic.advice" = "あなたの芸術的なスタイルは非常にユニークです！創造性を発揮し続け、あなたの個人的なテイストを示してください。";
+"style.streetwear.advice" = "あなたのストリートスタイルは素晴らしい態度を持っています！個性を出すために、より多くのブランドミックスを試すことができます。";
+"style.minimalist.advice" = "あなたのミニマリストスタイルは非常に上品です！テクスチャとテーラリングを通じてスタイリングの洗練度を高めることができます。";
+"style.edgy.advice" = "あなたのアバンギャルドなスタイルは非常に目を引きます！大胆に実験し続けますが、全体のバランスに注意してください。";
+"style.formal.advice" = "あなたのフォーマルなスタイルは非常にプロフェッショナルです！親近感を高めるために、いくつかの個性的な要素を追加してみてください。";
+"style.colorful.advice" = "あなたのカラーマッチングは非常にエネルギッシュです！マッチングをより調和させるために、色彩理論を学ぶことができます。";
+
+"style.score.high" = "あなたのスタイリングは非常に高い評価を受けました！このスタイルを維持し続けてください、あなたは自分に合った道を見つけました。";
+"style.score.good" = "あなたのスタイルは良い反応を得ました！全体的な効果を高めるために、より多くの詳細な最適化を試すことができます。";
+"style.score.average" = "あなたのスタイルには大きな改善の余地があります！高得点のスタイルをより多く観察し、マッチングテクニックを学ぶことをお勧めします。";
+"style.score.low" = "あなたのスタイルのポジショニングを再検討することをお勧めします。より適切なスタイルを見つけるために、さまざまなマッチングの方向性を試すことができます。";
+
+"style.diversity.focused" = "あなたのスタイルは非常に焦点が合っています！スタイリングの豊かさを増すために、他のスタイル要素を取り入れてみることができます。";
+"style.diversity.balanced" = "あなたは複数のスタイルを融合させるのが得意です！この多様性があなたのスタイリングをより層状にします。";
+"style.diversity.scattered" = "あなたは多くの異なるスタイルを試しました！個性を築くために、最も適した2〜3つのスタイルに焦点を当てることをお勧めします。";
+
+"style.gender.balanced" = "あなたのスタイルは両方の性別に人気があります！このバランスの取れた魅力はまれです。";
+"style.gender.female_preferred" = "あなたのスタイルは特に女性に愛されています！より広い魅力を求めるなら、いくつかの中性的な要素を追加することができます。";
+"style.gender.male_preferred" = "あなたのスタイルは特に男性に愛されています！より広い魅力を求めるなら、より洗練されたディテールを試すことができます。";
+
+"style.rating.high_taste" = "あなたは良いスタイルを評価する方法を知っています！あなたのテイストは公衆の好みと非常に一致しており、あなたの判断を信頼し続けてください。";
+"style.rating.balanced_view" = "あなたの美的観点は非常にバランスが取れています！「ホット」と評価したスタイルの特徴にもっと注意を払うことができます。";
+"style.rating.unique_view" = "あなたはユニークな美的観点を持っています！スタイリングの選択肢を広げるために、より多くの主流のスタイルを試すことができます。";
+
+"style.error.user_not_found" = "ユーザーデータが見つかりません";
+"style.error.no_photos_uploaded" = "ユーザーはまだ写真をアップロードしていません";
+
+// MARK: - CTA Messages
+"cta.checking_status" = "ステータスを確認中...";
+"cta.ready_to_upload" = "写真のアップロード準備ができました！";
+"cta.need_more_ratings" = "アップロード機能をアンロックするには、さらに評価を完了する必要があります";
+"cta.analyzing_preferences" = "あなたのスタイルの好みを分析中...";
+"cta.identifying_style" = "あなたの主なスタイルを特定中...";
+"cta.preparing" = "準備中...";
+
+// MARK: - Achievements
+"achievement.style_star.title" = "スタイルスター";
+"achievement.style_star.description" = "初めてスタイルレポートを取得";
+"achievement.style_star.reward" = "スタイルスターバッジ";
+"achievement.charm_master.title" = "チャームマスター";
+"achievement.charm_master.description" = "魅力スコアが80％以上に達する";
+"achievement.charm_master.reward" = "5回の加速評価機会";
+"achievement.style_master.title" = "スタイルマスター";
+"achievement.style_master.description" = "3つの異なるスタイルタイプで高得点を達成";
+"achievement.style_master.reward" = "スタイルマスターバッジ";
+"achievement.popularity_king.title" = "人気王";
+"achievement.popularity_king.description" = "100以上の評価を受け取る";
+"achievement.popularity_king.reward" = "スタイル進化分析をアンロック";
+
+// MARK: - Guest User
+"guest.user_name" = "ゲスト";
+
+// MARK: - Common
+"common.loading" = "読み込み中...";
+"common.error" = "エラー";
+"common.cancel" = "キャンセル";
+"common.done" = "完了";
+"common.retry" = "再試行";
+"common.ok" = "OK";
+"common.yes" = "はい";
+"common.no" = "いいえ";
