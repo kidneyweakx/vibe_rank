@@ -11,6 +11,9 @@
 "tab.report" = "レポート";
 "tab.profile" = "プロフィール";
 "tab.test" = "テスト";
+"tab.main.profile" = "プロフィール";
+"tab.main.rating" = "評価";
+"tab.main.upload" = "アップロード";
 
 // MARK: - Authentication
 "auth.title" = "デジタルプレミアムソーシャル評価プラットフォーム";

@@ -132,105 +132,52 @@ struct CardStyle: ViewModifier {
     }
 }
 
-// MARK: - Floating Shapes for Cute Background
-struct FloatingShape: View {
+// MARK: - Custom TabBar Style
+struct CustomTabBar: ViewModifier {
     @EnvironmentObject var themeManager: ThemeManager
-    let geometry: GeometryProxy
-    let index: Int
-    
-    @State private var offset: CGSize = .zero
-    @State private var rotation: Double = 0
-    @State private var scale: Double = 1.0
-    
-    private var shapeType: ShapeType {
-        ShapeType.allCases[index % ShapeType.allCases.count]
-    }
-    
-    private var color: Color {
-        let colors = themeManager.currentTheme.colors
-        switch index % 4 {
-        case 0: return colors.accent.opacity(0.6)
-        case 1: return Color.white.opacity(0.4)
-        case 2: return colors.secondary.opacity(0.3)
-        default: return colors.accent.opacity(0.3)
-        }
-    }
-    
-    private var size: CGFloat {
-        switch index % 3 {
-        case 0: return 8
-        case 1: return 12
-        default: return 16
-        }
-    }
-    
-    var body: some View {
-        Group {
-            switch shapeType {
-            case .star:
-                Text("⭐️")
-                    .font(.system(size: size))
-            case .diamond:
-                Diamond()
-                    .fill(color)
-                    .frame(width: size, height: size)
-            case .circle:
-                Circle()
-                    .fill(color)
-                    .frame(width: size, height: size)
-            case .sparkle:
-                Text("✨")
-                    .font(.system(size: size))
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear {
+                setupAppearance()
             }
-        }
-        .position(
-            x: CGFloat.random(in: 0...geometry.size.width),
-            y: CGFloat.random(in: 0...geometry.size.height)
-        )
-        .offset(offset)
-        .rotationEffect(.degrees(rotation))
-        .scaleEffect(scale)
-        .onAppear {
-            startAnimation()
-        }
+            .accentColor(themeManager.currentTheme.colors.accent)
     }
-    
-    private func startAnimation() {
-        let duration = Double.random(in: 3...8)
-        let delay = Double.random(in: 0...2)
-        
-        withAnimation(
-            .easeInOut(duration: duration)
-            .repeatForever(autoreverses: true)
-            .delay(delay)
-        ) {
-            offset = CGSize(
-                width: CGFloat.random(in: -30...30),
-                height: CGFloat.random(in: -30...30)
-            )
-            rotation = Double.random(in: 0...360)
-            scale = Double.random(in: 0.8...1.2)
-        }
-    }
-}
 
-enum ShapeType: CaseIterable {
-    case star, diamond, circle, sparkle
-}
+    func setupAppearance() {
+        let appearance = UITabBarAppearance()
+        let colors = themeManager.currentTheme.colors
 
-struct Diamond: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let center = CGPoint(x: rect.midX, y: rect.midY)
-        let radius = min(rect.width, rect.height) / 2
+        // Use a transparent background to blend with the content
+        appearance.configureWithTransparentBackground()
         
-        path.move(to: CGPoint(x: center.x, y: center.y - radius))
-        path.addLine(to: CGPoint(x: center.x + radius, y: center.y))
-        path.addLine(to: CGPoint(x: center.x, y: center.y + radius))
-        path.addLine(to: CGPoint(x: center.x - radius, y: center.y))
-        path.closeSubpath()
-        
-        return path
+        // A subtle background color that matches the theme
+        appearance.backgroundColor = UIColor(colors.background).withAlphaComponent(0.9)
+
+        // Add a blur effect for a modern, Instagram-like feel
+        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterial)
+        appearance.backgroundEffect = blurEffect
+
+        // Add a subtle top shadow to separate the tab bar from the content
+        appearance.shadowColor = UIColor.black.withAlphaComponent(0.1)
+
+        // Normal (unselected) state
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(colors.text.opacity(0.7))
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
+            .foregroundColor: UIColor(colors.text.opacity(0.7)),
+            .font: UIFont.systemFont(ofSize: 10, weight: .regular)
+        ]
+
+        // Selected state
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(colors.accent)
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
+            .foregroundColor: UIColor(colors.accent),
+            .font: UIFont.systemFont(ofSize: 10, weight: .bold)
+        ]
+
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
+        UITabBar.appearance().isTranslucent = true
     }
 }
 

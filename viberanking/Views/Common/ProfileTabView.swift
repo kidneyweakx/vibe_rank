@@ -10,29 +10,14 @@ import SwiftUI
 struct ProfileTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @EnvironmentObject private var themeManager: ThemeManager
-    @State private var showingSettings = false
     
     var body: some View {
         NavigationStack {
             ZStack {
-                // Cute background matching the main theme
-                LinearGradient(
-                    colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-                
-                // Floating decorative elements
-                GeometryReader { geometry in
-                    ForEach(0..<8, id: \.self) { index in
-                        FloatingShape(geometry: geometry, index: index)
-                    }
-                }
-                .ignoresSafeArea()
+                FloatingShapesBackground()
                 
                 ScrollView {
-                    VStack(spacing: AppTheme.Spacing.lg) {
+                    VStack(spacing: AppTheme.Spacing.md) {
                         // Profile Header
                         profileHeader
                         
@@ -45,35 +30,14 @@ struct ProfileTabView: View {
                         // Settings Section
                         settingsSection
                         
-                        Spacer(minLength: AppTheme.Spacing.xxl)
+                        Spacer(minLength: AppTheme.Spacing.xl)
                     }
                     .padding(.horizontal, AppTheme.Spacing.md)
                 }
             }
-            .navigationTitle("個人檔案")
+            .navigationTitle(NSLocalizedString("profile.title", comment: ""))
             .navigationBarTitleDisplayMode(.large)
             .toolbarBackground(.hidden, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showingSettings = true
-                    } label: {
-                        ZStack {
-                            Circle()
-                                .fill(.ultraThinMaterial)
-                                .frame(width: 36, height: 36)
-                                .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-                            
-                            Image(systemName: "gearshape.fill")
-                                .foregroundColor(.white)
-                                .font(.system(size: 16, weight: .semibold))
-                        }
-                    }
-                }
-            }
-            .sheet(isPresented: $showingSettings) {
-                SettingsView()
-            }
         }
     }
 }
@@ -82,14 +46,14 @@ struct ProfileTabView: View {
 private extension ProfileTabView {
     
     var profileHeader: some View {
-        VStack(spacing: AppTheme.Spacing.md) {
+        VStack(spacing: AppTheme.Spacing.sm) {
             // Avatar with cute design
             ZStack {
                 // Glow effect
                 Circle()
                     .fill(themeManager.currentTheme.colors.accent.opacity(0.3))
-                    .frame(width: 130, height: 130)
-                    .blur(radius: 20)
+                    .frame(width: 100, height: 100)
+                    .blur(radius: 15)
                 
                 // Main avatar circle
                 Circle()
@@ -100,82 +64,80 @@ private extension ProfileTabView {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 100, height: 100)
-                    .shadow(color: themeManager.currentTheme.colors.accent.opacity(0.4), radius: 20, x: 0, y: 10)
+                    .frame(width: 80, height: 80)
+                    .shadow(color: themeManager.currentTheme.colors.accent.opacity(0.3), radius: 15, x: 0, y: 8)
                 
                 // Inner highlight
                 Circle()
                     .stroke(
                         LinearGradient(
-                            colors: [.white.opacity(0.6), .clear],
+                            colors: [.white.opacity(0.5), .clear],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
-                        lineWidth: 3
+                        lineWidth: 2
                     )
-                    .frame(width: 100, height: 100)
+                    .frame(width: 80, height: 80)
                 
                 if authViewModel.isGuest {
                     Text("👤")
-                        .font(.system(size: 50))
+                        .font(.system(size: 40))
                         .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
                 } else {
                     Text(String(authViewModel.user?.name.prefix(1) ?? "U").uppercased())
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
+                        .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
                 }
             }
             
             // User Info with glass morphism
             VStack(spacing: AppTheme.Spacing.xs) {
-                Text(authViewModel.user?.name ?? "訪客用戶")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                Text(authViewModel.user?.name ?? NSLocalizedString("profile.guest.name", comment: ""))
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
-                    .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                    .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
                 
                 if authViewModel.isGuest {
                     HStack(spacing: AppTheme.Spacing.xs) {
                         Image(systemName: "person.crop.circle.badge.questionmark")
                             .foregroundColor(.orange)
-                        Text("訪客模式")
+                        Text(NSLocalizedString("profile.guest.mode", comment: ""))
                             .font(AppTheme.Typography.caption)
                             .fontWeight(.semibold)
                             .foregroundColor(.orange)
                     }
-                    .padding(.horizontal, AppTheme.Spacing.md)
+                    .padding(.horizontal, AppTheme.Spacing.sm)
                     .padding(.vertical, AppTheme.Spacing.xs)
                     .background(
                         Capsule()
                             .fill(.ultraThinMaterial)
-                            .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
                     )
                 } else {
                     Text(authViewModel.user?.email ?? "")
-                        .font(AppTheme.Typography.subheadline)
+                        .font(AppTheme.Typography.caption)
                         .foregroundColor(.white.opacity(0.8))
-                        .padding(.horizontal, AppTheme.Spacing.md)
+                        .padding(.horizontal, AppTheme.Spacing.sm)
                         .padding(.vertical, AppTheme.Spacing.xs)
                         .background(
                             Capsule()
                                 .fill(.ultraThinMaterial)
-                                .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
                         )
                 }
             }
         }
-        .padding(AppTheme.Spacing.lg)
+        .padding(AppTheme.Spacing.md)
         .background(
             RoundedRectangle(cornerRadius: AppTheme.CornerRadius.xl)
                 .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
+                .shadow(color: .black.opacity(0.1), radius: 15, x: 0, y: 8)
         )
     }
     
     var statsSection: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             HStack {
-                Text("統計數據")
+                Text(NSLocalizedString("profile.stats.title", comment: ""))
                     .font(AppTheme.Typography.headline)
                     .foregroundColor(themeManager.currentTheme.colors.text)
                 Spacer()
@@ -187,28 +149,28 @@ private extension ProfileTabView {
             ], spacing: AppTheme.Spacing.md) {
                 StatCard(
                     icon: "star.fill",
-                    title: "完成評分",
+                    title: NSLocalizedString("profile.stats.completedRatings", comment: ""),
                     value: "\(authViewModel.user?.ratingProgress.completedRatings ?? 0)",
                     color: themeManager.currentTheme.colors.accent
                 )
                 
                 StatCard(
                     icon: "target",
-                    title: "目標評分",
+                    title: NSLocalizedString("profile.stats.requiredRatings", comment: ""),
                     value: "\(authViewModel.user?.ratingProgress.requiredRatings ?? 0)",
                     color: themeManager.currentTheme.colors.primary
                 )
                 
                 StatCard(
                     icon: "chart.line.uptrend.xyaxis",
-                    title: "進度",
+                    title: NSLocalizedString("profile.stats.progress", comment: ""),
                     value: "\(Int((authViewModel.user?.ratingProgress.progressPercentage ?? 0) * 100))%",
                     color: .green
                 )
                 
                 StatCard(
                     icon: "photo.stack",
-                    title: "上傳照片",
+                    title: NSLocalizedString("profile.stats.uploadedPhotos", comment: ""),
                     value: "0", // TODO: Add photo count
                     color: themeManager.currentTheme.colors.secondary
                 )
@@ -219,11 +181,11 @@ private extension ProfileTabView {
     var achievementSection: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             HStack {
-                Text("成就")
+                Text(NSLocalizedString("profile.achievements.title", comment: ""))
                     .font(AppTheme.Typography.headline)
                     .foregroundColor(themeManager.currentTheme.colors.text)
                 Spacer()
-                Button("查看全部") {
+                Button(NSLocalizedString("profile.achievements.viewAll", comment: "")) {
                     // TODO: Navigate to achievements
                 }
                 .font(AppTheme.Typography.caption)
@@ -231,32 +193,32 @@ private extension ProfileTabView {
             }
             
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: AppTheme.Spacing.md) {
+                HStack(spacing: AppTheme.Spacing.sm) {
                     AchievementBadge(
                         icon: "star.fill",
-                        title: "首次評分",
+                        title: NSLocalizedString("profile.achievements.firstRating", comment: ""),
                         isUnlocked: (authViewModel.user?.ratingProgress.completedRatings ?? 0) > 0
                     )
                     
                     AchievementBadge(
                         icon: "flame.fill",
-                        title: "連續評分",
+                        title: NSLocalizedString("profile.achievements.ratingStreak", comment: ""),
                         isUnlocked: (authViewModel.user?.ratingProgress.completedRatings ?? 0) > 10
                     )
                     
                     AchievementBadge(
                         icon: "crown.fill",
-                        title: "評分達人",
+                        title: NSLocalizedString("profile.achievements.ratingExpert", comment: ""),
                         isUnlocked: (authViewModel.user?.ratingProgress.completedRatings ?? 0) > 50
                     )
                     
                     AchievementBadge(
                         icon: "lock.open.fill",
-                        title: "解鎖上傳",
+                        title: NSLocalizedString("profile.achievements.uploadUnlocked", comment: ""),
                         isUnlocked: authViewModel.user?.ratingProgress.hasUnlockedUpload ?? false
                     )
                 }
-                .padding(.horizontal, AppTheme.Spacing.md)
+                .padding(.horizontal, AppTheme.Spacing.sm)
             }
         }
         .cardStyle()
@@ -265,16 +227,21 @@ private extension ProfileTabView {
     var settingsSection: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             HStack {
-                Text("設定")
+                Text(NSLocalizedString("profile.settings.title", comment: ""))
                     .font(AppTheme.Typography.headline)
                     .foregroundColor(themeManager.currentTheme.colors.text)
                 Spacer()
             }
             
             VStack(spacing: 0) {
+                ThemeSwitcherView()
+                    .padding(.vertical, AppTheme.Spacing.sm)
+                
+                Divider()
+
                 SettingRow(
                     icon: "globe",
-                    title: "語言設定",
+                    title: NSLocalizedString("profile.settings.language", comment: ""),
                     action: {
                         // TODO: Navigate to language settings
                     }
@@ -284,7 +251,7 @@ private extension ProfileTabView {
                 
                 SettingRow(
                     icon: "bell.fill",
-                    title: "通知設定",
+                    title: NSLocalizedString("profile.settings.notifications", comment: ""),
                     action: {
                         // TODO: Navigate to notification settings
                     }
@@ -294,7 +261,7 @@ private extension ProfileTabView {
                 
                 SettingRow(
                     icon: "questionmark.circle.fill",
-                    title: "幫助與支援",
+                    title: NSLocalizedString("profile.settings.help", comment: ""),
                     action: {
                         // TODO: Navigate to help
                     }
@@ -305,7 +272,7 @@ private extension ProfileTabView {
                     
                     SettingRow(
                         icon: "rectangle.portrait.and.arrow.right",
-                        title: "登出",
+                        title: NSLocalizedString("profile.settings.logout", comment: ""),
                         isDestructive: true,
                         action: {
                             authViewModel.signOut()
@@ -316,7 +283,7 @@ private extension ProfileTabView {
                     
                     SettingRow(
                         icon: "person.crop.circle.fill.badge.plus",
-                        title: "註冊帳號",
+                        title: NSLocalizedString("profile.settings.register", comment: ""),
                         action: {
                             authViewModel.signOut() // Return to login
                         }
@@ -337,28 +304,31 @@ struct StatCard: View {
     let color: Color
     
     var body: some View {
-        VStack(spacing: AppTheme.Spacing.sm) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.2))
-                    .frame(width: 50, height: 50)
+        HStack(spacing: AppTheme.Spacing.sm) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(color)
+                .frame(width: 24, height: 24)
+                .background(
+                    Circle()
+                        .fill(color.opacity(0.15))
+                        .frame(width: 36, height: 36)
+                )
+
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+                Text(title)
+                    .font(AppTheme.Typography.caption)
+                    .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
                 
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(color)
+                Text(value)
+                    .font(AppTheme.Typography.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(themeManager.currentTheme.colors.text)
             }
-            
-            Text(value)
-                .font(AppTheme.Typography.title2)
-                .fontWeight(.bold)
-                .foregroundColor(themeManager.currentTheme.colors.text)
-            
-            Text(title)
-                .font(AppTheme.Typography.caption)
-                .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
-                .multilineTextAlignment(.center)
+            Spacer()
         }
-        .cardStyle()
+        .padding(AppTheme.Spacing.sm)
+        .cardStyle(padding: AppTheme.Spacing.sm)
     }
 }
 
@@ -372,23 +342,23 @@ struct AchievementBadge: View {
         VStack(spacing: AppTheme.Spacing.xs) {
             ZStack {
                 Circle()
-                    .fill(isUnlocked ? themeManager.currentTheme.colors.accent : themeManager.currentTheme.colors.text.opacity(0.2))
-                    .frame(width: 60, height: 60)
-                    .shadow(color: isUnlocked ? themeManager.currentTheme.colors.accent.opacity(0.3) : .clear, radius: 8, x: 0, y: 4)
+                    .fill(isUnlocked ? themeManager.currentTheme.colors.accent : themeManager.currentTheme.colors.text.opacity(0.1))
+                    .frame(width: 50, height: 50)
+                    .shadow(color: isUnlocked ? themeManager.currentTheme.colors.accent.opacity(0.2) : .clear, radius: 5, x: 0, y: 2)
                 
                 Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(isUnlocked ? .white : themeManager.currentTheme.colors.text.opacity(0.7))
+                    .font(.title3)
+                    .foregroundColor(isUnlocked ? .white : themeManager.currentTheme.colors.text.opacity(0.5))
             }
             
             Text(title)
                 .font(AppTheme.Typography.caption)
-                .foregroundColor(isUnlocked ? themeManager.currentTheme.colors.text : themeManager.currentTheme.colors.text.opacity(0.7))
+                .foregroundColor(isUnlocked ? themeManager.currentTheme.colors.text : themeManager.currentTheme.colors.text.opacity(0.5))
                 .multilineTextAlignment(.center)
         }
-        .frame(width: 80)
-        .scaleEffect(isUnlocked ? 1.0 : 0.9)
-        .opacity(isUnlocked ? 1.0 : 0.6)
+        .frame(width: 70)
+        .scaleEffect(isUnlocked ? 1.0 : 0.95)
+        .opacity(isUnlocked ? 1.0 : 0.7)
     }
 }
 
@@ -410,45 +380,42 @@ struct SettingRow: View {
         Button(action: action) {
             HStack(spacing: AppTheme.Spacing.md) {
                 Image(systemName: icon)
-                    .font(.title3)
+                    .font(.callout)
                     .foregroundColor(isDestructive ? .red : themeManager.currentTheme.colors.primary)
-                    .frame(width: 24)
+                    .frame(width: 20)
                 
                 Text(title)
                     .font(AppTheme.Typography.body)
                     .foregroundColor(isDestructive ? .red : themeManager.currentTheme.colors.text)
                 
                 Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
             }
             .padding(.horizontal, AppTheme.Spacing.md)
-            .padding(.vertical, AppTheme.Spacing.md)
+            .padding(.vertical, AppTheme.Spacing.sm)
         }
         .buttonStyle(PlainButtonStyle())
     }
 }
 
-struct SettingsView: View {
-    @Environment(\.dismiss) private var dismiss
-    
+// MARK: - Background View
+struct FloatingShapesBackground: View {
+    @EnvironmentObject private var themeManager: ThemeManager
+
     var body: some View {
-        NavigationStack {
-            VStack {
-                ThemeSwitcherView()
-                Spacer()
-            }
-            .navigationTitle("設定")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("完成") {
-                        dismiss()
-                    }
+        ZStack {
+            LinearGradient(
+                colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            GeometryReader { geometry in
+                ForEach(0..<8, id: \.self) { index in
+                    FloatingShape(geometry: geometry, index: index)
                 }
             }
+            .ignoresSafeArea()
         }
     }
 }
@@ -457,4 +424,106 @@ struct SettingsView: View {
     ProfileTabView()
         .environmentObject(AuthenticationViewModel())
         .environmentObject(ThemeManager())
+}
+
+// MARK: - Floating Shapes for Cute Background
+struct FloatingShape: View {
+    @EnvironmentObject var themeManager: ThemeManager
+    let geometry: GeometryProxy
+    let index: Int
+    
+    @State private var offset: CGSize = .zero
+    @State private var rotation: Double = 0
+    @State private var scale: Double = 1.0
+    
+    private var shapeType: ShapeType {
+        ShapeType.allCases[index % ShapeType.allCases.count]
+    }
+    
+    private var color: Color {
+        let colors = themeManager.currentTheme.colors
+        switch index % 4 {
+        case 0: return colors.accent.opacity(0.6)
+        case 1: return Color.white.opacity(0.4)
+        case 2: return colors.secondary.opacity(0.3)
+        default: return colors.accent.opacity(0.3)
+        }
+    }
+    
+    private var size: CGFloat {
+        switch index % 3 {
+        case 0: return 8
+        case 1: return 12
+        default: return 16
+        }
+    }
+    
+    var body: some View {
+        Group {
+            switch shapeType {
+            case .star:
+                Text("⭐️")
+                    .font(.system(size: size))
+            case .diamond:
+                Diamond()
+                    .fill(color)
+                    .frame(width: size, height: size)
+            case .circle:
+                Circle()
+                    .fill(color)
+                    .frame(width: size, height: size)
+            case .sparkle:
+                Text("✨")
+                    .font(.system(size: size))
+            }
+        }
+        .position(
+            x: CGFloat.random(in: 0...geometry.size.width),
+            y: CGFloat.random(in: 0...geometry.size.height)
+        )
+        .offset(offset)
+        .rotationEffect(.degrees(rotation))
+        .scaleEffect(scale)
+        .onAppear {
+            startAnimation()
+        }
+    }
+    
+    private func startAnimation() {
+        let duration = Double.random(in: 3...8)
+        let delay = Double.random(in: 0...2)
+        
+        withAnimation(
+            .easeInOut(duration: duration)
+            .repeatForever(autoreverses: true)
+            .delay(delay)
+        ) {
+            offset = CGSize(
+                width: CGFloat.random(in: -30...30),
+                height: CGFloat.random(in: -30...30)
+            )
+            rotation = Double.random(in: 0...360)
+            scale = Double.random(in: 0.8...1.2)
+        }
+    }
+}
+
+enum ShapeType: CaseIterable {
+    case star, diamond, circle, sparkle
+}
+
+struct Diamond: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let radius = min(rect.width, rect.height) / 2
+        
+        path.move(to: CGPoint(x: center.x, y: center.y - radius))
+        path.addLine(to: CGPoint(x: center.x + radius, y: center.y))
+        path.addLine(to: CGPoint(x: center.x, y: center.y + radius))
+        path.addLine(to: CGPoint(x: center.x - radius, y: center.y))
+        path.closeSubpath()
+        
+        return path
+    }
 }

@@ -82,27 +82,27 @@ private extension RatingTabView {
                 showCelebration = true
             }
             
-            Text("照片評分")
+            Text("rating.title".localized)
                 .font(AppTheme.Typography.title2)
                 .fontWeight(.bold)
-                .foregroundColor(.white)
+                .foregroundColor(themeManager.currentTheme.colors.text)
                 .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
             
             HStack(spacing: AppTheme.Spacing.xs) {
                 Text("👈")
                     .font(.system(size: 16))
-                Text("NOT")
+                Text("rating.not".localized)
                     .font(AppTheme.Typography.caption)
                     .fontWeight(.semibold)
                     .foregroundColor(themeManager.currentTheme.colors.secondary)
                 
                 Text("•")
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
                 
-                Text("HOT")
+                Text("rating.hot".localized)
                     .font(AppTheme.Typography.caption)
                     .fontWeight(.semibold)
-                    .foregroundColor(.red)
+                    .foregroundColor(themeManager.currentTheme.colors.accent)
                 Text("👉")
                     .font(.system(size: 16))
             }
@@ -181,18 +181,16 @@ private extension RatingTabView {
     
     var photoCardsStack: some View {
         ZStack {
-            // Background cards for depth
-            ForEach(0..<min(3, viewModel.photos.count - viewModel.currentPhotoIndex), id: \.self) { index in
-                if viewModel.currentPhotoIndex + index < viewModel.photos.count {
-                    let photo = viewModel.photos[viewModel.currentPhotoIndex + index]
-                    photoCard(photo: photo, index: index)
-                }
+            ForEach(viewModel.photos.indices, id: \.self) { index in
+                photoCard(photo: viewModel.photos[index], index: index)
             }
         }
     }
     
     func photoCard(photo: Photo, index: Int) -> some View {
-        ZStack {
+        let isTopCard = index == viewModel.currentPhotoIndex
+        
+        return ZStack {
             // Card background with modern glass effect
             RoundedRectangle(cornerRadius: AppTheme.CornerRadius.xl)
                 .fill(.ultraThinMaterial)
@@ -254,7 +252,7 @@ private extension RatingTabView {
             }
             
             // Swipe indicators with enhanced animations
-            if index == 0 {
+            if isTopCard {
                 swipeIndicators
             }
             
@@ -270,15 +268,13 @@ private extension RatingTabView {
                 )
         }
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.CornerRadius.xl))
-        .scaleEffect(index == 0 ? 1.0 : 0.92 - Double(index) * 0.04)
-        .offset(
-            x: index == 0 ? currentCardOffset.width : 0,
-            y: CGFloat(index) * 12
-        )
-        .rotationEffect(.degrees(index == 0 ? Double(currentCardOffset.width) / 25 : 0))
-        .opacity(index == 0 ? 1.0 : 0.8 - Double(index) * 0.15)
+        .offset(x: isTopCard ? currentCardOffset.width : 0, y: 0)
+        .scaleEffect(isTopCard ? 1.0 : 0.9)
+        .rotationEffect(.degrees(isTopCard ? Double(currentCardOffset.width) / 25.0 : 0))
+        .offset(y: CGFloat(index - viewModel.currentPhotoIndex) * 10)
+        .zIndex(Double(viewModel.photos.count - index))
         .gesture(
-            index == 0 ? DragGesture()
+            isTopCard ? DragGesture()
                 .onChanged { value in
                     withAnimation(.interactiveSpring(response: 0.3, dampingFraction: 0.8)) {
                         currentCardOffset = value.translation
@@ -299,7 +295,7 @@ private extension RatingTabView {
                     ZStack {
                         // Glow effect
                         Circle()
-                            .fill(.red.opacity(0.3))
+                            .fill(themeManager.currentTheme.colors.accent.opacity(0.3))
                             .frame(width: 100, height: 100)
                             .blur(radius: 20)
                         
@@ -314,12 +310,12 @@ private extension RatingTabView {
                         .font(.system(size: 28, weight: .black, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [.red, .pink],
+                                colors: [themeManager.currentTheme.colors.accent, themeManager.currentTheme.colors.primary],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .shadow(color: .red.opacity(0.5), radius: 5, x: 0, y: 2)
+                        .shadow(color: themeManager.currentTheme.colors.accent.opacity(0.5), radius: 5, x: 0, y: 2)
                 }
                 .opacity(min(Double(currentCardOffset.width) / 120, 1.0))
                 .scaleEffect(0.8 + min(Double(currentCardOffset.width) / 300, 0.4))
@@ -414,7 +410,7 @@ private extension RatingTabView {
                 ZStack {
                     // Outer glow
                     Circle()
-                        .fill(.red.opacity(0.3))
+                        .fill(themeManager.currentTheme.colors.accent.opacity(0.3))
                         .frame(width: 85, height: 85)
                         .blur(radius: 10)
                     
@@ -422,19 +418,19 @@ private extension RatingTabView {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [.red, .pink],
+                                colors: [themeManager.currentTheme.colors.accent, themeManager.currentTheme.colors.primary],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                         .frame(width: 70, height: 70)
-                        .shadow(color: .red.opacity(0.4), radius: 15, x: 0, y: 8)
+                        .shadow(color: themeManager.currentTheme.colors.accent.opacity(0.4), radius: 15, x: 0, y: 8)
                     
                     // Inner highlight
                     Circle()
                         .stroke(
                             LinearGradient(
-                                colors: [.white.opacity(0.6), .clear],
+                                colors: [themeManager.currentTheme.colors.text.opacity(0.6), .clear],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
@@ -460,7 +456,7 @@ private extension RatingTabView {
             ProgressView()
                 .scaleEffect(1.5)
             
-            Text("載入照片中...")
+            Text("rating.loading".localized)
                 .font(AppTheme.Typography.headline)
                 .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
         }
@@ -472,15 +468,15 @@ private extension RatingTabView {
             Text("📷")
                 .font(.system(size: 60))
             
-            Text("沒有更多照片了")
+            Text("rating.no_photos".localized)
                 .font(AppTheme.Typography.title2)
                 .foregroundColor(themeManager.currentTheme.colors.text)
             
-            Text("請稍後再試")
+            Text("rating.try_later".localized)
                 .font(AppTheme.Typography.body)
                 .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
             
-            Button("重新載入") {
+            Button("rating.reload".localized) {
                 Task {
                     await viewModel.refreshPhotos()
                 }

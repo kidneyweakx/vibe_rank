@@ -41,7 +41,7 @@ struct UploadTabView: View {
                     uploadContentView
                 }
             }
-            .navigationTitle("上傳照片")
+            .navigationTitle("upload.title".localized)
             .navigationBarTitleDisplayMode(.large)
             .toolbarBackground(.hidden, for: .navigationBar)
         }
@@ -57,20 +57,20 @@ private extension UploadTabView {
             ZStack {
                 // Glow effect
                 Circle()
-                    .fill(Color.orange.opacity(0.3))
+                    .fill(themeManager.currentTheme.colors.accent.opacity(0.3))
                     .frame(width: 140, height: 140)
                     .blur(radius: 20)
                 
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [Color.orange, Color.orange.opacity(0.8)],
+                            colors: [themeManager.currentTheme.colors.accent, themeManager.currentTheme.colors.accent.opacity(0.8)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
                     .frame(width: 120, height: 120)
-                    .shadow(color: Color.orange.opacity(0.4), radius: 20, x: 0, y: 10)
+                    .shadow(color: themeManager.currentTheme.colors.accent.opacity(0.4), radius: 20, x: 0, y: 10)
                 
                 Text("🔒")
                     .font(.system(size: 60))
@@ -78,16 +78,16 @@ private extension UploadTabView {
             }
             
             VStack(spacing: AppTheme.Spacing.md) {
-                Text("功能尚未解鎖")
+                Text("upload.locked_title".localized)
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(themeManager.currentTheme.colors.text)
                     .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
                 
                 if authViewModel.isGuest {
                     VStack(spacing: AppTheme.Spacing.md) {
-                        Text("請先註冊帳號以使用上傳功能")
+                        Text("login.required.upload".localized)
                             .font(AppTheme.Typography.body)
-                            .foregroundColor(.white.opacity(0.9))
+                            .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.9))
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, AppTheme.Spacing.md)
                             .padding(.vertical, AppTheme.Spacing.sm)
@@ -96,7 +96,7 @@ private extension UploadTabView {
                                     .fill(.ultraThinMaterial)
                             )
                         
-                        Button("註冊帳號") {
+                        Button("guest.sign_in_now".localized) {
                             authViewModel.signOut()
                         }
                         .font(.system(size: 18, weight: .semibold, design: .rounded))
@@ -207,11 +207,11 @@ private extension UploadTabView {
                 }
                 
                 VStack(spacing: AppTheme.Spacing.xs) {
-                    Text("選擇照片上傳")
+                    Text("upload.select_photos".localized)
                         .font(AppTheme.Typography.title2)
                         .foregroundColor(themeManager.currentTheme.colors.text)
                     
-                    Text("點擊選擇或拖拽照片到此處")
+                    Text("upload.select_photos_description".localized)
                         .font(AppTheme.Typography.body)
                         .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
                         .multilineTextAlignment(.center)
@@ -227,7 +227,7 @@ private extension UploadTabView {
                 HStack(spacing: AppTheme.Spacing.sm) {
                     Image(systemName: "photo.on.rectangle.angled")
                         .font(.title3)
-                    Text("從相簿選擇")
+                    Text("upload.choose_library".localized)
                         .font(AppTheme.Typography.headline)
                 }
                 .foregroundColor(.white)
@@ -268,46 +268,52 @@ private extension UploadTabView {
     var selectedPhotosGrid: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             HStack {
-                Text("已選擇的照片 (\(uploadedImages.count))")
+                Text(String(format: "upload.selected_photos".localized, uploadedImages.count))
                     .font(AppTheme.Typography.headline)
                     .foregroundColor(themeManager.currentTheme.colors.text)
                 
                 Spacer()
                 
-                Button("清除全部") {
+                Button("upload.clear_all".localized) {
                     uploadedImages.removeAll()
                     selectedPhotos.removeAll()
                 }
                 .font(AppTheme.Typography.caption)
-                .foregroundColor(.red)
+                .foregroundColor(themeManager.currentTheme.colors.accent)
             }
             
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: AppTheme.Spacing.sm) {
-                ForEach(Array(uploadedImages.enumerated()), id: \.offset) { index, image in
-                    ZStack(alignment: .topTrailing) {
-                        Image(uiImage: image)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(height: 120)
-                            .clipShape(RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md))
-                        
-                        Button {
-                            uploadedImages.remove(at: index)
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.title3)
-                                .foregroundColor(.white)
-                                .background(Color.black.opacity(0.6))
-                                .clipShape(Circle())
+            GeometryReader { geometry in
+                let threeColumnWidth = (geometry.size.width - AppTheme.Spacing.sm * 2) / 3
+                LazyVGrid(columns: [
+                    GridItem(.fixed(threeColumnWidth)),
+                    GridItem(.fixed(threeColumnWidth)),
+                    GridItem(.fixed(threeColumnWidth))
+                ], spacing: AppTheme.Spacing.sm) {
+                    ForEach(Array(uploadedImages.enumerated()), id: \.offset) { index, image in
+                        ZStack(alignment: .topTrailing) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: threeColumnWidth, height: threeColumnWidth)
+                                .clipShape(RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md))
+                            
+                            Button {
+                                uploadedImages.remove(at: index)
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                                    .background(Color.black.opacity(0.6))
+                                    .clipShape(Circle())
+                            }
+                            .padding(AppTheme.Spacing.xs)
                         }
-                        .padding(AppTheme.Spacing.xs)
                     }
                 }
             }
+            .frame(height: calculateGridHeight())
+
+
             
             // Upload button
             if !uploadedImages.isEmpty {
@@ -341,7 +347,7 @@ private extension UploadTabView {
     var uploadGuidelines: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             HStack {
-                Text("上傳須知")
+                Text("upload.guidelines_title".localized)
                     .font(AppTheme.Typography.headline)
                     .foregroundColor(themeManager.currentTheme.colors.text)
                 Spacer()
@@ -350,36 +356,49 @@ private extension UploadTabView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 GuidelineRow(
                     icon: "checkmark.circle.fill",
-                    text: "照片需清晰，光線充足",
-                    color: .green
+                    text: "upload.guideline_clear_photo".localized,
+                    color: themeManager.currentTheme.colors.primary
                 )
                 
                 GuidelineRow(
                     icon: "checkmark.circle.fill",
-                    text: "建議上傳人物照片",
-                    color: .green
+                    text: "upload.guideline_person_photo".localized,
+                    color: themeManager.currentTheme.colors.primary
                 )
                 
                 GuidelineRow(
                     icon: "checkmark.circle.fill",
-                    text: "每次最多上傳 5 張照片",
-                    color: .green
+                    text: "upload.guideline_max_5_photos".localized,
+                    color: themeManager.currentTheme.colors.primary
                 )
                 
                 GuidelineRow(
                     icon: "xmark.circle.fill",
-                    text: "不得上傳不當內容",
-                    color: .red
+                    text: "upload.guideline_no_inappropriate_content".localized,
+                    color: themeManager.currentTheme.colors.accent
                 )
                 
                 GuidelineRow(
                     icon: "info.circle.fill",
-                    text: "上傳的照片將用於評分系統",
-                    color: .blue
+                    text: "upload.guideline_for_rating_system".localized,
+                    color: themeManager.currentTheme.colors.secondary
                 )
             }
         }
         .cardStyle()
+    }
+    
+    // MARK: - Helper Functions
+    private func calculateGridHeight() -> CGFloat {
+        guard !uploadedImages.isEmpty else { return 0 }
+        
+        let screenWidth = UIScreen.main.bounds.width
+        let horizontalPadding = AppTheme.Spacing.md * 2
+        let gridSpacing = AppTheme.Spacing.sm * 2
+        let itemWidth = (screenWidth - horizontalPadding - gridSpacing) / 3
+        let rowCount = ceil(Double(uploadedImages.count) / 3.0)
+        
+        return itemWidth * rowCount
     }
 }
 
