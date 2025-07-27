@@ -205,7 +205,7 @@ private extension RatingTabView {
                 .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
             
             // Photo content with rounded corners
-            CachedAsyncImage(url: photo.imageURL) { image in
+            CachedAsyncImage(url: photo.imageURL.highRes) { image in
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)

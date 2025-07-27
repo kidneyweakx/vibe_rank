@@ -322,10 +322,14 @@ class PhotoRepository: PhotoRepositoryProtocol {
         var photos: [Photo] = []
         
         for i in 0..<limit {
+            let urlString = "https://picsum.photos/400/400?random=\(i)"
+            let url = URL(string: urlString)!
+            let photoURLs = PhotoURLs(thumbnail: url, preview: url, highRes: url)
+            
             let photo = Photo(
                 id: "sample_photo_\(i)",
                 userId: "sample_user_\(i)",
-                imageURL: "https://picsum.photos/400/400?random=\(i)"
+                imageURL: photoURLs
             )
             photos.append(photo)
         }
@@ -343,10 +347,14 @@ class PhotoRepository: PhotoRepositoryProtocol {
         var photos: [Photo] = []
         
         for i in 0..<sampleCount {
+            let urlString = "https://picsum.photos/400/400?random=\(userId.hashValue + i)"
+            let url = URL(string: urlString)!
+            let photoURLs = PhotoURLs(thumbnail: url, preview: url, highRes: url)
+            
             let photo = Photo(
                 id: "user_photo_\(userId)_\(i)",
                 userId: userId,
-                imageURL: "https://picsum.photos/400/400?random=\(userId.hashValue + i)"
+                imageURL: photoURLs
             )
             photos.append(photo)
         }

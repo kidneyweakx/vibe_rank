@@ -11,7 +11,7 @@ import Foundation
 struct Photo: Codable, Identifiable {
     let id: String
     let userId: String
-    let imageURL: String
+    let imageURL: PhotoURLs
     let uploadedAt: Date
     var ratings: [Rating]
     var averageScore: Double
@@ -19,7 +19,7 @@ struct Photo: Codable, Identifiable {
     
     init(id: String = UUID().uuidString,
          userId: String,
-         imageURL: String) {
+         imageURL: PhotoURLs) {
         self.id = id
         self.userId = userId
         self.imageURL = imageURL

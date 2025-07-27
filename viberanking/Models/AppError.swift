@@ -43,6 +43,7 @@ enum AppError: Error, LocalizedError {
     case invalidEXIFData
     case userNotFound
     case photoNotFound
+    case invalidURL
     case ratingSubmissionFailed
     case validationError(String)
     case firebaseError(FirebaseError)
@@ -71,6 +72,8 @@ enum AppError: Error, LocalizedError {
             return "找不到照片資料"
         case .ratingSubmissionFailed:
             return "評分提交失敗，請重試"
+        case .invalidURL:
+            return "無效的網址"
         case .validationError(let message):
             return message
         case .firebaseError(let firebaseError):
@@ -100,6 +103,8 @@ enum AppError: Error, LocalizedError {
             return "請重新登入或聯繫客服"
         case .ratingSubmissionFailed:
             return "請檢查網路連接並重試"
+        case .invalidURL:
+            return "請檢查輸入資料並重試"
         case .validationError:
             return "請檢查輸入資料並重試"
         case .firebaseError:

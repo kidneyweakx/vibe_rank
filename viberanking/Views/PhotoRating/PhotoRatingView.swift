@@ -18,7 +18,7 @@ struct PhotoRatingView: View {
     private var preloadUrls: [String] {
         let startIndex = viewModel.currentPhotoIndex
         let endIndex = min(startIndex + 5, viewModel.photos.count)
-        return Array(viewModel.photos[startIndex..<endIndex]).map { $0.imageURL }
+        return Array(viewModel.photos[startIndex..<endIndex]).map { $0.imageURL.highRes }
     }
     
     var body: some View {
@@ -225,7 +225,7 @@ private extension PhotoRatingView {
             .fill(Color.white)
             .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
             .overlay {
-                CachedAsyncImage(url: photo.imageURL) { image in
+                CachedAsyncImage(url: photo.imageURL.highRes) { image in
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)

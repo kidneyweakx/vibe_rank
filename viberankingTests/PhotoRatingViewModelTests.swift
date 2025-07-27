@@ -27,9 +27,11 @@ struct PhotoRatingViewModelTests {
     @Test func loadPhotosForRating() async {
         // Given
         let userId = "test_user"
+        let url = URL(string: "https://example.com/1.jpg")!
+        let photoURLs = PhotoURLs(thumbnail: url, preview: url, highRes: url)
         let mockPhotos = [
-            Photo(id: "1", userId: "other_user", imageURL: "https://example.com/1.jpg"),
-            Photo(id: "2", userId: "other_user", imageURL: "https://example.com/2.jpg")
+            Photo(id: "1", userId: "other_user", imageURL: photoURLs),
+            Photo(id: "2", userId: "other_user", imageURL: photoURLs)
         ]
         mockPhotoRatingService.mockPhotos = mockPhotos
         
@@ -45,8 +47,10 @@ struct PhotoRatingViewModelTests {
     @Test func submitRating() async {
         // Given
         let userId = "test_user"
+        let url = URL(string: "https://example.com/1.jpg")!
+        let photoURLs = PhotoURLs(thumbnail: url, preview: url, highRes: url)
         let mockPhotos = [
-            Photo(id: "1", userId: "other_user", imageURL: "https://example.com/1.jpg")
+            Photo(id: "1", userId: "other_user", imageURL: photoURLs)
         ]
         mockPhotoRatingService.mockPhotos = mockPhotos
         await viewModel.loadPhotosForRating(userId: userId)

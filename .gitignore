@@ -125,6 +125,7 @@ Thumbs.db
 
 # Firebase
 GoogleService-Info.plist
+Storage-Info.plist
 
 # Temporary files
 *.tmp

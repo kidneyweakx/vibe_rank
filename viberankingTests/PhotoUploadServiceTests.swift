@@ -11,15 +11,18 @@ import XCTest
 final class PhotoUploadServiceTests: XCTestCase {
     
     var photoUploadService: PhotoUploadService!
+    var mockStorageService: MockR2StorageService!
     var testImageData: Data!
     
     override func setUpWithError() throws {
-        photoUploadService = PhotoUploadService()
+        mockStorageService = MockR2StorageService()
+        photoUploadService = PhotoUploadService(storageService: mockStorageService)
         testImageData = createTestImageData()
     }
     
     override func tearDownWithError() throws {
         photoUploadService = nil
+        mockStorageService = nil
         testImageData = nil
     }
     
@@ -51,37 +54,20 @@ final class PhotoUploadServiceTests: XCTestCase {
         XCTAssertGreaterThan(photoSizes.highRes.count, 0)
     }
     
-    // MARK: - Upload Progress Tests
+    // MARK: - Upload Tests
     
-    func testGetUploadProgress() async throws {
-        // Given
-        let photoId = "test-photo-id"
-        
-        // When
-        let progress = try await photoUploadService.getUploadProgress(for: photoId)
-        
-        // Then
-        XCTAssertEqual(progress.photoId, photoId)
-        XCTAssertEqual(progress.currentRatings, 0)
-        XCTAssertEqual(progress.requiredRatings, 50)
-        XCTAssertFalse(progress.isReportUnlocked)
-    }
-    
-    // MARK: - UIImage Upload Tests
-    
-    func testUploadPhotoFromUIImage() async throws {
+    func testUploadPhoto() async throws {
         // Given
         let testImage = createTestUIImage()
+        let userId = "test-user"
         
-        // When/Then - This would require Firebase setup for full integration test
-        // For unit test, we verify the image data conversion
-        guard let imageData = testImage.jpegData(compressionQuality: 1.0) else {
-            XCTFail("Failed to convert UIImage to data")
-            return
-        }
+        // When
+        let photo = try await photoUploadService.uploadPhoto(testImage, for: userId)
         
-        XCTAssertNotNil(imageData)
-        XCTAssertGreaterThan(imageData.count, 0)
+        // Then
+        XCTAssertEqual(mockStorageService.uploadPhotoSizesCallCount, 1)
+        XCTAssertEqual(photo.userId, userId)
+        XCTAssertNotNil(photo.imageURL)
     }
     
     // MARK: - Performance Tests
@@ -124,6 +110,48 @@ final class PhotoUploadServiceTests: XCTestCase {
             
             wait(for: [expectation], timeout: 5.0)
         }
+    }
+}
+
+// MARK: - Mock R2 Storage Service
+class MockR2StorageService: R2StorageServiceProtocol {
+    var uploadPhotoSizesCallCount = 0
+    var deletePhotoCallCount = 0
+    var getDownloadURLCallCount = 0
+    var uploadSingleFileCallCount = 0
+    
+    var shouldThrowError = false
+    
+    func uploadPhotoSizes(_ photoSizes: PhotoSizes, photoId: String) async throws -> PhotoURLs {
+        uploadPhotoSizesCallCount += 1
+        if shouldThrowError {
+            throw AppError.imageUploadFailed
+        }
+        let url = URL(string: "https://example.com/\(photoId).webp")!
+        return PhotoURLs(thumbnail: url, preview: url, highRes: url)
+    }
+    
+    func deletePhoto(photoId: String) async throws {
+        deletePhotoCallCount += 1
+        if shouldThrowError {
+            throw AppError.imageUploadFailed
+        }
+    }
+    
+    func getDownloadURL(for path: String) async throws -> URL {
+        getDownloadURLCallCount += 1
+        if shouldThrowError {
+            throw AppError.invalidURL
+        }
+        return URL(string: "https://example.com/\(path)")!
+    }
+    
+    func uploadSingleFile(_ data: Data, to path: String) async throws -> URL {
+        uploadSingleFileCallCount += 1
+        if shouldThrowError {
+            throw AppError.imageUploadFailed
+        }
+        return URL(string: "https://example.com/\(path)")!
     }
 }
 

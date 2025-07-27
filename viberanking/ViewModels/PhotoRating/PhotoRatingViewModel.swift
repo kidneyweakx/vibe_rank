@@ -286,7 +286,7 @@ private extension PhotoRatingViewModel {
         let startIndex = currentPhotoIndex
         let endIndex = min(startIndex + preloadCount, photos.count)
         
-        let urlsToPreload = Array(photos[startIndex..<endIndex]).map { $0.imageURL }
+        let urlsToPreload = Array(photos[startIndex..<endIndex]).map { $0.imageURL.highRes }
         
         await MainActor.run {
             ImageCache.shared.preloadImages(urls: urlsToPreload)

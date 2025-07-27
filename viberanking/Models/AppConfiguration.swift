@@ -67,6 +67,53 @@ struct AppConfiguration {
         static let previews = "previews"
         static let highRes = "highres"
     }
+
+    // MARK: - R2 Configuration
+    struct R2 {
+        private static let r2Config: [String: Any] = {
+            guard let path = Bundle.main.path(forResource: "Storage-Info", ofType: "plist"),
+                  let dict = NSDictionary(contentsOfFile: path) as? [String: Any],
+                  let r2Dict = dict["R2"] as? [String: Any] else {
+                fatalError("R2 configuration not found in Info.plist")
+            }
+            return r2Dict
+        }()
+
+        static let accountId: String = {
+            guard let accountId = r2Config["AccountId"] as? String else {
+                fatalError("R2 AccountId not found in Info.plist")
+            }
+            return accountId
+        }()
+
+        static let bucketName: String = {
+            guard let bucketName = r2Config["BucketName"] as? String else {
+                fatalError("R2 BucketName not found in Info.plist")
+            }
+            return bucketName
+        }()
+
+        static let accessKey: String = {
+            guard let accessKey = r2Config["AccessKey"] as? String else {
+                fatalError("R2 AccessKey not found in Info.plist")
+            }
+            return accessKey
+        }()
+
+        static let secretKey: String = {
+            guard let secretKey = r2Config["SecretKey"] as? String else {
+                fatalError("R2 SecretKey not found in Info.plist")
+            }
+            return secretKey
+        }()
+
+        static let publicDomain: String = {
+            guard let publicDomain = r2Config["PublicDomain"] as? String else {
+                fatalError("R2 PublicDomain not found in Info.plist")
+            }
+            return publicDomain
+        }()
+    }
     
     // MARK: - Gamification Constants
     struct Gamification {

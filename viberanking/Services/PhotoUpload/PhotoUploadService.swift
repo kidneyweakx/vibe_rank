@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import FirebaseStorage
 import FirebaseFirestore
 import UniformTypeIdentifiers
 
@@ -16,7 +15,7 @@ import UniformTypeIdentifiers
 class PhotoUploadService: PhotoUploadServiceProtocol {
     
     // MARK: - Dependencies
-    private let storage = Storage.storage()
+    private let storageService: R2StorageServiceProtocol
     private let firestore = Firestore.firestore()
     private let webpConverter = WebPConverter.shared
     
@@ -24,8 +23,8 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
     private var activeUploads: [String: UploadTask] = [:]
     
     // MARK: - Initialization
-    init() {
-        // No-op
+    init(storageService: R2StorageServiceProtocol = R2StorageService()) {
+        self.storageService = storageService
     }
     
     // MARK: - Public Methods
@@ -44,15 +43,15 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
             }
             let photoSizes = try await generateThumbnails(imageData)
             
-            // Step 2: Upload to Firebase Storage
+            // Step 2: Upload to R2 Storage
             updateUploadStatus(photoId: photoId, status: .uploading(progress: 0.0))
-            let imageURL = try await uploadToFirebaseStorage(photoSizes: photoSizes, photoId: photoId)
+            let photoURLs = try await storageService.uploadPhotoSizes(photoSizes, photoId: photoId)
             
             // Step 3: Create Photo object
             let photo = Photo(
                 id: photoId,
                 userId: userId,
-                imageURL: imageURL
+                imageURL: photoURLs
             )
             
             // Step 4: Save to Firestore
@@ -122,7 +121,7 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
     
     /// Cancel upload for a specific photo
     func cancelUpload(for photoId: String) async throws {
-        if let uploadTask = activeUploads[photoId] {
+        if let _ = activeUploads[photoId] {
             updateUploadStatus(photoId: photoId, status: .cancelled)
             activeUploads.removeValue(forKey: photoId)
             
@@ -153,31 +152,6 @@ private extension PhotoUploadService {
         }
     }
     
-    /// Upload photo sizes to Firebase Storage with progress tracking
-    func uploadToFirebaseStorage(photoSizes: PhotoSizes, photoId: String) async throws -> String {
-        let storageRef = storage.reference()
-        
-        // Upload thumbnail first (smallest file)
-        updateUploadStatus(photoId: photoId, status: .uploading(progress: 0.1))
-        let thumbnailRef = storageRef.child("photos/\(photoId)/thumbnail.webp")
-        _ = try await thumbnailRef.putDataAsync(photoSizes.thumbnail)
-        
-        // Upload preview image
-        updateUploadStatus(photoId: photoId, status: .uploading(progress: 0.4))
-        let previewRef = storageRef.child("photos/\(photoId)/preview.webp")
-        _ = try await previewRef.putDataAsync(photoSizes.preview)
-        
-        // Upload high resolution image (main image URL)
-        updateUploadStatus(photoId: photoId, status: .uploading(progress: 0.7))
-        let highResRef = storageRef.child("photos/\(photoId)/highres.webp")
-        _ = try await highResRef.putDataAsync(photoSizes.highRes)
-        let highResURL = try await highResRef.downloadURL()
-        
-        updateUploadStatus(photoId: photoId, status: .uploading(progress: 0.9))
-        
-        return highResURL.absoluteString
-    }
-    
     /// Save photo metadata to Firestore
     func savePhotoToFirestore(_ photo: Photo) async throws {
         let document = firestore.collection(AppConfiguration.Collections.photos).document(photo.id)
@@ -193,22 +167,7 @@ private extension PhotoUploadService {
     
     /// Clean up partially uploaded files
     func cleanupPartialUpload(photoId: String) async throws {
-        let storageRef = storage.reference()
-        
-        let filePaths = [
-            "photos/\(photoId)/thumbnail.webp",
-            "photos/\(photoId)/preview.webp",
-            "photos/\(photoId)/highres.webp"
-        ]
-        
-        for path in filePaths {
-            do {
-                try await storageRef.child(path).delete()
-            } catch {
-                // Continue cleanup even if some files fail to delete
-                print("Failed to delete \(path): \(error)")
-            }
-        }
+        try await storageService.deletePhoto(photoId: photoId)
         
         // Remove from Firestore if it exists
         do {
@@ -216,23 +175,6 @@ private extension PhotoUploadService {
             try await firestore.collection("uploadProgress").document(photoId).delete()
         } catch {
             print("Failed to cleanup Firestore documents: \(error)")
-        }
-    }
-}
-
-// MARK: - Firebase Storage Extensions
-private extension StorageReference {
-    func putDataAsync(_ data: Data) async throws -> StorageMetadata {
-        return try await withCheckedThrowingContinuation { continuation in
-            self.putData(data, metadata: nil) { metadata, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else if let metadata = metadata {
-                    continuation.resume(returning: metadata)
-                } else {
-                    continuation.resume(throwing: AppError.imageUploadFailed)
-                }
-            }
         }
     }
 }

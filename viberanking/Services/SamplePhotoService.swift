@@ -63,10 +63,13 @@ class SamplePhotoService: ObservableObject, SamplePhotoServiceProtocol {
     
     /// Generate a sample photo with specified parameters
     func generateSamplePhoto(id: String, imageUrl: String, style: StyleType) -> Photo {
+        let url = URL(string: imageUrl)!
+        let photoURLs = PhotoURLs(thumbnail: url, preview: url, highRes: url)
+        
         var photo = Photo(
             id: id,
             userId: "sample_user",
-            imageURL: imageUrl
+            imageURL: photoURLs
         )
         
         // Add some sample ratings to make it more realistic
