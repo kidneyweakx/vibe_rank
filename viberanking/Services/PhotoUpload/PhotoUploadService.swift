@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import FirebaseFirestore
 import UniformTypeIdentifiers
 
 // MARK: - Photo Upload Service Implementation
@@ -16,7 +15,6 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
     
     // MARK: - Dependencies
     private let storageService: R2StorageServiceProtocol
-    private let firestore = Firestore.firestore()
     private let webpConverter = WebPConverter.shared
     
     // MARK: - Upload Management
@@ -54,10 +52,7 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
                 imageURL: photoURLs
             )
             
-            // Step 4: Save to Firestore
-            try await savePhotoToFirestore(photo)
-            
-            // Step 5: Complete upload
+            // Step 4: Complete upload
             updateUploadStatus(photoId: photoId, status: .completed)
             activeUploads.removeValue(forKey: photoId)
             
@@ -74,49 +69,27 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
     func convertToWebP(_ imageData: Data, quality: Float) async throws -> Data {
         return try await webpConverter.convertToWebP(imageData, quality: quality)
     }
+
+    /// Get upload progress for a photo
+    func getUploadProgress(for photoId: String) -> UploadProgress {
+        if let task = activeUploads[photoId] {
+            return UploadProgress(photoId: photoId, status: task.status, progress: task.progress)
+        }
+        return UploadProgress(photoId: photoId, status: .pending, progress: 0.0)
+    }
+    
+    /// Get upload statuses for multiple photos
+    func getUploadStatuses(for photoIds: [String]) -> [String: UploadProgress] {
+        var statuses: [String: UploadProgress] = [:]
+        for photoId in photoIds {
+            statuses[photoId] = getUploadProgress(for: photoId)
+        }
+        return statuses
+    }
     
     /// Generate thumbnails at different sizes using WebP conversion
     func generateThumbnails(_ imageData: Data) async throws -> PhotoSizes {
         return try await webpConverter.generateThumbnails(imageData)
-    }
-    
-    /// Get upload progress for a photo
-    func getUploadProgress(for photoId: String) async throws -> UploadProgress {
-        let document = firestore.collection("uploadProgress").document(photoId)
-        let snapshot = try await document.getDocument()
-        
-        if let data = snapshot.data(),
-           let progress = try? Firestore.Decoder().decode(UploadProgress.self, from: data) {
-            return progress
-        } else {
-            // Return default progress if not found
-            return UploadProgress(photoId: photoId)
-        }
-    }
-    
-    /// Get upload statuses for multiple photos
-    func getUploadStatuses(for photoIds: [String]) async throws -> [String: UploadProgress] {
-        var statuses: [String: UploadProgress] = [:]
-        
-        // Use batch read for efficiency
-        let documents = photoIds.map { firestore.collection("uploadProgress").document($0) }
-        
-        for document in documents {
-            do {
-                let snapshot = try await document.getDocument()
-                if let data = snapshot.data(),
-                   let progress = try? Firestore.Decoder().decode(UploadProgress.self, from: data) {
-                    statuses[document.documentID] = progress
-                } else {
-                    statuses[document.documentID] = UploadProgress(photoId: document.documentID)
-                }
-            } catch {
-                // Continue with other documents if one fails
-                statuses[document.documentID] = UploadProgress(photoId: document.documentID)
-            }
-        }
-        
-        return statuses
     }
     
     /// Cancel upload for a specific photo
@@ -126,7 +99,7 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
             activeUploads.removeValue(forKey: photoId)
             
             // Attempt to delete any partially uploaded files
-            try await cleanupPartialUpload(photoId: photoId)
+            try await storageService.deletePhoto(photoId: photoId)
         }
     }
 }
@@ -149,32 +122,6 @@ private extension PhotoUploadService {
             }
             
             activeUploads[photoId] = uploadTask
-        }
-    }
-    
-    /// Save photo metadata to Firestore
-    func savePhotoToFirestore(_ photo: Photo) async throws {
-        let document = firestore.collection(AppConfiguration.Collections.photos).document(photo.id)
-        let data = try Firestore.Encoder().encode(photo)
-        try await document.setData(data)
-        
-        // Initialize upload progress
-        let progress = UploadProgress(photoId: photo.id)
-        let progressDocument = firestore.collection("uploadProgress").document(photo.id)
-        let progressData = try Firestore.Encoder().encode(progress)
-        try await progressDocument.setData(progressData)
-    }
-    
-    /// Clean up partially uploaded files
-    func cleanupPartialUpload(photoId: String) async throws {
-        try await storageService.deletePhoto(photoId: photoId)
-        
-        // Remove from Firestore if it exists
-        do {
-            try await firestore.collection(AppConfiguration.Collections.photos).document(photoId).delete()
-            try await firestore.collection("uploadProgress").document(photoId).delete()
-        } catch {
-            print("Failed to cleanup Firestore documents: \(error)")
         }
     }
 }

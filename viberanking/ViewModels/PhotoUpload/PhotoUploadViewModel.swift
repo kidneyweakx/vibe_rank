@@ -147,27 +147,15 @@ private extension PhotoUploadViewModel {
     }
     
     /// Perform the actual photo upload
-    func performUpload(image: UIImage, userId: String) async {
+    public func performUpload(image: UIImage, userId: String) async {
         await MainActor.run {
             uploadState = .uploading(progress: 0.0)
             uploadProgress = 0.0
         }
         
         do {
-            // Simulate progress updates during upload
-            let progressTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
-                Task { @MainActor in
-                    if case .uploading(let currentProgress) = self.uploadState,
-                       currentProgress < 0.9 {
-                        self.uploadProgress = min(currentProgress + 0.02, 0.9)
-                    }
-                }
-            }
-            
             // Upload photo
             let uploadedPhoto = try await photoUploadService.uploadPhoto(image, for: userId)
-            
-            progressTimer.invalidate()
             
             await MainActor.run {
                 self.uploadProgress = 1.0

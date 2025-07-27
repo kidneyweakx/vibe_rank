@@ -36,10 +36,10 @@ protocol PhotoUploadServiceProtocol {
     func generateThumbnails(_ imageData: Data) async throws -> PhotoSizes
     
     /// Get upload progress for a photo
-    func getUploadProgress(for photoId: String) async throws -> UploadProgress
+    func getUploadProgress(for photoId: String) -> UploadProgress
     
     /// Get upload status for multiple photos
-    func getUploadStatuses(for photoIds: [String]) async throws -> [String: UploadProgress]
+    func getUploadStatuses(for photoIds: [String]) -> [String: UploadProgress]
     
     /// Cancel upload for a specific photo
     func cancelUpload(for photoId: String) async throws
@@ -91,31 +91,3 @@ struct IncentiveStatus: Codable {
     }
 }
 
-// MARK: - Upload Status
-enum UploadStatus {
-    case preparing
-    case uploading(progress: Double)
-    case processing
-    case completed
-    case failed(Error)
-    case cancelled
-}
-
-// MARK: - Upload Task
-struct UploadTask {
-    let id: String
-    let photoId: String
-    let userId: String
-    var status: UploadStatus
-    var progress: Double
-    let createdAt: Date
-    
-    init(photoId: String, userId: String) {
-        self.id = UUID().uuidString
-        self.photoId = photoId
-        self.userId = userId
-        self.status = .preparing
-        self.progress = 0.0
-        self.createdAt = Date()
-    }
-}

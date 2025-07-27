@@ -11,6 +11,7 @@ import PhotosUI
 struct UploadTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @EnvironmentObject private var themeManager: ThemeManager
+    @StateObject private var uploadViewModel = PhotoUploadViewModel()
     @State private var selectedPhotos: [PhotosPickerItem] = []
     @State private var uploadedImages: [UIImage] = []
     @State private var isUploading = false
@@ -443,14 +444,18 @@ private extension UploadTabView {
     
     func uploadPhotos() {
         isUploading = true
-        
-        // TODO: Implement actual upload logic
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            isUploading = false
-            uploadedImages.removeAll()
-            selectedPhotos.removeAll()
+        Task {
+            for image in uploadedImages {
+                uploadViewModel.handleSelectedImage(image)
+                await uploadViewModel.performUpload(image: image, userId: authViewModel.user?.id ?? "")
+            }
             
-            // Show success message
+            await MainActor.run {
+                isUploading = false
+                uploadedImages.removeAll()
+                selectedPhotos.removeAll()
+            }
+
         }
     }
 }

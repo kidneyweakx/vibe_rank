@@ -52,28 +52,3 @@ struct PhotoSizes: Codable {
     let preview: Data      // 800x800 WebP, medium quality
     let highRes: Data      // 1200x1200 WebP, high quality
 }
-
-// MARK: - Upload Progress
-struct UploadProgress: Codable {
-    let photoId: String
-    var currentRatings: Int
-    let requiredRatings: Int
-    
-    init(photoId: String, currentRatings: Int = 0, requiredRatings: Int = 50) {
-        self.photoId = photoId
-        self.currentRatings = currentRatings
-        self.requiredRatings = requiredRatings
-    }
-    
-    var isReportUnlocked: Bool {
-        return currentRatings >= requiredRatings
-    }
-    
-    var progressPercentage: Double {
-        return min(Double(currentRatings) / Double(requiredRatings), 1.0)
-    }
-    
-    var remainingRatings: Int {
-        return max(requiredRatings - currentRatings, 0)
-    }
-}
