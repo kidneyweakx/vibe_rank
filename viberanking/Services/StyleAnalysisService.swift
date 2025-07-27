@@ -428,11 +428,11 @@ enum StyleAnalysisError: LocalizedError {
         case .noPhotosUploaded:
             return "style.error.no_photos_uploaded".localized
         case .insufficientRatings(let current, let required):
-            return "評分數量不足：目前 \(current) 個，需要 \(required) 個"
+            return String(format: "style.error.insufficient_ratings".localized, current, required)
         case .analysisProcessingError:
-            return "風格分析處理失敗"
+            return "style.error.analysis_processing_error".localized
         case .reportGenerationFailed:
-            return "報告生成失敗"
+            return "style.error.report_generation_failed".localized
         }
     }
 }

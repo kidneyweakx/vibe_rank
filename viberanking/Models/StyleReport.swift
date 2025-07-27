@@ -9,47 +9,24 @@ import Foundation
 
 // MARK: - Style Type Enum
 enum StyleType: String, CaseIterable, Codable {
-    case elegant = "優雅"
-    case casual = "休閒"
-    case trendy = "時尚"
-    case classic = "經典"
-    case sporty = "運動"
-    case artistic = "藝術"
-    case streetwear = "街頭"
-    case minimalist = "極簡"
-    case edgy = "前衛"
-    case formal = "正式"
-    case colorful = "繽紛"
+    case elegant
+    case casual
+    case trendy
+    case classic
+    case sporty
+    case artistic
+    case streetwear
+    case minimalist
+    case edgy
+    case formal
+    case colorful
 
     var displayName: String {
-        return rawValue
+        return "style.\(self.rawValue).display_name".localized
     }
 
     var description: String {
-        switch self {
-        case .elegant:
-            return "精緻優雅的風格，展現品味與氣質"
-        case .casual:
-            return "輕鬆自然的風格，舒適且親和"
-        case .trendy:
-            return "時尚前衛的風格，跟上潮流趨勢"
-        case .classic:
-            return "經典永恆的風格，不受時間影響"
-        case .sporty:
-            return "運動活力的風格，展現健康活力"
-        case .artistic:
-            return "藝術創意的風格，獨特且富有創意"
-        case .streetwear:
-            return "街頭潮流的風格，展現個性與態度"
-        case .minimalist:
-            return "極簡主義的風格，簡單卻不失品味"
-        case .edgy:
-            return "前衛獨特的風格，敢於挑戰傳統"
-        case .formal:
-            return "正式場合的風格，展現專業與莊重"
-        case .colorful:
-            return "繽紛多彩的風格，充滿活力與創意"
-        }
+        return "style.\(self.rawValue).description".localized
     }
 
     var emoji: String {

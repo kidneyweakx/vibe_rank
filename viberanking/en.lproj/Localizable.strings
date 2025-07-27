@@ -216,6 +216,84 @@
 "gamification.style_report_title" = "My Style Analysis Report";
 "gamification.style_report_description" = "Check out my style analysis on Digital Premium Social Rating Platform";
 "gamification.style_report_share_text" = "Come check out my style analysis report on Digital Premium Social Rating Platform!";
+"gamification.style_trend.insufficient_data" = "Need more data to analyze trends";
+"gamification.style_trend.evolving" = "Your style is evolving from %@ to %@";
+"gamification.style_trend.consistent" = "You maintain a consistent %@ style";
+"achievement.rating_novice.title" = "Rating Novice";
+"achievement.rating_novice.description" = "Complete your first 10 ratings";
+"achievement.rating_novice.reward" = "Get 1 accelerated rating opportunity";
+"achievement.rating_pro.title" = "Rating Pro";
+"achievement.rating_pro.description" = "Complete 100 ratings";
+"achievement.rating_pro.reward" = "Get 3 accelerated rating opportunities";
+"achievement.first_upload.title" = "First Upload";
+"achievement.first_upload.description" = "Upload your first photo";
+"achievement.first_upload.reward" = "Unlock style evolution analysis";
+"achievement.style_explorer.title" = "Style Explorer";
+"achievement.style_explorer.description" = "Upload 5 photos of different styles";
+"achievement.style_explorer.reward" = "Get Style Explorer badge";
+"achievement.style_analyst.title" = "Style Analyst";
+"achievement.style_analyst.description" = "Generate your first style report";
+"achievement.style_analyst.reward" = "Unlock advanced analysis features";
+"gamification.error.insufficient_photos" = "Need at least 3 photos to perform style evolution analysis";
+"gamification.error.achievement_already_unlocked" = "Achievement already unlocked";
+"gamification.error.invalid_reward_type" = "Invalid reward type";
+
+"permission.go_to_settings" = "Go to Settings";
+"permission.camera.title" = "Camera Permission Required";
+"permission.camera.message" = "Please allow the app to use the camera in Settings to take photos for upload.";
+"permission.photo_library.title" = "Photo Library Permission Required";
+"permission.photo_library.message" = "Please allow the app to access photos in Settings to select photos for upload.";
+
+"report.unlock.congrats" = "🎉 Congrats!";
+"report.unlock.title" = "Your Style Report is Unlocked";
+"report.unlock.subtitle" = "In-depth analysis based on 50+ ratings";
+"report.unlock.view_report" = "View My Report";
+
+"gender.male" = "Male";
+"gender.female" = "Female";
+"gender.other" = "Other";
+
+"achievement.category.rating" = "Rating";
+"achievement.category.upload" = "Upload";
+"achievement.category.social" = "Social";
+"achievement.category.style" = "Style";
+"achievement.category.milestone" = "Milestone";
+"achievement.requirement_type.ratingsGiven" = "Ratings Given";
+"achievement.requirement_type.photosUploaded" = "Photos Uploaded";
+"achievement.requirement_type.ratingsReceived" = "Ratings Received";
+"achievement.requirement_type.hotRatingsReceived" = "Hot Ratings Received";
+"achievement.requirement_type.consecutiveDays" = "Consecutive Days";
+"achievement.requirement_type.styleReportsGenerated" = "Style Reports Generated";
+"achievement.requirement_type.attractivenessScore" = "Attractiveness Score";
+"achievement.requirement_type.multipleStyleMastery" = "Multiple Style Mastery";
+"achievement.reward_type.acceleratedRating" = "Accelerated Rating";
+"achievement.reward_type.bonusAnalysis" = "Bonus Analysis";
+"achievement.reward_type.specialBadge" = "Special Badge";
+"achievement.reward_type.priorityQueue" = "Priority Queue";
+"achievement.reward_type.evolutionAnalysis" = "Style Evolution Analysis";
+
+"style.elegant.display_name" = "Elegant";
+"style.elegant.description" = "Refined and graceful style, showcasing taste and class";
+"style.casual.display_name" = "Casual";
+"style.casual.description" = "Relaxed and natural style, comfortable and approachable";
+"style.trendy.display_name" = "Trendy";
+"style.trendy.description" = "Fashion-forward style, keeping up with the latest trends";
+"style.classic.display_name" = "Classic";
+"style.classic.description" = "Timeless style that is unaffected by time";
+"style.sporty.display_name" = "Sporty";
+"style.sporty.description" = "Athletic and energetic style, showcasing health and vitality";
+"style.artistic.display_name" = "Artistic";
+"style.artistic.description" = "Creative and unique style, full of originality";
+"style.streetwear.display_name" = "Streetwear";
+"style.streetwear.description" = "Urban fashion style, showcasing personality and attitude";
+"style.minimalist.display_name" = "Minimalist";
+"style.minimalist.description" = "Simple yet tasteful style";
+"style.edgy.display_name" = "Edgy";
+"style.edgy.description" = "Avant-garde and unique style, daring to challenge tradition";
+"style.formal.display_name" = "Formal";
+"style.formal.description" = "Style for formal occasions, showing professionalism and solemnity";
+"style.colorful.display_name" = "Colorful";
+"style.colorful.description" = "Vibrant and colorful style, full of energy and creativity";
 
 // MARK: - Style Analysis
 "style.elegant.keywords" = "Elegant, Refined, Classy, Tasteful";
@@ -256,6 +334,9 @@
 
 "style.error.user_not_found" = "User data not found";
 "style.error.no_photos_uploaded" = "User has not uploaded any photos yet";
+"style.error.insufficient_ratings" = "Insufficient ratings: currently %d, requires %d";
+"style.error.analysis_processing_error" = "Style analysis processing failed";
+"style.error.report_generation_failed" = "Report generation failed";
 
 // MARK: - CTA Messages
 "cta.checking_status" = "Checking status...";
@@ -264,6 +345,49 @@
 "cta.analyzing_preferences" = "Analyzing your style preferences...";
 "cta.identifying_style" = "Identifying your main style...";
 "cta.preparing" = "Preparing...";
+"cta.style_preference" = "You prefer %@ %@ style";
+"cta.rating_behavior.high" = "You gave positive feedback to %@%% of the photos, great taste!";
+"cta.rating_behavior.medium" = "Your rating is very selective, showing unique vision";
+"cta.rating_behavior.low" = "Your rating standard is high, pursuing perfect quality";
+"cta.style_insight.elegant" = "You appreciate exquisite and elegant beauty";
+"cta.style_insight.casual" = "You like natural and comfortable style";
+"cta.style_insight.trendy" = "You always keep up with the latest trends";
+"cta.style_insight.classic" = "You prefer timeless classic design";
+"cta.style_insight.sporty" = "You show a vibrant and healthy attitude";
+"cta.style_insight.artistic" = "You have a unique artistic vision";
+"cta.style_insight.streetwear" = "You have a unique artistic vision";
+"cta.style_insight.minimalist" = "You have a unique artistic vision";
+"cta.style_insight.edgy" = "You have a unique artistic vision";
+"cta.style_insight.formal" = "You have a unique artistic vision";
+"cta.style_insight.colorful" = "You have a unique artistic vision";
+"cta.elegant.title" = "Show your elegant style!";
+"cta.elegant.subtitle" = "Based on your rating preferences, you have exquisite taste. Let's see how others rate your elegant style!";
+"cta.elegant.button" = "Upload my elegant photo";
+"cta.elegant.motivation" = "Your elegance deserves to be seen, share your exquisite taste!";
+"cta.casual.title" = "Share your natural charm!";
+"cta.casual.subtitle" = "You like a relaxed and natural style, this authentic beauty is a real heart-winner. Let's see what others think of your natural style!";
+"cta.casual.button" = "Upload my natural photo";
+"cta.casual.motivation" = "Natural is beautiful, show the real you!";
+"cta.trendy.title" = "Showcase your fashion taste!";
+"cta.trendy.subtitle" = "You always capture the latest fashion trends, this keen sense of fashion is impressive!";
+"cta.trendy.button" = "Upload my fashion photo";
+"cta.trendy.motivation" = "You are the fashionista, let everyone see your trendy taste!";
+"cta.classic.title" = "Highlight your classic taste!";
+"cta.classic.subtitle" = "You appreciate timeless classic aesthetics, this taste unaffected by time is most precious.";
+"cta.classic.button" = "Upload my classic photo";
+"cta.classic.motivation" = "Classic never goes out of style, show your timeless charm!";
+"cta.sporty.title" = "Show your vibrant style!";
+"cta.sporty.subtitle" = "You like a vibrant and sporty style, this healthy and positive energy is most attractive!";
+"cta.sporty.button" = "Upload my vibrant photo";
+"cta.sporty.motivation" = "The energetic you is the most charming, share your positive energy!";
+"cta.artistic.title" = "Share your artistic vision!";
+"cta.artistic.subtitle" = "You have a unique artistic taste, this creativity and personality is most rare. Let everyone appreciate your artistic style!";
+"cta.artistic.button" = "Upload my artistic photo";
+"cta.artistic.motivation" = "The artist's vision is unique, show your creative charm!";
+"cta.default.title" = "Share your unique vision!";
+"cta.default.subtitle" = "You have a unique artistic taste, this creativity and personality is most rare. Let everyone appreciate your artistic style!";
+"cta.default.button" = "Upload my artistic photo";
+"cta.default.motivation" = "The artist's vision is unique, show your creative charm!";
 
 // MARK: - Achievements
 "achievement.style_star.title" = "Style Star";

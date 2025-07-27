@@ -176,7 +176,7 @@ struct PermissionAlertView: View {
                 .multilineTextAlignment(.center)
             
             HStack(spacing: 12) {
-                Button("取消") {
+                Button("common.cancel".localized) {
                     onCancel()
                 }
                 .font(.body)
@@ -186,7 +186,7 @@ struct PermissionAlertView: View {
                 .background(Color(.secondarySystemGroupedBackground))
                 .cornerRadius(8)
                 
-                Button("前往設定") {
+                Button("permission.go_to_settings".localized) {
                     onOpenSettings()
                 }
                 .font(.body)
@@ -212,8 +212,8 @@ extension ImagePicker {
     /// Create permission alert for camera
     static func cameraPermissionAlert(onOpenSettings: @escaping () -> Void, onCancel: @escaping () -> Void) -> some View {
         PermissionAlertView(
-            title: "需要相機權限",
-            message: "請在設定中允許應用程式使用相機，以便拍攝照片上傳。",
+            title: "permission.camera.title".localized,
+            message: "permission.camera.message".localized,
             onOpenSettings: onOpenSettings,
             onCancel: onCancel
         )
@@ -222,8 +222,8 @@ extension ImagePicker {
     /// Create permission alert for photo library
     static func photoLibraryPermissionAlert(onOpenSettings: @escaping () -> Void, onCancel: @escaping () -> Void) -> some View {
         PermissionAlertView(
-            title: "需要照片權限",
-            message: "請在設定中允許應用程式訪問照片，以便選擇照片上傳。",
+            title: "permission.photo_library.title".localized,
+            message: "permission.photo_library.message".localized,
             onOpenSettings: onOpenSettings,
             onCancel: onCancel
         )

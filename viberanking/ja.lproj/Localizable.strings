@@ -2,7 +2,7 @@
   Localizable.strings (Japanese)
   viberanking
   
-  Created by Kidney on 2025/07/25.
+  Created by Kiro on 2025/07/25.
 */
 
 // MARK: - Tab Bar
@@ -216,6 +216,84 @@
 "gamification.style_report_title" = "マイスタイル分析レポート";
 "gamification.style_report_description" = "デジタルプレミアムソーシャル評価プラットフォームでの私のスタイル分析をチェック";
 "gamification.style_report_share_text" = "デジタルプレミアムソーシャル評価プラットフォームで私のスタイル分析レポートをチェックしに来てください！";
+"gamification.style_trend.insufficient_data" = "トレンドを分析するには、より多くのデータが必要です";
+"gamification.style_trend.evolving" = "あなたのスタイルは%@から%@へと進化しています";
+"gamification.style_trend.consistent" = "あなたは一貫した%@スタイルを維持しています";
+"achievement.rating_novice.title" = "評価初心者";
+"achievement.rating_novice.description" = "最初の10件の評価を完了する";
+"achievement.rating_novice.reward" = "1回の加速評価機会を得る";
+"achievement.rating_pro.title" = "評価の達人";
+"achievement.rating_pro.description" = "100件の評価を完了する";
+"achievement.rating_pro.reward" = "3回の加速評価機会を得る";
+"achievement.first_upload.title" = "初めてのアップロード";
+"achievement.first_upload.description" = "最初の写真をアップロードする";
+"achievement.first_upload.reward" = "スタイル進化分析をアンロック";
+"achievement.style_explorer.title" = "スタイルエクスプローラー";
+"achievement.style_explorer.description" = "5つの異なるスタイルの写真をアップロードする";
+"achievement.style_explorer.reward" = "スタイルエクスプローラーバッジを取得";
+"achievement.style_analyst.title" = "スタイルアナリスト";
+"achievement.style_analyst.description" = "最初のスタイルレポートを生成する";
+"achievement.style_analyst.reward" = "高度な分析機能をアンロック";
+"gamification.error.insufficient_photos" = "スタイル進化分析を実行するには、少なくとも3枚の写真が必要です";
+"gamification.error.achievement_already_unlocked" = "実績はすでにアンロックされています";
+"gamification.error.invalid_reward_type" = "無効な報酬タイプ";
+
+"permission.go_to_settings" = "設定に移動";
+"permission.camera.title" = "カメラの許可が必要です";
+"permission.camera.message" = "アップロード用の写真を撮るために、設定でアプリにカメラの使用を許可してください。";
+"permission.photo_library.title" = "写真ライブラリの許可が必要です";
+"permission.photo_library.message" = "アップロードする写真を選択するために、設定でアプリに写真へのアクセスを許可してください。";
+
+"report.unlock.congrats" = "🎉 おめでとうございます！";
+"report.unlock.title" = "あなたのスタイルレポートがアンロックされました";
+"report.unlock.subtitle" = "50件以上の評価に基づく詳細な分析";
+"report.unlock.view_report" = "私のレポートを見る";
+
+"gender.male" = "男性";
+"gender.female" = "女性";
+"gender.other" = "その他";
+
+"achievement.category.rating" = "評価";
+"achievement.category.upload" = "アップロード";
+"achievement.category.social" = "ソーシャル";
+"achievement.category.style" = "スタイル";
+"achievement.category.milestone" = "マイルストーン";
+"achievement.requirement_type.ratingsGiven" = "評価した数";
+"achievement.requirement_type.photosUploaded" = "アップロードした写真の数";
+"achievement.requirement_type.ratingsReceived" = "受け取った評価の数";
+"achievement.requirement_type.hotRatingsReceived" = "受け取ったHot評価の数";
+"achievement.requirement_type.consecutiveDays" = "連続使用日数";
+"achievement.requirement_type.styleReportsGenerated" = "生成されたスタイルレポートの数";
+"achievement.requirement_type.attractivenessScore" = "魅力スコア";
+"achievement.requirement_type.multipleStyleMastery" = "複数スタイルのマスター";
+"achievement.reward_type.acceleratedRating" = "加速評価";
+"achievement.reward_type.bonusAnalysis" = "ボーナス分析";
+"achievement.reward_type.specialBadge" = "特別バッジ";
+"achievement.reward_type.priorityQueue" = "優先キュー";
+"achievement.reward_type.evolutionAnalysis" = "スタイル進化分析";
+
+"style.elegant.display_name" = "エレガント";
+"style.elegant.description" = "洗練された優雅なスタイル、品味と気品を示す";
+"style.casual.display_name" = "カジュアル";
+"style.casual.description" = "リラックスした自然なスタイル、快適で親しみやすい";
+"style.trendy.display_name" = "トレンディ";
+"style.trendy.description" = "ファッションフォワードなスタイル、最新のトレンドに追いつく";
+"style.classic.display_name" = "クラシック";
+"style.classic.description" = "時代に左右されないクラシックなスタイル";
+"style.sporty.display_name" = "スポーティ";
+"style.sporty.description" = "アクティブでエネルギッシュなスタイル、健康と活力を示す";
+"style.artistic.display_name" = "芸術的";
+"style.artistic.description" = "創造的でユニークなスタイル、独創性に富む";
+"style.streetwear.display_name" = "ストリートウェア";
+"style.streetwear.description" = "都会的なファッションスタイル、個性と態度を示す";
+"style.minimalist.display_name" = "ミニマリスト";
+"style.minimalist.description" = "シンプルでありながら品のあるスタイル";
+"style.edgy.display_name" = "エッジの効いた";
+"style.edgy.description" = "前衛的でユニークなスタイル、伝統に挑戦する";
+"style.formal.display_name" = "フォーマル";
+"style.formal.description" = "フォーマルな場面でのスタイル、プロフェッショナリズムと荘厳さを示す";
+"style.colorful.display_name" = "カラフル";
+"style.colorful.description" = "活気に満ちたカラフルなスタイル、エネルギーと創造性に富む";
 
 // MARK: - Style Analysis
 "style.elegant.keywords" = "エレガント, 洗練された, 上品な, 品のある";
@@ -256,6 +334,9 @@
 
 "style.error.user_not_found" = "ユーザーデータが見つかりません";
 "style.error.no_photos_uploaded" = "ユーザーはまだ写真をアップロードしていません";
+"style.error.insufficient_ratings" = "評価が不足しています：現在 %d 件、必要な評価数 %d 件";
+"style.error.analysis_processing_error" = "スタイル分析の処理に失敗しました";
+"style.error.report_generation_failed" = "レポートの生成に失敗しました";
 
 // MARK: - CTA Messages
 "cta.checking_status" = "ステータスを確認中...";
@@ -264,6 +345,49 @@
 "cta.analyzing_preferences" = "あなたのスタイルの好みを分析中...";
 "cta.identifying_style" = "あなたの主なスタイルを特定中...";
 "cta.preparing" = "準備中...";
+"cta.style_preference" = "あなたは%@ %@スタイルが好きです";
+"cta.rating_behavior.high" = "あなたは写真の%@%%に高評価を付けました、素晴らしいセンスです！";
+"cta.rating_behavior.medium" = "あなたの評価は非常に選択的で、ユニークな視点を示しています";
+"cta.rating_behavior.low" = "あなたの評価基準は高く、完璧な品質を追求しています";
+"cta.style_insight.elegant" = "あなたは洗練されたエレガントな美を評価します";
+"cta.style_insight.casual" = "あなたは自然で快適なスタイルが好きです";
+"cta.style_insight.trendy" = "あなたは常に最新のトレンドを追いかけています";
+"cta.style_insight.classic" = "あなたは時代を超越したクラシックなデザインを好みます";
+"cta.style_insight.sporty" = "あなたは活気に満ちた健康的な姿勢を示します";
+"cta.style_insight.artistic" = "あなたはユニークな芸術的視点を持っています";
+"cta.style_insight.streetwear" = "あなたはユニークな芸術的視点を持っています";
+"cta.style_insight.minimalist" = "あなたはユニークな芸術的視点を持っています";
+"cta.style_insight.edgy" = "あなたはユニークな芸術的視点を持っています";
+"cta.style_insight.formal" = "あなたはユニークな芸術的視点を持っています";
+"cta.style_insight.colorful" = "あなたはユニークな芸術的視点を持っています";
+"cta.elegant.title" = "あなたのエレガントなスタイルを見せて！";
+"cta.elegant.subtitle" = "あなたの評価の好みから、あなたは洗練されたテイストを持っていることがわかります。他の人があなたのエレガントなスタイルをどう評価するか見てみましょう！";
+"cta.elegant.button" = "私のエレガントな写真をアップロード";
+"cta.elegant.motivation" = "あなたの優雅さは見られる価値があります、あなたの洗練されたテイストを共有しましょう！";
+"cta.casual.title" = "あなたの自然な魅力を共有しましょう！";
+"cta.casual.subtitle" = "あなたはリラックスした自然なスタイルが好きです。この本物の美しさは本当に心を打ちます。他の人があなたの自然なスタイルをどう思うか見てみましょう！";
+"cta.casual.button" = "私の自然な写真をアップロード";
+"cta.casual.motivation" = "自然が一番美しい、本当のあなたを見せて！";
+"cta.trendy.title" = "あなたのファッションセンスを披露しましょう！";
+"cta.trendy.subtitle" = "あなたは常に最新のファッショントレンドを捉えています。この鋭いファッションセンスは印象的です！";
+"cta.trendy.button" = "私のファッション写真をアップロード";
+"cta.trendy.motivation" = "あなたはファッショニスタです、あなたのトレンディなテイストをみんなに見せましょう！";
+"cta.classic.title" = "あなたのクラシックなテイストを強調しましょう！";
+"cta.classic.subtitle" = "あなたは時代を超越したクラシックな美学を高く評価しています。時間に影響されないこのテイストは最も貴重です。";
+"cta.classic.button" = "私のクラシックな写真をアップロード";
+"cta.classic.motivation" = "クラシックは決して時代遅れになりません、あなたの時代を超越した魅力を披露しましょう！";
+"cta.sporty.title" = "あなたの活気あるスタイルを見せて！";
+"cta.sporty.subtitle" = "あなたは活気に満ちたスポーティなスタイルが好きです。この健康的でポジティブなエネルギーは最も魅力的です！";
+"cta.sporty.button" = "私の活気ある写真をアップロード";
+"cta.sporty.motivation" = "エネルギッシュなあなたは最も魅力的です、あなたのポジティブなエネルギーを共有しましょう！";
+"cta.artistic.title" = "あなたの芸術的なビジョンを共有しましょう！";
+"cta.artistic.subtitle" = "あなたはユニークな芸術的テイストを持っています。この創造性と個性は最も稀です。みんなにあなたの芸術的なスタイルを鑑賞してもらいましょう！";
+"cta.artistic.button" = "私の芸術的な写真をアップロード";
+"cta.artistic.motivation" = "アーティストのビジョンはユニークです、あなたの創造的な魅力を披露しましょう！";
+"cta.default.title" = "あなたのユニークなビジョンを共有しましょう！";
+"cta.default.subtitle" = "あなたはユニークな芸術的テイストを持っています。この創造性と個性は最も稀です。みんなにあなたの芸術的なスタイルを鑑賞してもらいましょう！";
+"cta.default.button" = "私の芸術的な写真をアップロード";
+"cta.default.motivation" = "アーティストのビジョンはユニークです、あなたの創造的な魅力を披露しましょう！";
 
 // MARK: - Achievements
 "achievement.style_star.title" = "スタイルスター";

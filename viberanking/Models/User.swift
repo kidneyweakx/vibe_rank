@@ -46,18 +46,18 @@ struct User: Codable, Identifiable {
 
 // MARK: - Gender Enum
 enum Gender: String, CaseIterable, Codable {
-    case male = "male"
-    case female = "female"
-    case other = "other"
+    case male
+    case female
+    case other
     
     var displayName: String {
         switch self {
         case .male:
-            return "男性"
+            return "gender.male".localized
         case .female:
-            return "女性"
+            return "gender.female".localized
         case .other:
-            return "其他"
+            return "gender.other".localized
         }
     }
 }

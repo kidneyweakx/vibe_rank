@@ -216,6 +216,84 @@
 "gamification.style_report_title" = "我的風格分析報告";
 "gamification.style_report_description" = "查看我在數位頂尖社交評價平台的風格分析";
 "gamification.style_report_share_text" = "快來數位頂尖社交評價平台看看我的風格分析報告！";
+"gamification.style_trend.insufficient_data" = "需要更多數據來分析趨勢";
+"gamification.style_trend.evolving" = "你的風格正在從%@轉向%@";
+"gamification.style_trend.consistent" = "你保持著一致的%@風格";
+"achievement.rating_novice.title" = "評分新手";
+"achievement.rating_novice.description" = "完成你的前10次評分";
+"achievement.rating_novice.reward" = "獲得1次加速評分機會";
+"achievement.rating_pro.title" = "評分達人";
+"achievement.rating_pro.description" = "完成100次評分";
+"achievement.rating_pro.reward" = "獲得3次加速評分機會";
+"achievement.first_upload.title" = "首次上傳";
+"achievement.first_upload.description" = "上傳你的第一張照片";
+"achievement.first_upload.reward" = "解鎖風格演變分析";
+"achievement.style_explorer.title" = "風格探索者";
+"achievement.style_explorer.description" = "上傳5張不同風格的照片";
+"achievement.style_explorer.reward" = "獲得風格探索者徽章";
+"achievement.style_analyst.title" = "風格分析師";
+"achievement.style_analyst.description" = "生成你的第一份風格報告";
+"achievement.style_analyst.reward" = "解鎖高級分析功能";
+"gamification.error.insufficient_photos" = "需要至少3張照片才能進行風格演變分析";
+"gamification.error.achievement_already_unlocked" = "成就已經解鎖";
+"gamification.error.invalid_reward_type" = "無效的獎勵類型";
+
+"permission.go_to_settings" = "前往設定";
+"permission.camera.title" = "需要相機權限";
+"permission.camera.message" = "請在設定中允許應用程式使用相機，以便拍攝照片上傳。";
+"permission.photo_library.title" = "需要照片權限";
+"permission.photo_library.message" = "請在設定中允許應用程式訪問照片，以便選擇照片上傳。";
+
+"report.unlock.congrats" = "🎉 恭喜！";
+"report.unlock.title" = "你的風格報告已解鎖";
+"report.unlock.subtitle" = "基於 50+ 個評分的深度分析";
+"report.unlock.view_report" = "查看我的報告";
+
+"gender.male" = "男性";
+"gender.female" = "女性";
+"gender.other" = "其他";
+
+"achievement.category.rating" = "評分";
+"achievement.category.upload" = "上傳";
+"achievement.category.social" = "社交";
+"achievement.category.style" = "風格";
+"achievement.category.milestone" = "里程碑";
+"achievement.requirement_type.ratingsGiven" = "給出評分數量";
+"achievement.requirement_type.photosUploaded" = "上傳照片數量";
+"achievement.requirement_type.ratingsReceived" = "獲得評分數量";
+"achievement.requirement_type.hotRatingsReceived" = "獲得Hot評分數量";
+"achievement.requirement_type.consecutiveDays" = "連續使用天數";
+"achievement.requirement_type.styleReportsGenerated" = "生成風格報告數量";
+"achievement.requirement_type.attractivenessScore" = "吸引力分數";
+"achievement.requirement_type.multipleStyleMastery" = "多風格掌握";
+"achievement.reward_type.acceleratedRating" = "加速評分機會";
+"achievement.reward_type.bonusAnalysis" = "額外分析功能";
+"achievement.reward_type.specialBadge" = "特殊徽章";
+"achievement.reward_type.priorityQueue" = "優先評分隊列";
+"achievement.reward_type.evolutionAnalysis" = "風格演變分析";
+
+"style.elegant.display_name" = "優雅";
+"style.elegant.description" = "精緻優雅的風格，展現品味與氣質";
+"style.casual.display_name" = "休閒";
+"style.casual.description" = "輕鬆自然的風格，舒適且親和";
+"style.trendy.display_name" = "時尚";
+"style.trendy.description" = "時尚前衛的風格，跟上潮流趨勢";
+"style.classic.display_name" = "經典";
+"style.classic.description" = "經典永恆的風格，不受時間影響";
+"style.sporty.display_name" = "運動";
+"style.sporty.description" = "運動活力的風格，展現健康活力";
+"style.artistic.display_name" = "藝術";
+"style.artistic.description" = "藝術創意的風格，獨特且富有創意";
+"style.streetwear.display_name" = "街頭";
+"style.streetwear.description" = "街頭潮流的風格，展現個性與態度";
+"style.minimalist.display_name" = "極簡";
+"style.minimalist.description" = "極簡主義的風格，簡單卻不失品味";
+"style.edgy.display_name" = "前衛";
+"style.edgy.description" = "前衛獨特的風格，敢於挑戰傳統";
+"style.formal.display_name" = "正式";
+"style.formal.description" = "正式場合的風格，展現專業與莊重";
+"style.colorful.display_name" = "繽紛";
+"style.colorful.description" = "繽紛多彩的風格，充滿活力與創意";
 
 // MARK: - Style Analysis
 "style.elegant.keywords" = "優雅, 精緻, 氣質, 品味";
@@ -256,6 +334,9 @@
 
 "style.error.user_not_found" = "找不到用戶資料";
 "style.error.no_photos_uploaded" = "用戶尚未上傳任何照片";
+"style.error.insufficient_ratings" = "評分數量不足：目前 %d 個，需要 %d 個";
+"style.error.analysis_processing_error" = "風格分析處理失敗";
+"style.error.report_generation_failed" = "報告生成失敗";
 
 // MARK: - CTA Messages
 "cta.checking_status" = "正在檢查狀態...";
@@ -264,6 +345,49 @@
 "cta.analyzing_preferences" = "正在分析你的風格偏好...";
 "cta.identifying_style" = "正在識別你的主要風格...";
 "cta.preparing" = "準備中...";
+"cta.style_preference" = "你偏愛%@ %@風格";
+"cta.rating_behavior.high" = "你對%@%%的照片給予好評，品味很棒！";
+"cta.rating_behavior.medium" = "你的評分很有選擇性，展現獨特眼光";
+"cta.rating_behavior.low" = "你的評分標準很高，追求完美品質";
+"cta.style_insight.elegant" = "你欣賞精緻優雅的美感";
+"cta.style_insight.casual" = "你喜歡自然舒適的風格";
+"cta.style_insight.trendy" = "你總是跟上最新潮流";
+"cta.style_insight.classic" = "你偏愛永恆經典的設計";
+"cta.style_insight.sporty" = "你展現活力健康的生活態度";
+"cta.style_insight.artistic" = "你具有獨特的藝術眼光";
+"cta.style_insight.streetwear" = "你具有獨特的藝術眼光";
+"cta.style_insight.minimalist" = "你具有獨特的藝術眼光";
+"cta.style_insight.edgy" = "你具有獨特的藝術眼光";
+"cta.style_insight.formal" = "你具有獨特的藝術眼光";
+"cta.style_insight.colorful" = "你具有獨特的藝術眼光";
+"cta.elegant.title" = "展現你的優雅風格！";
+"cta.elegant.subtitle" = "根據你的評分偏好，你擁有精緻的品味。讓我們看看別人如何評價你的優雅風格！";
+"cta.elegant.button" = "上傳我的優雅照片";
+"cta.elegant.motivation" = "優雅的你值得被看見，分享你的精緻品味吧！";
+"cta.casual.title" = "分享你的自然魅力！";
+"cta.casual.subtitle" = "你喜歡輕鬆自然的風格，這種真實的美最打動人心。來看看大家對你的自然風格有什麼看法！";
+"cta.casual.button" = "上傳我的自然照片";
+"cta.casual.motivation" = "自然就是美，展現最真實的你！";
+"cta.trendy.title" = "展示你的時尚品味！";
+"cta.trendy.subtitle" = "你總是能捕捉到最新的時尚趨勢，這種敏銳的時尚嗅覺讓人印象深刻！";
+"cta.trendy.button" = "上傳我的時尚照片";
+"cta.trendy.motivation" = "時尚達人就是你，讓大家見識你的潮流品味！";
+"cta.classic.title" = "彰顯你的經典品味！";
+"cta.classic.subtitle" = "你欣賞永恆的經典美學，這種不受時間影響的品味最珍貴。";
+"cta.classic.button" = "上傳我的經典照片";
+"cta.classic.motivation" = "經典永不過時，展現你的永恆魅力！";
+"cta.sporty.title" = "展現你的活力風采！";
+"cta.sporty.subtitle" = "你喜歡充滿活力的運動風格，這種健康正面的能量最吸引人！";
+"cta.sporty.button" = "上傳我的活力照片";
+"cta.sporty.motivation" = "活力四射的你最有魅力，分享你的正能量！";
+"cta.artistic.title" = "分享你的藝術眼光！";
+"cta.artistic.subtitle" = "你具有獨特的藝術品味，這種創意和個性最難得。讓大家欣賞你的藝術風格！";
+"cta.artistic.button" = "上傳我的藝術照片";
+"cta.artistic.motivation" = "藝術家的眼光獨一無二，展現你的創意魅力！";
+"cta.default.title" = "分享你的藝術眼光！";
+"cta.default.subtitle" = "你具有獨特的藝術品味，這種創意和個性最難得。讓大家欣賞你的藝術風格！";
+"cta.default.button" = "上傳我的藝術照片";
+"cta.default.motivation" = "藝術家的眼光獨一無二，展現你的創意魅力！";
 
 // MARK: - Achievements
 "achievement.style_star.title" = "風格新星";

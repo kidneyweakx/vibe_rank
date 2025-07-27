@@ -45,14 +45,14 @@ struct Achievement: Codable, Identifiable, Equatable {
 
 // MARK: - Achievement Category
 enum AchievementCategory: String, CaseIterable, Codable {
-    case rating = "評分"
-    case upload = "上傳"
-    case social = "社交"
-    case style = "風格"
-    case milestone = "里程碑"
+    case rating
+    case upload
+    case social
+    case style
+    case milestone
     
     var displayName: String {
-        return self.rawValue
+        return "achievement.category.\(self.rawValue)".localized
     }
 }
 
@@ -79,17 +79,17 @@ struct AchievementRequirement: Codable, Equatable {
 
 // MARK: - Requirement Type
 enum RequirementType: String, CaseIterable, Codable {
-    case ratingsGiven = "給出評分數量"
-    case photosUploaded = "上傳照片數量"
-    case ratingsReceived = "獲得評分數量"
-    case hotRatingsReceived = "獲得Hot評分數量"
-    case consecutiveDays = "連續使用天數"
-    case styleReportsGenerated = "生成風格報告數量"
-    case attractivenessScore = "吸引力分數"
-    case multipleStyleMastery = "多風格掌握"
+    case ratingsGiven
+    case photosUploaded
+    case ratingsReceived
+    case hotRatingsReceived
+    case consecutiveDays
+    case styleReportsGenerated
+    case attractivenessScore
+    case multipleStyleMastery
     
     var displayName: String {
-        return self.rawValue
+        return "achievement.requirement_type.\(self.rawValue)".localized
     }
 }
 
@@ -108,14 +108,14 @@ struct AchievementReward: Codable, Equatable {
 
 // MARK: - Reward Type
 enum RewardType: String, CaseIterable, Codable {
-    case acceleratedRating = "加速評分機會"
-    case bonusAnalysis = "額外分析功能"
-    case specialBadge = "特殊徽章"
-    case priorityQueue = "優先評分隊列"
-    case evolutionAnalysis = "風格演變分析"
+    case acceleratedRating
+    case bonusAnalysis
+    case specialBadge
+    case priorityQueue
+    case evolutionAnalysis
     
     var displayName: String {
-        return self.rawValue
+        return "achievement.reward_type.\(self.rawValue)".localized
     }
 }
 

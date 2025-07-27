@@ -316,7 +316,7 @@ private extension GamificationService {
     /// Calculate overall trend from style periods
     func calculateOverallTrend(from periods: [StylePeriod]) -> StyleTrend {
         guard periods.count >= 2 else {
-            return StyleTrend(direction: .stable, confidence: 0.5, description: "需要更多數據來分析趨勢")
+            return StyleTrend(direction: .stable, confidence: 0.5, description: "gamification.style_trend.insufficient_data".localized)
         }
         
         // Simple trend analysis
@@ -327,13 +327,13 @@ private extension GamificationService {
             return StyleTrend(
                 direction: .evolving,
                 confidence: 0.8,
-                description: "你的風格正在從\(firstPeriod.dominantStyle.rawValue)轉向\(lastPeriod.dominantStyle.rawValue)"
+                description: String(format: "gamification.style_trend.evolving".localized, firstPeriod.dominantStyle.rawValue, lastPeriod.dominantStyle.rawValue)
             )
         } else {
             return StyleTrend(
                 direction: .consistent,
                 confidence: 0.9,
-                description: "你保持著一致的\(lastPeriod.dominantStyle.rawValue)風格"
+                description: String(format: "gamification.style_trend.consistent".localized, lastPeriod.dominantStyle.rawValue)
             )
         }
     }
@@ -405,48 +405,48 @@ private extension GamificationService {
         return [
             // Rating achievements
             Achievement(
-                title: "評分新手",
-                description: "完成你的前10次評分",
+                title: "achievement.rating_novice.title".localized,
+                description: "achievement.rating_novice.description".localized,
                 iconName: "star.fill",
                 category: .rating,
                 requirement: AchievementRequirement(type: .ratingsGiven, target: 10),
-                reward: AchievementReward(type: .acceleratedRating, value: 1, description: "獲得1次加速評分機會")
+                reward: AchievementReward(type: .acceleratedRating, value: 1, description: "achievement.rating_novice.reward".localized)
             ),
             Achievement(
-                title: "評分達人",
-                description: "完成100次評分",
+                title: "achievement.rating_pro.title".localized,
+                description: "achievement.rating_pro.description".localized,
                 iconName: "star.circle.fill",
                 category: .rating,
                 requirement: AchievementRequirement(type: .ratingsGiven, target: 100),
-                reward: AchievementReward(type: .acceleratedRating, value: 3, description: "獲得3次加速評分機會")
+                reward: AchievementReward(type: .acceleratedRating, value: 3, description: "achievement.rating_pro.reward".localized)
             ),
             
             // Upload achievements
             Achievement(
-                title: "首次上傳",
-                description: "上傳你的第一張照片",
+                title: "achievement.first_upload.title".localized,
+                description: "achievement.first_upload.description".localized,
                 iconName: "camera.fill",
                 category: .upload,
                 requirement: AchievementRequirement(type: .photosUploaded, target: 1),
-                reward: AchievementReward(type: .bonusAnalysis, value: 1, description: "解鎖風格演變分析")
+                reward: AchievementReward(type: .bonusAnalysis, value: 1, description: "achievement.first_upload.reward".localized)
             ),
             Achievement(
-                title: "風格探索者",
-                description: "上傳5張不同風格的照片",
+                title: "achievement.style_explorer.title".localized,
+                description: "achievement.style_explorer.description".localized,
                 iconName: "photo.stack.fill",
                 category: .upload,
                 requirement: AchievementRequirement(type: .photosUploaded, target: 5),
-                reward: AchievementReward(type: .specialBadge, value: 1, description: "獲得風格探索者徽章")
+                reward: AchievementReward(type: .specialBadge, value: 1, description: "achievement.style_explorer.reward".localized)
             ),
             
             // Style achievements
             Achievement(
-                title: "風格分析師",
-                description: "生成你的第一份風格報告",
+                title: "achievement.style_analyst.title".localized,
+                description: "achievement.style_analyst.description".localized,
                 iconName: "chart.bar.fill",
                 category: .style,
                 requirement: AchievementRequirement(type: .styleReportsGenerated, target: 1),
-                reward: AchievementReward(type: .bonusAnalysis, value: 1, description: "解鎖高級分析功能")
+                reward: AchievementReward(type: .bonusAnalysis, value: 1, description: "achievement.style_analyst.reward".localized)
             )
         ]
     }
@@ -480,16 +480,16 @@ struct StyleTrend: Codable {
 
 /// Trend direction enum
 enum TrendDirection: String, Codable {
-    case evolving = "演變中"
-    case consistent = "一致"
-    case stable = "穩定"
+    case evolving
+    case consistent
+    case stable
 }
 
 /// Share type enum
 enum ShareType: String, Codable {
-    case styleReport = "風格報告"
-    case achievement = "成就"
-    case evolution = "風格演變"
+    case styleReport
+    case achievement
+    case evolution
 }
 
 /// Gamification specific errors
@@ -501,11 +501,11 @@ enum GamificationError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .insufficientPhotosForEvolution:
-            return "需要至少3張照片才能進行風格演變分析"
+            return "gamification.error.insufficient_photos".localized
         case .achievementAlreadyUnlocked:
-            return "成就已經解鎖"
+            return "gamification.error.achievement_already_unlocked".localized
         case .invalidRewardType:
-            return "無效的獎勵類型"
+            return "gamification.error.invalid_reward_type".localized
         }
     }
 }

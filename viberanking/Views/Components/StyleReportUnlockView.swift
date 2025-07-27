@@ -49,19 +49,19 @@ struct StyleReportUnlockView: View {
                 // Text content
                 if showContent {
                     VStack(spacing: 16) {
-                        Text("🎉 恭喜！")
+                        Text("report.unlock.congrats".localized)
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .foregroundColor(.yellow)
                             .scaleEffect(animationPhase >= 3 ? 1.0 : 0.5)
                         
-                        Text("你的風格報告已解鎖")
+                        Text("report.unlock.title".localized)
                             .font(.title2)
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
                             .opacity(animationPhase >= 4 ? 1.0 : 0)
                         
-                        Text("基於 50+ 個評分的深度分析")
+                        Text("report.unlock.subtitle".localized)
                             .font(.body)
                             .foregroundColor(.white.opacity(0.8))
                             .opacity(animationPhase >= 5 ? 1.0 : 0)
@@ -78,7 +78,7 @@ struct StyleReportUnlockView: View {
                     }) {
                         HStack {
                             Image(systemName: "eye.fill")
-                            Text("查看我的報告")
+                            Text("report.unlock.view_report".localized)
                                 .fontWeight(.semibold)
                         }
                         .frame(maxWidth: .infinity)

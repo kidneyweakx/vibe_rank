@@ -180,42 +180,42 @@ private extension CTAService {
         var elements: [String] = []
         
         // Add style-specific elements
-        elements.append("你偏愛\(dominantStyle.emoji) \(dominantStyle.displayName)風格")
+        elements.append(String(format: "cta.style_preference".localized, dominantStyle.emoji, dominantStyle.displayName))
         
         // Add rating behavior insights
         let hotPercentage = Int(preferences.hotRatingPercentage * 100)
         if hotPercentage > 70 {
-            elements.append("你對\(hotPercentage)%的照片給予好評，品味很棒！")
+            elements.append(String(format: "cta.rating_behavior.high".localized, hotPercentage))
         } else if hotPercentage > 40 {
-            elements.append("你的評分很有選擇性，展現獨特眼光")
+            elements.append("cta.rating_behavior.medium".localized)
         } else {
-            elements.append("你的評分標準很高，追求完美品質")
+            elements.append("cta.rating_behavior.low".localized)
         }
         
         // Add style-specific insights
         switch dominantStyle {
         case .elegant:
-            elements.append("你欣賞精緻優雅的美感")
+            elements.append("cta.style_insight.elegant".localized)
         case .casual:
-            elements.append("你喜歡自然舒適的風格")
+            elements.append("cta.style_insight.casual".localized)
         case .trendy:
-            elements.append("你總是跟上最新潮流")
+            elements.append("cta.style_insight.trendy".localized)
         case .classic:
-            elements.append("你偏愛永恆經典的設計")
+            elements.append("cta.style_insight.classic".localized)
         case .sporty:
-            elements.append("你展現活力健康的生活態度")
+            elements.append("cta.style_insight.sporty".localized)
         case .artistic:
-            elements.append("你具有獨特的藝術眼光")
+            elements.append("cta.style_insight.artistic".localized)
         case .streetwear:
-            elements.append("你具有獨特的藝術眼光")
+            elements.append("cta.style_insight.streetwear".localized)
         case .minimalist:
-            elements.append("你具有獨特的藝術眼光")
+            elements.append("cta.style_insight.minimalist".localized)
         case .edgy:
-            elements.append("你具有獨特的藝術眼光")
+            elements.append("cta.style_insight.edgy".localized)
         case .formal:
-            elements.append("你具有獨特的藝術眼光")
+            elements.append("cta.style_insight.formal".localized)
         case .colorful:
-            elements.append("你具有獨特的藝術眼光")
+            elements.append("cta.style_insight.colorful".localized)
         }
         
         return elements
@@ -227,57 +227,57 @@ private extension CTAService {
         switch dominantStyle {
         case .elegant:
             return (
-                title: "展現你的優雅風格！",
-                subtitle: "根據你的評分偏好，你擁有精緻的品味。讓我們看看別人如何評價你的優雅風格！",
-                buttonText: "上傳我的優雅照片",
-                motivationalText: "優雅的你值得被看見，分享你的精緻品味吧！"
+                title: "cta.elegant.title".localized,
+                subtitle: "cta.elegant.subtitle".localized,
+                buttonText: "cta.elegant.button".localized,
+                motivationalText: "cta.elegant.motivation".localized
             )
             
         case .casual:
             return (
-                title: "分享你的自然魅力！",
-                subtitle: "你喜歡輕鬆自然的風格，這種真實的美最打動人心。來看看大家對你的自然風格有什麼看法！",
-                buttonText: "上傳我的自然照片",
-                motivationalText: "自然就是美，展現最真實的你！"
+                title: "cta.casual.title".localized,
+                subtitle: "cta.casual.subtitle".localized,
+                buttonText: "cta.casual.button".localized,
+                motivationalText: "cta.casual.motivation".localized
             )
             
         case .trendy:
             return (
-                title: "展示你的時尚品味！",
-                subtitle: "你總是能捕捉到最新的時尚趨勢，這種敏銳的時尚嗅覺讓人印象深刻！",
-                buttonText: "上傳我的時尚照片",
-                motivationalText: "時尚達人就是你，讓大家見識你的潮流品味！"
+                title: "cta.trendy.title".localized,
+                subtitle: "cta.trendy.subtitle".localized,
+                buttonText: "cta.trendy.button".localized,
+                motivationalText: "cta.trendy.motivation".localized
             )
             
         case .classic:
             return (
-                title: "彰顯你的經典品味！",
-                subtitle: "你欣賞永恆的經典美學，這種不受時間影響的品味最珍貴。",
-                buttonText: "上傳我的經典照片",
-                motivationalText: "經典永不過時，展現你的永恆魅力！"
+                title: "cta.classic.title".localized,
+                subtitle: "cta.classic.subtitle".localized,
+                buttonText: "cta.classic.button".localized,
+                motivationalText: "cta.classic.motivation".localized
             )
             
         case .sporty:
             return (
-                title: "展現你的活力風采！",
-                subtitle: "你喜歡充滿活力的運動風格，這種健康正面的能量最吸引人！",
-                buttonText: "上傳我的活力照片",
-                motivationalText: "活力四射的你最有魅力，分享你的正能量！"
+                title: "cta.sporty.title".localized,
+                subtitle: "cta.sporty.subtitle".localized,
+                buttonText: "cta.sporty.button".localized,
+                motivationalText: "cta.sporty.motivation".localized
             )
             
         case .artistic:
             return (
-                title: "分享你的藝術眼光！",
-                subtitle: "你具有獨特的藝術品味，這種創意和個性最難得。讓大家欣賞你的藝術風格！",
-                buttonText: "上傳我的藝術照片",
-                motivationalText: "藝術家的眼光獨一無二，展現你的創意魅力！"
+                title: "cta.artistic.title".localized,
+                subtitle: "cta.artistic.subtitle".localized,
+                buttonText: "cta.artistic.button".localized,
+                motivationalText: "cta.artistic.motivation".localized
             )
         default:
             return(
-                title: "分享你的藝術眼光！",
-                subtitle: "你具有獨特的藝術品味，這種創意和個性最難得。讓大家欣賞你的藝術風格！",
-                buttonText: "上傳我的藝術照片",
-                motivationalText: "藝術家的眼光獨一無二，展現你的創意魅力！"
+                title: "cta.default.title".localized,
+                subtitle: "cta.default.subtitle".localized,
+                buttonText: "cta.default.button".localized,
+                motivationalText: "cta.default.motivation".localized
             )
         }
     }
