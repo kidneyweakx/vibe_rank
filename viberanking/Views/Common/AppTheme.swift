@@ -9,38 +9,11 @@ import SwiftUI
 
 // MARK: - App Theme
 struct AppTheme {
+    @EnvironmentObject var themeManager: ThemeManager
+    
     // MARK: - Colors
-    struct Colors {
-        // Primary brand colors inspired by the image
-        static let primaryBlue = Color(red: 0.2, green: 0.4, blue: 1.0) // Bright blue from image
-        static let secondaryBlue = Color(red: 0.0, green: 0.7, blue: 1.0) // Cyan blue
-        static let accentYellow = Color(red: 1.0, green: 0.8, blue: 0.0) // Star yellow
-        static let warmWhite = Color(red: 1.0, green: 1.0, blue: 0.98)
-        
-        // Gradient backgrounds
-        static let primaryGradient = LinearGradient(
-            colors: [primaryBlue, secondaryBlue],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        
-        static let cardGradient = LinearGradient(
-            colors: [warmWhite, Color.white],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        
-        // Dark mode support
-        static let backgroundPrimary = Color("BackgroundPrimary")
-        static let backgroundSecondary = Color("BackgroundSecondary")
-        static let textPrimary = Color("TextPrimary")
-        static let textSecondary = Color("TextSecondary")
-        
-        // Semantic colors
-        static let success = Color.green
-        static let warning = Color.orange
-        static let error = Color.red
-        static let info = primaryBlue
+    var colors: ColorScheme {
+        themeManager.currentTheme.colors
     }
     
     // MARK: - Typography
@@ -85,6 +58,7 @@ struct AppTheme {
 
 // MARK: - Custom Button Styles
 struct PrimaryButtonStyle: ButtonStyle {
+    @EnvironmentObject var themeManager: ThemeManager
     let isDestructive: Bool
     
     init(isDestructive: Bool = false) {
@@ -92,17 +66,19 @@ struct PrimaryButtonStyle: ButtonStyle {
     }
     
     func makeBody(configuration: Configuration) -> some View {
+        let colors = themeManager.currentTheme.colors
+        
         configuration.label
             .font(AppTheme.Typography.headline)
-            .foregroundColor(.white)
+            .foregroundColor(colors.text)
             .padding(.horizontal, AppTheme.Spacing.lg)
             .padding(.vertical, AppTheme.Spacing.md)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.CornerRadius.lg)
                     .fill(
-                        isDestructive ? 
-                        LinearGradient(colors: [AppTheme.Colors.error], startPoint: .leading, endPoint: .trailing) :
-                        AppTheme.Colors.primaryGradient
+                        isDestructive ?
+                        LinearGradient(colors: [Color.red], startPoint: .leading, endPoint: .trailing) :
+                        LinearGradient(colors: [colors.primary, colors.secondary], startPoint: .leading, endPoint: .trailing)
                     )
             )
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
@@ -111,15 +87,19 @@ struct PrimaryButtonStyle: ButtonStyle {
 }
 
 struct SecondaryButtonStyle: ButtonStyle {
+    @EnvironmentObject var themeManager: ThemeManager
+    
     func makeBody(configuration: Configuration) -> some View {
+        let colors = themeManager.currentTheme.colors
+        
         configuration.label
             .font(AppTheme.Typography.headline)
-            .foregroundColor(AppTheme.Colors.primaryBlue)
+            .foregroundColor(colors.primary)
             .padding(.horizontal, AppTheme.Spacing.lg)
             .padding(.vertical, AppTheme.Spacing.md)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.CornerRadius.lg)
-                    .stroke(AppTheme.Colors.primaryBlue, lineWidth: 2)
+                    .stroke(colors.primary, lineWidth: 2)
                     .background(
                         RoundedRectangle(cornerRadius: AppTheme.CornerRadius.lg)
                             .fill(Color.clear)
@@ -132,6 +112,7 @@ struct SecondaryButtonStyle: ButtonStyle {
 
 // MARK: - Custom Card Style
 struct CardStyle: ViewModifier {
+    @EnvironmentObject var themeManager: ThemeManager
     let padding: CGFloat
     
     init(padding: CGFloat = AppTheme.Spacing.md) {
@@ -139,11 +120,13 @@ struct CardStyle: ViewModifier {
     }
     
     func body(content: Content) -> some View {
+        let colors = themeManager.currentTheme.colors
+        
         content
             .padding(padding)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.CornerRadius.lg)
-                    .fill(AppTheme.Colors.cardGradient)
+                    .fill(LinearGradient(colors: [colors.background, colors.background.opacity(0.8)], startPoint: .top, endPoint: .bottom))
                     .shadow(color: AppTheme.Shadow.light, radius: 8, x: 0, y: 4)
             )
     }
@@ -151,6 +134,7 @@ struct CardStyle: ViewModifier {
 
 // MARK: - Floating Shapes for Cute Background
 struct FloatingShape: View {
+    @EnvironmentObject var themeManager: ThemeManager
     let geometry: GeometryProxy
     let index: Int
     
@@ -163,11 +147,12 @@ struct FloatingShape: View {
     }
     
     private var color: Color {
+        let colors = themeManager.currentTheme.colors
         switch index % 4 {
-        case 0: return AppTheme.Colors.accentYellow.opacity(0.6)
+        case 0: return colors.accent.opacity(0.6)
         case 1: return Color.white.opacity(0.4)
-        case 2: return AppTheme.Colors.secondaryBlue.opacity(0.3)
-        default: return AppTheme.Colors.accentYellow.opacity(0.3)
+        case 2: return colors.secondary.opacity(0.3)
+        default: return colors.accent.opacity(0.3)
         }
     }
     

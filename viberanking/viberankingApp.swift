@@ -15,6 +15,7 @@ struct viberankingApp: App {
     @StateObject private var authenticationViewModel = AuthenticationViewModel()
     @StateObject private var errorHandler = ErrorHandler()
     @StateObject private var localizationManager = LocalizationManager.shared
+    @StateObject private var themeManager = ThemeManager()
 
     init() {
         // Configure Firebase first
@@ -70,6 +71,7 @@ struct viberankingApp: App {
                 .environmentObject(authenticationViewModel)
                 .environmentObject(errorHandler)
                 .environmentObject(localizationManager)
+                .environmentObject(themeManager)
                 .onAppear {
                     // Log app start event
                     AnalyticsService.shared.logEvent(.featureUsed(feature: "app_launch"))

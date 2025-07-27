@@ -11,7 +11,7 @@ import GoogleSignIn
 
 struct LoginView: View {
     @EnvironmentObject private var viewModel: AuthenticationViewModel
-    @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var themeManager: ThemeManager
     
     var body: some View {
         GeometryReader { geometry in
@@ -19,9 +19,7 @@ struct LoginView: View {
                 // Background gradient that adapts to light/dark mode
                 LinearGradient(
                     gradient: Gradient(
-                        colors: colorScheme == .dark 
-                            ? [Color(hex: "1A1A2E"), Color(hex: "16213E")]
-                            : [Color(hex: "F5F7FA"), Color(hex: "E4E9F2")]
+                        colors: [themeManager.currentTheme.colors.background, themeManager.currentTheme.colors.background.opacity(0.8)]
                     ),
                     startPoint: .top,
                     endPoint: .bottom
@@ -39,14 +37,14 @@ struct LoginView: View {
                     // App title with dynamic text styling
                     Text("auth.title".localized)
                         .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(colorScheme == .dark ? .white : Color(hex: "333333"))
+                        .foregroundColor(themeManager.currentTheme.colors.text)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                     
                     // App subtitle
                     Text("auth.subtitle".localized)
                         .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundColor(colorScheme == .dark ? Color(hex: "CCCCCC") : Color(hex: "666666"))
+                        .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                         .padding(.bottom, 20)
@@ -79,7 +77,7 @@ struct LoginView: View {
 // MARK: - Logo View
 struct LogoView: View {
     @State private var isAnimating = false
-    @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var themeManager: ThemeManager
     
     var body: some View {
         ZStack {
@@ -88,16 +86,14 @@ struct LogoView: View {
                 .fill(
                     LinearGradient(
                         gradient: Gradient(
-                            colors: colorScheme == .dark 
-                                ? [Color(hex: "4A4AFF"), Color(hex: "6B8CFF")] 
-                                : [Color(hex: "4A4AFF"), Color(hex: "6B8CFF")]
+                            colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary]
                         ),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
                 .frame(width: 120, height: 120)
-                .shadow(color: colorScheme == .dark ? Color.black.opacity(0.3) : Color.gray.opacity(0.3), radius: 10, x: 0, y: 5)
+                .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 5)
             
             // Inner star icon
             Image(systemName: "star.fill")
@@ -121,7 +117,7 @@ struct LogoView: View {
 // MARK: - Authentication Buttons View
 struct AuthButtonsView: View {
     @ObservedObject var viewModel: AuthenticationViewModel
-    @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var themeManager: ThemeManager
     
     var body: some View {
         VStack(spacing: 16) {
@@ -138,7 +134,7 @@ struct AuthButtonsView: View {
             // Apple Sign In Button - Using official ASAuthorizationAppleIDButton
             AppleSignInButton(
                 type: .signIn,
-                style: colorScheme == .dark ? .white : .black
+                style: themeManager.currentTheme == .dark ? .white : .black
             ) {
                 withAnimation {
                     viewModel.signInWithApple()
@@ -156,7 +152,7 @@ struct AuthButtonsView: View {
             }) {
                 Text("auth.continue_guest".localized)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(colorScheme == .dark ? Color(hex: "AAAAAA") : Color(hex: "666666"))
+                    .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
                     .underline()
                     .padding(.top, 8)
             }
@@ -171,7 +167,7 @@ struct AuthButtonsView: View {
 // MARK: - Loading View
 struct LoadingView: View {
     @State private var isAnimating = false
-    @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var themeManager: ThemeManager
     
     var body: some View {
         VStack(spacing: 20) {
@@ -186,7 +182,7 @@ struct LoadingView: View {
                     .trim(from: 0, to: 0.7)
                     .stroke(
                         LinearGradient(
-                            gradient: Gradient(colors: [Color(hex: "4A4AFF"), Color(hex: "6B8CFF")]),
+                            gradient: Gradient(colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary]),
                             startPoint: .leading,
                             endPoint: .trailing
                         ),
@@ -203,7 +199,7 @@ struct LoadingView: View {
             
             Text("auth.signing_in".localized)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(colorScheme == .dark ? .white : Color(hex: "333333"))
+                .foregroundColor(themeManager.currentTheme.colors.text)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 150)
@@ -251,7 +247,7 @@ struct ErrorMessageView: View {
 // MARK: - Google Sign-In Button
 struct GoogleSignInButton: View {
     let action: () -> Void
-    @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var themeManager: ThemeManager
     @State private var isPressed = false
     
     var body: some View {
@@ -263,7 +259,7 @@ struct GoogleSignInButton: View {
                 
                 Text("auth.sign_in_google".localized)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(colorScheme == .dark ? .white : Color(hex: "3C4043"))
+                    .foregroundColor(themeManager.currentTheme.colors.text)
                 
                 Spacer()
             }
@@ -272,7 +268,7 @@ struct GoogleSignInButton: View {
             .frame(height: 54)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(colorScheme == .dark ? Color(hex: "2D2D2D") : .white)
+                    .fill(themeManager.currentTheme.colors.background)
                     .shadow(
                         color: isPressed ? Color.black.opacity(0.2) : Color.black.opacity(0.1),
                         radius: isPressed ? 1 : 2,
@@ -283,7 +279,7 @@ struct GoogleSignInButton: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(
-                        colorScheme == .dark ? Color.gray.opacity(0.3) : Color.gray.opacity(0.2),
+                        themeManager.currentTheme.colors.text.opacity(0.2),
                         lineWidth: 1
                     )
             )
@@ -372,23 +368,27 @@ struct LoginViewPreview: PreviewProvider {
             // Light Mode Preview
             LoginView()
                 .environmentObject(LoginPreviewAuthenticationViewModel())
+                .environmentObject(ThemeManager())
                 .preferredColorScheme(.light)
                 .previewDisplayName("Light Mode")
             
             // Dark Mode Preview
             LoginView()
                 .environmentObject(LoginPreviewAuthenticationViewModel())
+                .environmentObject(ThemeManager())
                 .preferredColorScheme(.dark)
                 .previewDisplayName("Dark Mode")
             
             // Loading State Preview
             LoginView()
                 .environmentObject(LoginPreviewAuthenticationViewModel(isLoading: true))
+                .environmentObject(ThemeManager())
                 .previewDisplayName("Loading State")
             
             // Error State Preview
             LoginView()
                 .environmentObject(LoginPreviewAuthenticationViewModel(errorMessage: "auth.login_failed".localized))
+                .environmentObject(ThemeManager())
                 .previewDisplayName("Error State")
         }
     }

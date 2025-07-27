@@ -10,6 +10,7 @@ import PhotosUI
 
 struct UploadTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
+    @EnvironmentObject private var themeManager: ThemeManager
     @State private var selectedPhotos: [PhotosPickerItem] = []
     @State private var uploadedImages: [UIImage] = []
     @State private var isUploading = false
@@ -19,8 +20,12 @@ struct UploadTabView: View {
         NavigationStack {
             ZStack {
                 // Cute background matching the main theme
-                AppTheme.Colors.primaryGradient
-                    .ignoresSafeArea()
+                LinearGradient(
+                    colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 // Floating decorative elements
                 GeometryReader { geometry in
@@ -52,20 +57,20 @@ private extension UploadTabView {
             ZStack {
                 // Glow effect
                 Circle()
-                    .fill(AppTheme.Colors.warning.opacity(0.3))
+                    .fill(Color.orange.opacity(0.3))
                     .frame(width: 140, height: 140)
                     .blur(radius: 20)
                 
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [AppTheme.Colors.warning, AppTheme.Colors.warning.opacity(0.8)],
+                            colors: [Color.orange, Color.orange.opacity(0.8)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
                     .frame(width: 120, height: 120)
-                    .shadow(color: AppTheme.Colors.warning.opacity(0.4), radius: 20, x: 0, y: 10)
+                    .shadow(color: Color.orange.opacity(0.4), radius: 20, x: 0, y: 10)
                 
                 Text("🔒")
                     .font(.system(size: 60))
@@ -100,8 +105,8 @@ private extension UploadTabView {
                         .padding(.vertical, AppTheme.Spacing.md)
                         .background(
                             RoundedRectangle(cornerRadius: AppTheme.CornerRadius.lg)
-                                .fill(AppTheme.Colors.accentYellow)
-                                .shadow(color: AppTheme.Colors.accentYellow.opacity(0.4), radius: 15, x: 0, y: 8)
+                                .fill(themeManager.currentTheme.colors.accent)
+                                .shadow(color: themeManager.currentTheme.colors.accent.opacity(0.4), radius: 15, x: 0, y: 8)
                         )
                     }
                 } else {
@@ -130,7 +135,7 @@ private extension UploadTabView {
                                 
                                 Text("\(authViewModel.user?.ratingProgress.completedRatings ?? 0)/\(authViewModel.user?.ratingProgress.requiredRatings ?? 0)")
                                     .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                    .foregroundColor(AppTheme.Colors.accentYellow)
+                                    .foregroundColor(themeManager.currentTheme.colors.accent)
                             }
                             
                             ZStack(alignment: .leading) {
@@ -141,7 +146,7 @@ private extension UploadTabView {
                                 RoundedRectangle(cornerRadius: AppTheme.CornerRadius.sm)
                                     .fill(
                                         LinearGradient(
-                                            colors: [AppTheme.Colors.accentYellow, AppTheme.Colors.accentYellow.opacity(0.8)],
+                                            colors: [themeManager.currentTheme.colors.accent, themeManager.currentTheme.colors.accent.opacity(0.8)],
                                             startPoint: .leading,
                                             endPoint: .trailing
                                         )
@@ -150,7 +155,7 @@ private extension UploadTabView {
                                         width: max(0, UIScreen.main.bounds.width * 0.7 * (authViewModel.user?.ratingProgress.progressPercentage ?? 0)),
                                         height: 12
                                     )
-                                    .shadow(color: AppTheme.Colors.accentYellow.opacity(0.5), radius: 5, x: 0, y: 2)
+                                    .shadow(color: themeManager.currentTheme.colors.accent.opacity(0.5), radius: 5, x: 0, y: 2)
                                     .animation(.easeInOut(duration: 0.5), value: authViewModel.user?.ratingProgress.progressPercentage)
                             }
                         }
@@ -193,22 +198,22 @@ private extension UploadTabView {
             VStack(spacing: AppTheme.Spacing.md) {
                 ZStack {
                     Circle()
-                        .fill(AppTheme.Colors.primaryBlue.opacity(0.2))
+                        .fill(themeManager.currentTheme.colors.primary.opacity(0.2))
                         .frame(width: 100, height: 100)
                     
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 60))
-                        .foregroundColor(AppTheme.Colors.primaryBlue)
+                        .foregroundColor(themeManager.currentTheme.colors.primary)
                 }
                 
                 VStack(spacing: AppTheme.Spacing.xs) {
                     Text("選擇照片上傳")
                         .font(AppTheme.Typography.title2)
-                        .foregroundColor(AppTheme.Colors.textPrimary)
+                        .foregroundColor(themeManager.currentTheme.colors.text)
                     
                     Text("點擊選擇或拖拽照片到此處")
                         .font(AppTheme.Typography.body)
-                        .foregroundColor(AppTheme.Colors.textSecondary)
+                        .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
                         .multilineTextAlignment(.center)
                 }
             }
@@ -228,7 +233,11 @@ private extension UploadTabView {
                 .foregroundColor(.white)
                 .padding(.horizontal, AppTheme.Spacing.lg)
                 .padding(.vertical, AppTheme.Spacing.md)
-                .background(AppTheme.Colors.primaryGradient)
+                .background(LinearGradient(
+                    colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                ))
                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.CornerRadius.lg))
             }
             .onChange(of: selectedPhotos) { _, newItems in
@@ -261,7 +270,7 @@ private extension UploadTabView {
             HStack {
                 Text("已選擇的照片 (\(uploadedImages.count))")
                     .font(AppTheme.Typography.headline)
-                    .foregroundColor(AppTheme.Colors.textPrimary)
+                    .foregroundColor(themeManager.currentTheme.colors.text)
                 
                 Spacer()
                 
@@ -270,7 +279,7 @@ private extension UploadTabView {
                     selectedPhotos.removeAll()
                 }
                 .font(AppTheme.Typography.caption)
-                .foregroundColor(AppTheme.Colors.error)
+                .foregroundColor(.red)
             }
             
             LazyVGrid(columns: [
@@ -320,7 +329,7 @@ private extension UploadTabView {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, AppTheme.Spacing.md)
-                    .background(AppTheme.Colors.success)
+                    .background(.green)
                     .clipShape(RoundedRectangle(cornerRadius: AppTheme.CornerRadius.lg))
                 }
                 .disabled(isUploading)
@@ -334,7 +343,7 @@ private extension UploadTabView {
             HStack {
                 Text("上傳須知")
                     .font(AppTheme.Typography.headline)
-                    .foregroundColor(AppTheme.Colors.textPrimary)
+                    .foregroundColor(themeManager.currentTheme.colors.text)
                 Spacer()
             }
             
@@ -342,31 +351,31 @@ private extension UploadTabView {
                 GuidelineRow(
                     icon: "checkmark.circle.fill",
                     text: "照片需清晰，光線充足",
-                    color: AppTheme.Colors.success
+                    color: .green
                 )
                 
                 GuidelineRow(
                     icon: "checkmark.circle.fill",
                     text: "建議上傳人物照片",
-                    color: AppTheme.Colors.success
+                    color: .green
                 )
                 
                 GuidelineRow(
                     icon: "checkmark.circle.fill",
                     text: "每次最多上傳 5 張照片",
-                    color: AppTheme.Colors.success
+                    color: .green
                 )
                 
                 GuidelineRow(
                     icon: "xmark.circle.fill",
                     text: "不得上傳不當內容",
-                    color: AppTheme.Colors.error
+                    color: .red
                 )
                 
                 GuidelineRow(
                     icon: "info.circle.fill",
                     text: "上傳的照片將用於評分系統",
-                    color: AppTheme.Colors.info
+                    color: .blue
                 )
             }
         }
@@ -389,7 +398,7 @@ struct GuidelineRow: View {
             
             Text(text)
                 .font(AppTheme.Typography.subheadline)
-                .foregroundColor(AppTheme.Colors.textPrimary)
+                .foregroundColor(Color.primary)
             
             Spacer()
         }
@@ -430,4 +439,5 @@ private extension UploadTabView {
 #Preview {
     UploadTabView()
         .environmentObject(AuthenticationViewModel())
+        .environmentObject(ThemeManager())
 }

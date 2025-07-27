@@ -9,6 +9,7 @@ import SwiftUI
 
 struct RatingTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
+    @EnvironmentObject private var themeManager: ThemeManager
     @StateObject private var viewModel = PhotoRatingViewModel()
     @State private var currentCardOffset: CGSize = .zero
     @State private var nextCardOffset: CGSize = .zero
@@ -17,7 +18,7 @@ struct RatingTabView: View {
     var body: some View {
         ZStack {
             // Background
-            AppTheme.Colors.backgroundPrimary
+            themeManager.currentTheme.colors.background
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -58,14 +59,14 @@ private extension RatingTabView {
             ZStack {
                 // Glow effect
                 Circle()
-                    .fill(AppTheme.Colors.accentYellow.opacity(0.3))
+                    .fill(themeManager.currentTheme.colors.accent.opacity(0.3))
                     .frame(width: 80, height: 80)
                     .blur(radius: 10)
                 
                 Circle()
-                    .fill(AppTheme.Colors.accentYellow)
+                    .fill(themeManager.currentTheme.colors.accent)
                     .frame(width: 60, height: 60)
-                    .shadow(color: AppTheme.Colors.accentYellow.opacity(0.4), radius: 15, x: 0, y: 8)
+                    .shadow(color: themeManager.currentTheme.colors.accent.opacity(0.4), radius: 15, x: 0, y: 8)
                 
                 Text("⭐️")
                     .font(.system(size: 30))
@@ -93,7 +94,7 @@ private extension RatingTabView {
                 Text("NOT")
                     .font(AppTheme.Typography.caption)
                     .fontWeight(.semibold)
-                    .foregroundColor(AppTheme.Colors.secondaryBlue)
+                    .foregroundColor(themeManager.currentTheme.colors.secondary)
                 
                 Text("•")
                     .foregroundColor(.white.opacity(0.7))
@@ -121,12 +122,12 @@ private extension RatingTabView {
         VStack(spacing: AppTheme.Spacing.sm) {
             HStack {
                 Image(systemName: viewModel.ratingProgress.hasUnlockedUpload ? "lock.open.fill" : "lock.fill")
-                    .foregroundColor(viewModel.ratingProgress.hasUnlockedUpload ? AppTheme.Colors.success : AppTheme.Colors.warning)
+                    .foregroundColor(viewModel.ratingProgress.hasUnlockedUpload ? .green : .orange)
                     .font(.title3)
                 
                 Text(viewModel.progressText)
                     .font(AppTheme.Typography.headline)
-                    .foregroundColor(AppTheme.Colors.textPrimary)
+                    .foregroundColor(themeManager.currentTheme.colors.text)
                 
                 Spacer()
             }
@@ -134,11 +135,15 @@ private extension RatingTabView {
             // Progress bar
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: AppTheme.CornerRadius.sm)
-                    .fill(AppTheme.Colors.textSecondary.opacity(0.2))
+                    .fill(themeManager.currentTheme.colors.text.opacity(0.2))
                     .frame(height: 8)
                 
                 RoundedRectangle(cornerRadius: AppTheme.CornerRadius.sm)
-                    .fill(AppTheme.Colors.primaryGradient)
+                    .fill(LinearGradient(
+                        colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ))
                     .frame(width: max(0, UIScreen.main.bounds.width * 0.8 * viewModel.progressPercentage), height: 8)
                     .animation(.easeInOut(duration: 0.3), value: viewModel.progressPercentage)
             }
@@ -146,13 +151,13 @@ private extension RatingTabView {
             HStack {
                 Text("\(viewModel.ratingProgress.completedRatings)")
                     .font(AppTheme.Typography.caption)
-                    .foregroundColor(AppTheme.Colors.textSecondary)
+                    .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
                 
                 Spacer()
                 
                 Text("\(viewModel.ratingProgress.requiredRatings)")
                     .font(AppTheme.Typography.caption)
-                    .foregroundColor(AppTheme.Colors.textSecondary)
+                    .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
             }
         }
         .cardStyle()
@@ -205,7 +210,7 @@ private extension RatingTabView {
                 .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
             
             // Photo content with rounded corners
-            CachedAsyncImage(url: photo.imageURL.highRes) { image in
+            AsyncImage(url: URL(string: photo.imageURL.highRes)) { image in
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -217,8 +222,8 @@ private extension RatingTabView {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    AppTheme.Colors.primaryBlue.opacity(0.1),
-                                    AppTheme.Colors.secondaryBlue.opacity(0.1)
+                                    themeManager.currentTheme.colors.primary.opacity(0.1),
+                                    themeManager.currentTheme.colors.secondary.opacity(0.1)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -229,7 +234,7 @@ private extension RatingTabView {
                     VStack(spacing: AppTheme.Spacing.sm) {
                         ZStack {
                             Circle()
-                                .fill(AppTheme.Colors.accentYellow.opacity(0.3))
+                                .fill(themeManager.currentTheme.colors.accent.opacity(0.3))
                                 .frame(width: 60, height: 60)
                             
                             Text("📷")
@@ -238,12 +243,12 @@ private extension RatingTabView {
                         
                         Text("載入中...")
                             .font(AppTheme.Typography.caption)
-                            .foregroundColor(AppTheme.Colors.textSecondary)
+                            .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
                             .fontWeight(.medium)
                         
                         ProgressView()
                             .scaleEffect(0.8)
-                            .tint(AppTheme.Colors.primaryBlue)
+                            .tint(themeManager.currentTheme.colors.primary)
                     }
                 }
             }
@@ -327,7 +332,7 @@ private extension RatingTabView {
                     ZStack {
                         // Glow effect
                         Circle()
-                            .fill(AppTheme.Colors.secondaryBlue.opacity(0.3))
+                            .fill(themeManager.currentTheme.colors.secondary.opacity(0.3))
                             .frame(width: 100, height: 100)
                             .blur(radius: 20)
                         
@@ -342,12 +347,12 @@ private extension RatingTabView {
                         .font(.system(size: 28, weight: .black, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [AppTheme.Colors.secondaryBlue, AppTheme.Colors.primaryBlue],
+                                colors: [themeManager.currentTheme.colors.secondary, themeManager.currentTheme.colors.primary],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .shadow(color: AppTheme.Colors.secondaryBlue.opacity(0.5), radius: 5, x: 0, y: 2)
+                        .shadow(color: themeManager.currentTheme.colors.secondary.opacity(0.5), radius: 5, x: 0, y: 2)
                 }
                 .opacity(min(Double(-currentCardOffset.width) / 120, 1.0))
                 .scaleEffect(0.8 + min(Double(-currentCardOffset.width) / 300, 0.4))
@@ -365,7 +370,7 @@ private extension RatingTabView {
                 ZStack {
                     // Outer glow
                     Circle()
-                        .fill(AppTheme.Colors.secondaryBlue.opacity(0.3))
+                        .fill(themeManager.currentTheme.colors.secondary.opacity(0.3))
                         .frame(width: 85, height: 85)
                         .blur(radius: 10)
                     
@@ -373,13 +378,13 @@ private extension RatingTabView {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [AppTheme.Colors.secondaryBlue, AppTheme.Colors.primaryBlue],
+                                colors: [themeManager.currentTheme.colors.secondary, themeManager.currentTheme.colors.primary],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                         .frame(width: 70, height: 70)
-                        .shadow(color: AppTheme.Colors.secondaryBlue.opacity(0.4), radius: 15, x: 0, y: 8)
+                        .shadow(color: themeManager.currentTheme.colors.secondary.opacity(0.4), radius: 15, x: 0, y: 8)
                     
                     // Inner highlight
                     Circle()
@@ -457,7 +462,7 @@ private extension RatingTabView {
             
             Text("載入照片中...")
                 .font(AppTheme.Typography.headline)
-                .foregroundColor(AppTheme.Colors.textSecondary)
+                .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
         }
         .cardStyle()
     }
@@ -469,11 +474,11 @@ private extension RatingTabView {
             
             Text("沒有更多照片了")
                 .font(AppTheme.Typography.title2)
-                .foregroundColor(AppTheme.Colors.textPrimary)
+                .foregroundColor(themeManager.currentTheme.colors.text)
             
             Text("請稍後再試")
                 .font(AppTheme.Typography.body)
-                .foregroundColor(AppTheme.Colors.textSecondary)
+                .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
             
             Button("重新載入") {
                 Task {
@@ -530,7 +535,7 @@ private extension RatingTabView {
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [.white, AppTheme.Colors.accentYellow],
+                                colors: [.white, themeManager.currentTheme.colors.accent],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -609,4 +614,5 @@ private extension RatingTabView {
 #Preview {
     RatingTabView()
         .environmentObject(AuthenticationViewModel())
+        .environmentObject(ThemeManager())
 }

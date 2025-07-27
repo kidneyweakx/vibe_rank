@@ -9,14 +9,19 @@ import SwiftUI
 
 struct ProfileTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
+    @EnvironmentObject private var themeManager: ThemeManager
     @State private var showingSettings = false
     
     var body: some View {
         NavigationStack {
             ZStack {
                 // Cute background matching the main theme
-                AppTheme.Colors.primaryGradient
-                    .ignoresSafeArea()
+                LinearGradient(
+                    colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 // Floating decorative elements
                 GeometryReader { geometry in
@@ -82,7 +87,7 @@ private extension ProfileTabView {
             ZStack {
                 // Glow effect
                 Circle()
-                    .fill(AppTheme.Colors.accentYellow.opacity(0.3))
+                    .fill(themeManager.currentTheme.colors.accent.opacity(0.3))
                     .frame(width: 130, height: 130)
                     .blur(radius: 20)
                 
@@ -90,13 +95,13 @@ private extension ProfileTabView {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [AppTheme.Colors.accentYellow, AppTheme.Colors.accentYellow.opacity(0.8)],
+                            colors: [themeManager.currentTheme.colors.accent, themeManager.currentTheme.colors.accent.opacity(0.8)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
                     .frame(width: 100, height: 100)
-                    .shadow(color: AppTheme.Colors.accentYellow.opacity(0.4), radius: 20, x: 0, y: 10)
+                    .shadow(color: themeManager.currentTheme.colors.accent.opacity(0.4), radius: 20, x: 0, y: 10)
                 
                 // Inner highlight
                 Circle()
@@ -132,11 +137,11 @@ private extension ProfileTabView {
                 if authViewModel.isGuest {
                     HStack(spacing: AppTheme.Spacing.xs) {
                         Image(systemName: "person.crop.circle.badge.questionmark")
-                            .foregroundColor(AppTheme.Colors.warning)
+                            .foregroundColor(.orange)
                         Text("訪客模式")
                             .font(AppTheme.Typography.caption)
                             .fontWeight(.semibold)
-                            .foregroundColor(AppTheme.Colors.warning)
+                            .foregroundColor(.orange)
                     }
                     .padding(.horizontal, AppTheme.Spacing.md)
                     .padding(.vertical, AppTheme.Spacing.xs)
@@ -172,7 +177,7 @@ private extension ProfileTabView {
             HStack {
                 Text("統計數據")
                     .font(AppTheme.Typography.headline)
-                    .foregroundColor(AppTheme.Colors.textPrimary)
+                    .foregroundColor(themeManager.currentTheme.colors.text)
                 Spacer()
             }
             
@@ -184,28 +189,28 @@ private extension ProfileTabView {
                     icon: "star.fill",
                     title: "完成評分",
                     value: "\(authViewModel.user?.ratingProgress.completedRatings ?? 0)",
-                    color: AppTheme.Colors.accentYellow
+                    color: themeManager.currentTheme.colors.accent
                 )
                 
                 StatCard(
                     icon: "target",
                     title: "目標評分",
                     value: "\(authViewModel.user?.ratingProgress.requiredRatings ?? 0)",
-                    color: AppTheme.Colors.primaryBlue
+                    color: themeManager.currentTheme.colors.primary
                 )
                 
                 StatCard(
                     icon: "chart.line.uptrend.xyaxis",
                     title: "進度",
                     value: "\(Int((authViewModel.user?.ratingProgress.progressPercentage ?? 0) * 100))%",
-                    color: AppTheme.Colors.success
+                    color: .green
                 )
                 
                 StatCard(
                     icon: "photo.stack",
                     title: "上傳照片",
                     value: "0", // TODO: Add photo count
-                    color: AppTheme.Colors.secondaryBlue
+                    color: themeManager.currentTheme.colors.secondary
                 )
             }
         }
@@ -216,13 +221,13 @@ private extension ProfileTabView {
             HStack {
                 Text("成就")
                     .font(AppTheme.Typography.headline)
-                    .foregroundColor(AppTheme.Colors.textPrimary)
+                    .foregroundColor(themeManager.currentTheme.colors.text)
                 Spacer()
                 Button("查看全部") {
                     // TODO: Navigate to achievements
                 }
                 .font(AppTheme.Typography.caption)
-                .foregroundColor(AppTheme.Colors.primaryBlue)
+                .foregroundColor(themeManager.currentTheme.colors.primary)
             }
             
             ScrollView(.horizontal, showsIndicators: false) {
@@ -262,7 +267,7 @@ private extension ProfileTabView {
             HStack {
                 Text("設定")
                     .font(AppTheme.Typography.headline)
-                    .foregroundColor(AppTheme.Colors.textPrimary)
+                    .foregroundColor(themeManager.currentTheme.colors.text)
                 Spacer()
             }
             
@@ -325,6 +330,7 @@ private extension ProfileTabView {
 
 // MARK: - Supporting Views
 struct StatCard: View {
+    @EnvironmentObject private var themeManager: ThemeManager
     let icon: String
     let title: String
     let value: String
@@ -345,11 +351,11 @@ struct StatCard: View {
             Text(value)
                 .font(AppTheme.Typography.title2)
                 .fontWeight(.bold)
-                .foregroundColor(AppTheme.Colors.textPrimary)
+                .foregroundColor(themeManager.currentTheme.colors.text)
             
             Text(title)
                 .font(AppTheme.Typography.caption)
-                .foregroundColor(AppTheme.Colors.textSecondary)
+                .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
                 .multilineTextAlignment(.center)
         }
         .cardStyle()
@@ -357,6 +363,7 @@ struct StatCard: View {
 }
 
 struct AchievementBadge: View {
+    @EnvironmentObject private var themeManager: ThemeManager
     let icon: String
     let title: String
     let isUnlocked: Bool
@@ -365,18 +372,18 @@ struct AchievementBadge: View {
         VStack(spacing: AppTheme.Spacing.xs) {
             ZStack {
                 Circle()
-                    .fill(isUnlocked ? AppTheme.Colors.accentYellow : AppTheme.Colors.textSecondary.opacity(0.2))
+                    .fill(isUnlocked ? themeManager.currentTheme.colors.accent : themeManager.currentTheme.colors.text.opacity(0.2))
                     .frame(width: 60, height: 60)
-                    .shadow(color: isUnlocked ? AppTheme.Colors.accentYellow.opacity(0.3) : .clear, radius: 8, x: 0, y: 4)
+                    .shadow(color: isUnlocked ? themeManager.currentTheme.colors.accent.opacity(0.3) : .clear, radius: 8, x: 0, y: 4)
                 
                 Image(systemName: icon)
                     .font(.title2)
-                    .foregroundColor(isUnlocked ? .white : AppTheme.Colors.textSecondary)
+                    .foregroundColor(isUnlocked ? .white : themeManager.currentTheme.colors.text.opacity(0.7))
             }
             
             Text(title)
                 .font(AppTheme.Typography.caption)
-                .foregroundColor(isUnlocked ? AppTheme.Colors.textPrimary : AppTheme.Colors.textSecondary)
+                .foregroundColor(isUnlocked ? themeManager.currentTheme.colors.text : themeManager.currentTheme.colors.text.opacity(0.7))
                 .multilineTextAlignment(.center)
         }
         .frame(width: 80)
@@ -386,6 +393,7 @@ struct AchievementBadge: View {
 }
 
 struct SettingRow: View {
+    @EnvironmentObject private var themeManager: ThemeManager
     let icon: String
     let title: String
     let isDestructive: Bool
@@ -403,18 +411,18 @@ struct SettingRow: View {
             HStack(spacing: AppTheme.Spacing.md) {
                 Image(systemName: icon)
                     .font(.title3)
-                    .foregroundColor(isDestructive ? AppTheme.Colors.error : AppTheme.Colors.primaryBlue)
+                    .foregroundColor(isDestructive ? .red : themeManager.currentTheme.colors.primary)
                     .frame(width: 24)
                 
                 Text(title)
                     .font(AppTheme.Typography.body)
-                    .foregroundColor(isDestructive ? AppTheme.Colors.error : AppTheme.Colors.textPrimary)
+                    .foregroundColor(isDestructive ? .red : themeManager.currentTheme.colors.text)
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.caption)
-                    .foregroundColor(AppTheme.Colors.textSecondary)
+                    .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
             }
             .padding(.horizontal, AppTheme.Spacing.md)
             .padding(.vertical, AppTheme.Spacing.md)
@@ -429,10 +437,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                Text("設定頁面")
-                    .font(AppTheme.Typography.title)
-                    .padding()
-                
+                ThemeSwitcherView()
                 Spacer()
             }
             .navigationTitle("設定")
@@ -451,4 +456,5 @@ struct SettingsView: View {
 #Preview {
     ProfileTabView()
         .environmentObject(AuthenticationViewModel())
+        .environmentObject(ThemeManager())
 }

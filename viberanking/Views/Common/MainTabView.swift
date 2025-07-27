@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MainTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
+    @EnvironmentObject private var themeManager: ThemeManager
     @State private var selectedTab: TabItem = .rating
     
     var body: some View {
@@ -41,7 +42,7 @@ struct MainTabView: View {
                     }
                     .tag(TabItem.upload)
             }
-            .accentColor(AppTheme.Colors.accentYellow)
+            .accentColor(themeManager.currentTheme.colors.accent)
             .onAppear {
                 setupTabBarAppearance()
             }
@@ -52,8 +53,12 @@ struct MainTabView: View {
     private var starryBackground: some View {
         ZStack {
             // Main gradient background
-            AppTheme.Colors.primaryGradient
-                .ignoresSafeArea()
+            LinearGradient(
+                colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
             
             // Floating stars and shapes
             GeometryReader { geometry in
@@ -111,4 +116,5 @@ enum TabItem: CaseIterable {
 #Preview {
     MainTabView()
         .environmentObject(AuthenticationViewModel())
+        .environmentObject(ThemeManager())
 }

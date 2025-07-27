@@ -9,12 +9,17 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var viewModel: AuthenticationViewModel
+    @EnvironmentObject private var themeManager: ThemeManager
     
     var body: some View {
         ZStack {
             // Background gradient matching the cute star theme
-            AppTheme.Colors.primaryGradient
-                .ignoresSafeArea()
+            LinearGradient(
+                colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
             
             Group {
                 if viewModel.isAuthenticated {
@@ -24,7 +29,7 @@ struct ContentView: View {
                 }
             }
         }
-        .preferredColorScheme(.light) // Force light mode for consistent cute theme
+        .preferredColorScheme(themeManager.currentTheme == .dark ? .dark : .light)
         .localized()
     }
 }
