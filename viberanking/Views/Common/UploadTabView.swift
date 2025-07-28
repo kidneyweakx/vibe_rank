@@ -29,12 +29,12 @@ struct UploadTabView: View {
                 .ignoresSafeArea()
                 
                 // Floating decorative elements
-                GeometryReader { geometry in
-                    ForEach(0..<6, id: \.self) { index in
-                        FloatingShape(geometry: geometry, index: index)
-                    }
-                }
-                .ignoresSafeArea()
+//                GeometryReader { geometry in
+//                    ForEach(0..<6, id: \.self) { index in
+//                        FloatingShape(geometry: geometry, index: index)
+//                    }
+////                }
+//                .ignoresSafeArea()
                 
                 if authViewModel.isGuest || !(authViewModel.user?.ratingProgress.hasUnlockedUpload ?? false) {
                     lockedStateView

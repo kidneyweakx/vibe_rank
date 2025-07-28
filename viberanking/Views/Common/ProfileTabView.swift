@@ -10,34 +10,32 @@ import SwiftUI
 struct ProfileTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @EnvironmentObject private var themeManager: ThemeManager
+    @State private var showingImagePicker = false
+    @State private var showingShareSheet = false
     
     var body: some View {
         NavigationStack {
             ZStack {
-                FloatingShapesBackground()
+                Color.black.ignoresSafeArea()
                 
-                ScrollView {
-                    VStack(spacing: AppTheme.Spacing.sm) {
-                        // Profile Header
-                        profileHeader
-                        
-                        // Stats Cards
-                        statsSection
-                        
-                        // Achievement Section
-                        achievementSection
-                        
-                        // Settings Section
-                        settingsSection
-                        
-                        Spacer(minLength: AppTheme.Spacing.lg)
-                    }
-                    .padding(.horizontal, AppTheme.Spacing.md)
+                VStack(spacing: 0) {
+                    // Profile Header
+                    profileHeader
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                    
+                    // Weekly Photos ScrollView
+                    weeklyPhotosScrollView
+                        .padding(.top, 20)
                 }
             }
-            .navigationTitle(NSLocalizedString("profile.title", comment: ""))
-            .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(.hidden, for: .navigationBar)
+            .navigationBarHidden(true)
+        }
+        .sheet(isPresented: $showingImagePicker) {
+            // Image picker implementation
+        }
+        .sheet(isPresented: $showingShareSheet) {
+            // Share sheet implementation
         }
     }
 }
@@ -46,609 +44,271 @@ struct ProfileTabView: View {
 private extension ProfileTabView {
     
     var profileHeader: some View {
-        NavigationLink(destination: StyleReportView(userId: authViewModel.user?.id ?? "guest")) {
-            VStack(spacing: AppTheme.Spacing.sm) {
-                // Avatar with cute design
-                ZStack {
-                    // Glow effect
-                    Circle()
-                        .fill(themeManager.currentTheme.colors.accent.opacity(0.3))
-                        .frame(width: 100, height: 100)
-                        .blur(radius: 15)
+        VStack(spacing: 16) {
+            // Top row: Name/Age/Location and Avatar
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("tsla")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.white)
                     
-                    // Main avatar circle
+                    Text("Ninja")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.gray)
+                }
+                
+                Spacer()
+                
+                Button(action: {
+                    showingImagePicker = true
+                }) {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [themeManager.currentTheme.colors.accent, themeManager.currentTheme.colors.accent.opacity(0.8)],
+                                colors: [Color.pink.opacity(0.8), Color.purple.opacity(0.6)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .frame(width: 80, height: 80)
-                        .shadow(color: themeManager.currentTheme.colors.accent.opacity(0.3), radius: 15, x: 0, y: 8)
-                    
-                    // Inner highlight
-                    Circle()
-                        .stroke(
-                            LinearGradient(
-                                colors: [.white.opacity(0.5), .clear],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 2
+                        .frame(width: 60, height: 60)
+                        .overlay(
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
                         )
-                        .frame(width: 80, height: 80)
-                    
-                    if authViewModel.isGuest {
-                        Text("👤")
-                            .font(.system(size: 40))
-                            .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
-                    } else {
-                        Text(String(authViewModel.user?.name.prefix(1) ?? "U").uppercased())
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                            .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
-                    }
                 }
-                
-                // User Info with glass morphism
-                VStack(spacing: AppTheme.Spacing.xs) {
-                    HStack(spacing: AppTheme.Spacing.xs) {
-                        Text(authViewModel.user?.name ?? NSLocalizedString("profile.guest.name", comment: ""))
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                            .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
-                            .lineLimit(1)
+            }
+            
+            // Middle row: Stats
+            HStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 14))
+                            .foregroundColor(.gray)
                         
-                        Image(systemName: "chart.bar.doc.horizontal")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
+                        Text("Weeks posted: 3")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
                     }
                     
-                    if authViewModel.isGuest {
-                        HStack(spacing: AppTheme.Spacing.xs) {
-                            Image(systemName: "person.crop.circle.badge.questionmark")
-                                .foregroundColor(.orange)
-                            Text(NSLocalizedString("profile.guest.mode", comment: ""))
-                                .font(AppTheme.Typography.caption)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.orange)
-                                .lineLimit(1)
-                        }
-                        .padding(.horizontal, AppTheme.Spacing.sm)
-                        .padding(.vertical, AppTheme.Spacing.xs)
-                        .background(
-                            Capsule()
-                                .fill(.ultraThinMaterial)
-                        )
-                    } else {
-                        Text("點擊查看風格報告")
-                            .font(AppTheme.Typography.caption)
-                            .foregroundColor(.white.opacity(0.8))
-                            .padding(.horizontal, AppTheme.Spacing.sm)
-                            .padding(.vertical, AppTheme.Spacing.xs)
+                    HStack(spacing: 8) {
+                        Image(systemName: "location")
+                            .font(.system(size: 14))
+                            .foregroundColor(.gray)
+                        
+                        Text("Homebase: space")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                    }
+                }
+                
+                Spacer()
+                
+                HStack(spacing: 12) {
+                    Button(action: {
+                        // Settings action
+                    }) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 20))
+                            .foregroundColor(.white)
+                            .frame(width: 40, height: 40)
                             .background(
-                                Capsule()
-                                    .fill(.ultraThinMaterial)
+                                Circle()
+                                    .fill(Color.white.opacity(0.1))
+                            )
+                    }
+                    
+                    Button(action: {
+                        showingShareSheet = true
+                    }) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 20))
+                            .foregroundColor(.white)
+                            .frame(width: 40, height: 40)
+                            .background(
+                                Circle()
+                                    .fill(Color.white.opacity(0.1))
                             )
                     }
                 }
             }
-            .padding(AppTheme.Spacing.md)
-            .background(
-                RoundedRectangle(cornerRadius: AppTheme.CornerRadius.xl)
-                    .fill(.ultraThinMaterial)
-                    .shadow(color: .black.opacity(0.1), radius: 15, x: 0, y: 8)
-            )
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-    
-    var statsSection: some View {
-        VStack(spacing: AppTheme.Spacing.sm) {
-            HStack {
-                Text(NSLocalizedString("profile.stats.title", comment: ""))
-                    .font(AppTheme.Typography.headline)
-                    .foregroundColor(themeManager.currentTheme.colors.text)
-                Spacer()
-            }
             
-            // Compact stats grid with 2x2 layout
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: AppTheme.Spacing.sm),
-                GridItem(.flexible(), spacing: AppTheme.Spacing.sm)
-            ], spacing: AppTheme.Spacing.sm) {
-                CompactStatCard(
-                    icon: "star.fill",
-                    title: NSLocalizedString("profile.stats.completedRatings", comment: ""),
-                    value: "\(authViewModel.user?.ratingProgress.completedRatings ?? 0)",
-                    color: themeManager.currentTheme.colors.accent
-                )
-                
-                CompactStatCard(
-                    icon: "target",
-                    title: NSLocalizedString("profile.stats.requiredRatings", comment: ""),
-                    value: "\(authViewModel.user?.ratingProgress.requiredRatings ?? 0)",
-                    color: themeManager.currentTheme.colors.primary
-                )
-                
-                CompactStatCard(
-                    icon: "chart.line.uptrend.xyaxis",
-                    title: NSLocalizedString("profile.stats.progress", comment: ""),
-                    value: "\(Int((authViewModel.user?.ratingProgress.progressPercentage ?? 0) * 100))%",
-                    color: .green
-                )
-                
-                CompactStatCard(
-                    icon: "photo.stack",
-                    title: NSLocalizedString("profile.stats.uploadedPhotos", comment: ""),
-                    value: "0", // TODO: Add photo count
-                    color: themeManager.currentTheme.colors.secondary
-                )
-            }
-        }
-        .cardStyle()
-    }
-    
-    var achievementSection: some View {
-        VStack(spacing: AppTheme.Spacing.sm) {
-            HStack {
-                Text(NSLocalizedString("profile.achievements.title", comment: ""))
-                    .font(AppTheme.Typography.headline)
-                    .foregroundColor(themeManager.currentTheme.colors.text)
-                Spacer()
-                Button(NSLocalizedString("profile.achievements.viewAll", comment: "")) {
-                    // TODO: Navigate to achievements
+            // Bottom row: Action buttons
+            HStack(spacing: 12) {
+                Button("Recaps") {
+                    // Recaps action
                 }
-                .font(AppTheme.Typography.caption)
-                .foregroundColor(themeManager.currentTheme.colors.primary)
-            }
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: AppTheme.Spacing.sm) {
-                    CompactAchievementBadge(
-                        icon: "star.fill",
-                        title: NSLocalizedString("profile.achievements.firstRating", comment: ""),
-                        isUnlocked: (authViewModel.user?.ratingProgress.completedRatings ?? 0) > 0
-                    )
-                    
-                    CompactAchievementBadge(
-                        icon: "flame.fill",
-                        title: NSLocalizedString("profile.achievements.ratingStreak", comment: ""),
-                        isUnlocked: (authViewModel.user?.ratingProgress.completedRatings ?? 0) > 10
-                    )
-                    
-                    CompactAchievementBadge(
-                        icon: "crown.fill",
-                        title: NSLocalizedString("profile.achievements.ratingExpert", comment: ""),
-                        isUnlocked: (authViewModel.user?.ratingProgress.completedRatings ?? 0) > 50
-                    )
-                    
-                    CompactAchievementBadge(
-                        icon: "lock.open.fill",
-                        title: NSLocalizedString("profile.achievements.uploadUnlocked", comment: ""),
-                        isUnlocked: authViewModel.user?.ratingProgress.hasUnlockedUpload ?? false
-                    )
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
+                .background(
+                    RoundedRectangle(cornerRadius: 22)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                )
+                
+                Button("Share Profile") {
+                    showingShareSheet = true
                 }
-                .padding(.horizontal, AppTheme.Spacing.sm)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
+                .background(
+                    RoundedRectangle(cornerRadius: 22)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                )
+                
+                Button(action: {
+                    // Settings action
+                }) {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(.white)
+                        .frame(width: 44, height: 44)
+                        .background(
+                            Circle()
+                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        )
+                }
             }
         }
-        .cardStyle()
     }
     
-    var settingsSection: some View {
-        VStack(spacing: AppTheme.Spacing.sm) {
-            HStack {
-                Text(NSLocalizedString("profile.settings.title", comment: ""))
-                    .font(AppTheme.Typography.headline)
-                    .foregroundColor(themeManager.currentTheme.colors.text)
-                Spacer()
+    var weeklyPhotosScrollView: some View {
+        ScrollView {
+            LazyVStack(spacing: 20) {
+                ForEach(getRecentWeeks(), id: \.weekNumber) { week in
+                    WeeklyPhotoSection(week: week)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 100)
+        }
+    }
+    
+    func getRecentWeeks() -> [WeekData] {
+        let calendar = Calendar.current
+        let today = Date()
+        var weeks: [WeekData] = []
+        
+        for i in 0..<5 {
+            let weekStart = calendar.date(byAdding: .weekOfYear, value: -i, to: today) ?? today
+            let weekNumber = calendar.component(.weekOfYear, from: weekStart)
+            
+            var days: [DayData] = []
+            for j in 0..<7 {
+                if let dayDate = calendar.date(byAdding: .day, value: j, to: weekStart) {
+                    let dayNumber = calendar.component(.day, from: dayDate)
+                    let monthName = DateFormatter().shortMonthSymbols[calendar.component(.month, from: dayDate) - 1]
+                    let weekdayName = DateFormatter().shortWeekdaySymbols[calendar.component(.weekday, from: dayDate) - 1]
+                    
+                    days.append(DayData(
+                        date: dayDate,
+                        dayNumber: dayNumber,
+                        monthName: monthName,
+                        weekdayName: weekdayName,
+                        hasPhoto: Bool.random() // Random for demo
+                    ))
+                }
             }
             
-            VStack(spacing: 0) {
-                ThemeSwitcherView()
-                    .padding(.vertical, AppTheme.Spacing.xs)
-                
-                Divider()
+            weeks.append(WeekData(weekNumber: weekNumber, days: days))
+        }
+        
+        return weeks
+    }
+    
 
-                CompactSettingRow(
-                    icon: "globe",
-                    title: NSLocalizedString("profile.settings.language", comment: ""),
-                    action: {
-                        // TODO: Navigate to language settings
-                    }
-                )
+}
+
+// MARK: - Data Models
+struct WeekData {
+    let weekNumber: Int
+    let days: [DayData]
+}
+
+struct DayData {
+    let date: Date
+    let dayNumber: Int
+    let monthName: String
+    let weekdayName: String
+    let hasPhoto: Bool
+}
+
+// MARK: - Supporting Views
+struct WeeklyPhotoSection: View {
+    let week: WeekData
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Week \(week.weekNumber)")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
                 
-                Divider()
+                Spacer()
                 
-                CompactSettingRow(
-                    icon: "bell.fill",
-                    title: NSLocalizedString("profile.settings.notifications", comment: ""),
-                    action: {
-                        // TODO: Navigate to notification settings
-                    }
-                )
-                
-                Divider()
-                
-                CompactSettingRow(
-                    icon: "questionmark.circle.fill",
-                    title: NSLocalizedString("profile.settings.help", comment: ""),
-                    action: {
-                        // TODO: Navigate to help
-                    }
-                )
-                
-                if !authViewModel.isGuest {
-                    Divider()
-                    
-                    CompactSettingRow(
-                        icon: "rectangle.portrait.and.arrow.right",
-                        title: NSLocalizedString("profile.settings.logout", comment: ""),
-                        isDestructive: true,
-                        action: {
-                            authViewModel.signOut()
-                        }
-                    )
-                } else {
-                    Divider()
-                    
-                    CompactSettingRow(
-                        icon: "person.crop.circle.fill.badge.plus",
-                        title: NSLocalizedString("profile.settings.register", comment: ""),
-                        action: {
-                            authViewModel.signOut() // Return to login
-                        }
-                    )
+                Button(action: {
+                    // More options
+                }) {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 16))
+                        .foregroundColor(.gray)
+                }
+            }
+            
+            HStack(spacing: 8) {
+                ForEach(Array(week.days.enumerated()), id: \.offset) { index, day in
+                    DayPhotoCard(day: day)
                 }
             }
         }
-        .cardStyle(padding: 0)
+    }
+}
+
+struct DayPhotoCard: View {
+    let day: DayData
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(day.hasPhoto ? Color.gray.opacity(0.3) : Color.gray.opacity(0.1))
+                .frame(height: 80)
+                .overlay(
+                    Group {
+                        if day.hasPhoto {
+                            Image(systemName: "photo.fill")
+                                .font(.system(size: 20))
+                                .foregroundColor(.gray)
+                        }
+                    }
+                )
+            
+            VStack(spacing: 2) {
+                Text(day.monthName)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.gray)
+                
+                Text("\(day.dayNumber)")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+                
+                Text(day.weekdayName)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.gray)
+            }
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
 // MARK: - Supporting Views
-struct StatCard: View {
-    @EnvironmentObject private var themeManager: ThemeManager
-    let icon: String
-    let title: String
-    let value: String
-    let color: Color
-    
-    var body: some View {
-        HStack(spacing: AppTheme.Spacing.sm) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundColor(color)
-                .frame(width: 24, height: 24)
-                .background(
-                    Circle()
-                        .fill(color.opacity(0.15))
-                        .frame(width: 36, height: 36)
-                )
 
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-                Text(title)
-                    .font(AppTheme.Typography.caption)
-                    .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
-                
-                Text(value)
-                    .font(AppTheme.Typography.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(themeManager.currentTheme.colors.text)
-            }
-            Spacer()
-        }
-        .padding(AppTheme.Spacing.sm)
-        .cardStyle(padding: AppTheme.Spacing.sm)
-    }
-}
-
-struct CompactStatCard: View {
-    @EnvironmentObject private var themeManager: ThemeManager
-    let icon: String
-    let title: String
-    let value: String
-    let color: Color
-    
-    var body: some View {
-        VStack(spacing: AppTheme.Spacing.xs) {
-            HStack(spacing: AppTheme.Spacing.xs) {
-                Image(systemName: icon)
-                    .font(.callout)
-                    .foregroundColor(color)
-                    .frame(width: 16, height: 16)
-                
-                Text(value)
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundColor(themeManager.currentTheme.colors.text)
-                    .lineLimit(1)
-                
-                Spacer()
-            }
-            
-            Text(title)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
-                .lineLimit(2)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(.horizontal, AppTheme.Spacing.sm)
-        .padding(.vertical, AppTheme.Spacing.xs)
-        .frame(height: 50)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
-                .fill(themeManager.currentTheme.colors.cardBackground)
-                .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
-        )
-    }
-}
-
-struct AchievementBadge: View {
-    @EnvironmentObject private var themeManager: ThemeManager
-    let icon: String
-    let title: String
-    let isUnlocked: Bool
-    
-    var body: some View {
-        VStack(spacing: AppTheme.Spacing.xs) {
-            ZStack {
-                Circle()
-                    .fill(isUnlocked ? themeManager.currentTheme.colors.accent : themeManager.currentTheme.colors.text.opacity(0.1))
-                    .frame(width: 50, height: 50)
-                    .shadow(color: isUnlocked ? themeManager.currentTheme.colors.accent.opacity(0.2) : .clear, radius: 5, x: 0, y: 2)
-                
-                Image(systemName: icon)
-                    .font(.title3)
-                    .foregroundColor(isUnlocked ? .white : themeManager.currentTheme.colors.text.opacity(0.5))
-            }
-            
-            Text(title)
-                .font(AppTheme.Typography.caption)
-                .foregroundColor(isUnlocked ? themeManager.currentTheme.colors.text : themeManager.currentTheme.colors.text.opacity(0.5))
-                .multilineTextAlignment(.center)
-        }
-        .frame(width: 70)
-        .scaleEffect(isUnlocked ? 1.0 : 0.95)
-        .opacity(isUnlocked ? 1.0 : 0.7)
-    }
-}
-
-struct CompactAchievementBadge: View {
-    @EnvironmentObject private var themeManager: ThemeManager
-    let icon: String
-    let title: String
-    let isUnlocked: Bool
-    
-    var body: some View {
-        VStack(spacing: AppTheme.Spacing.xs) {
-            ZStack {
-                Circle()
-                    .fill(isUnlocked ? themeManager.currentTheme.colors.accent : themeManager.currentTheme.colors.text.opacity(0.1))
-                    .frame(width: 40, height: 40)
-                    .shadow(color: isUnlocked ? themeManager.currentTheme.colors.accent.opacity(0.2) : .clear, radius: 3, x: 0, y: 1)
-                
-                Image(systemName: icon)
-                    .font(.callout)
-                    .foregroundColor(isUnlocked ? .white : themeManager.currentTheme.colors.text.opacity(0.5))
-            }
-            
-            Text(title)
-                .font(.system(size: 10, weight: .medium))
-                .foregroundColor(isUnlocked ? themeManager.currentTheme.colors.text : themeManager.currentTheme.colors.text.opacity(0.5))
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-        }
-        .frame(width: 60)
-        .scaleEffect(isUnlocked ? 1.0 : 0.95)
-        .opacity(isUnlocked ? 1.0 : 0.7)
-    }
-}
-
-struct SettingRow: View {
-    @EnvironmentObject private var themeManager: ThemeManager
-    let icon: String
-    let title: String
-    let isDestructive: Bool
-    let action: () -> Void
-    
-    init(icon: String, title: String, isDestructive: Bool = false, action: @escaping () -> Void) {
-        self.icon = icon
-        self.title = title
-        self.isDestructive = isDestructive
-        self.action = action
-    }
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: AppTheme.Spacing.md) {
-                Image(systemName: icon)
-                    .font(.callout)
-                    .foregroundColor(isDestructive ? .red : themeManager.currentTheme.colors.primary)
-                    .frame(width: 20)
-                
-                Text(title)
-                    .font(AppTheme.Typography.body)
-                    .foregroundColor(isDestructive ? .red : themeManager.currentTheme.colors.text)
-                
-                Spacer()
-            }
-            .padding(.horizontal, AppTheme.Spacing.md)
-            .padding(.vertical, AppTheme.Spacing.sm)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-struct CompactSettingRow: View {
-    @EnvironmentObject private var themeManager: ThemeManager
-    let icon: String
-    let title: String
-    let isDestructive: Bool
-    let action: () -> Void
-    
-    init(icon: String, title: String, isDestructive: Bool = false, action: @escaping () -> Void) {
-        self.icon = icon
-        self.title = title
-        self.isDestructive = isDestructive
-        self.action = action
-    }
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: AppTheme.Spacing.sm) {
-                Image(systemName: icon)
-                    .font(.callout)
-                    .foregroundColor(isDestructive ? .red : themeManager.currentTheme.colors.primary)
-                    .frame(width: 18)
-                
-                Text(title)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(isDestructive ? .red : themeManager.currentTheme.colors.text)
-                    .lineLimit(1)
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.5))
-            }
-            .padding(.horizontal, AppTheme.Spacing.md)
-            .padding(.vertical, AppTheme.Spacing.xs)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-// MARK: - Background View
-struct FloatingShapesBackground: View {
-    @EnvironmentObject private var themeManager: ThemeManager
-
-    var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            GeometryReader { geometry in
-                ForEach(0..<8, id: \.self) { index in
-                    FloatingShape(geometry: geometry, index: index)
-                }
-            }
-            .ignoresSafeArea()
-        }
-    }
-}
 
 #Preview {
     ProfileTabView()
         .environmentObject(AuthenticationViewModel())
         .environmentObject(ThemeManager())
-}
-
-// MARK: - Floating Shapes for Cute Background
-struct FloatingShape: View {
-    @EnvironmentObject var themeManager: ThemeManager
-    let geometry: GeometryProxy
-    let index: Int
-    
-    @State private var offset: CGSize = .zero
-    @State private var rotation: Double = 0
-    @State private var scale: Double = 1.0
-    
-    private var shapeType: ShapeType {
-        ShapeType.allCases[index % ShapeType.allCases.count]
-    }
-    
-    private var color: Color {
-        let colors = themeManager.currentTheme.colors
-        switch index % 4 {
-        case 0: return colors.accent.opacity(0.6)
-        case 1: return Color.white.opacity(0.4)
-        case 2: return colors.secondary.opacity(0.3)
-        default: return colors.accent.opacity(0.3)
-        }
-    }
-    
-    private var size: CGFloat {
-        switch index % 3 {
-        case 0: return 8
-        case 1: return 12
-        default: return 16
-        }
-    }
-    
-    var body: some View {
-        Group {
-            switch shapeType {
-            case .star:
-                Text("⭐️")
-                    .font(.system(size: size))
-            case .diamond:
-                Diamond()
-                    .fill(color)
-                    .frame(width: size, height: size)
-            case .circle:
-                Circle()
-                    .fill(color)
-                    .frame(width: size, height: size)
-            case .sparkle:
-                Text("✨")
-                    .font(.system(size: size))
-            }
-        }
-        .position(
-            x: CGFloat.random(in: 0...geometry.size.width),
-            y: CGFloat.random(in: 0...geometry.size.height)
-        )
-        .offset(offset)
-        .rotationEffect(.degrees(rotation))
-        .scaleEffect(scale)
-        .onAppear {
-            startAnimation()
-        }
-    }
-    
-    private func startAnimation() {
-        let duration = Double.random(in: 3...8)
-        let delay = Double.random(in: 0...2)
-        
-        withAnimation(
-            .easeInOut(duration: duration)
-            .repeatForever(autoreverses: true)
-            .delay(delay)
-        ) {
-            offset = CGSize(
-                width: CGFloat.random(in: -30...30),
-                height: CGFloat.random(in: -30...30)
-            )
-            rotation = Double.random(in: 0...360)
-            scale = Double.random(in: 0.8...1.2)
-        }
-    }
-}
-
-enum ShapeType: CaseIterable {
-    case star, diamond, circle, sparkle
-}
-
-struct Diamond: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let center = CGPoint(x: rect.midX, y: rect.midY)
-        let radius = min(rect.width, rect.height) / 2
-        
-        path.move(to: CGPoint(x: center.x, y: center.y - radius))
-        path.addLine(to: CGPoint(x: center.x + radius, y: center.y))
-        path.addLine(to: CGPoint(x: center.x, y: center.y + radius))
-        path.addLine(to: CGPoint(x: center.x - radius, y: center.y))
-        path.closeSubpath()
-        
-        return path
-    }
 }

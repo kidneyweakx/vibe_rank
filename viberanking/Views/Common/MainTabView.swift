@@ -11,11 +11,12 @@ struct MainTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @EnvironmentObject private var themeManager: ThemeManager
     @State private var selectedTab: TabItem = .home
+    @State private var isVibeMode = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
-                RatingTabView()
+                RatingTabView(isVibeMode: $isVibeMode)
                     .tag(TabItem.rating)
                 
                 HomeView()
@@ -32,7 +33,9 @@ struct MainTabView: View {
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             
-            CustomTikTokTabBar(selectedTab: $selectedTab)
+            if !isVibeMode {
+                CustomTikTokTabBar(selectedTab: $selectedTab)
+            }
         }
         .preferredColorScheme(.dark)
     }

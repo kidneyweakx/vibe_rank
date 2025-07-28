@@ -13,6 +13,7 @@ struct RatingTabView: View {
     @StateObject private var viewModel = PhotoRatingViewModel()
     @State private var currentCardOffset: CGSize = .zero
     @State private var showCelebration = false
+    @Binding var isVibeMode: Bool
     
     var body: some View {
         ZStack {
@@ -26,12 +27,83 @@ struct RatingTabView: View {
                 emptyStateView
             }
             
-            // Action buttons overlay
-            VStack {
-                Spacer()
-                actionButtonsView
-                    .padding(.bottom, 50)
+            // Top overlay with exit button (only in vibe mode)
+            if isVibeMode {
+                VStack {
+                    HStack {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                isVibeMode = false
+                            }
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 20, weight: .medium))
+                                .foregroundColor(.white)
+                                .frame(width: 44, height: 44)
+                                .background(.ultraThinMaterial)
+                                .clipShape(Circle())
+                                .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 2)
+                        }
+                        
+                        Spacer()
+                        
+                        // Vibe mode indicator
+                        Text("VIBE")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(15)
+                            .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 2)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 50) // 增加頂部間距，避免超出安全區域
+                    
+                    Spacer()
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
+            
+            // Action buttons overlay (only when not in vibe mode)
+            if !isVibeMode {
+                VStack {
+                    Spacer()
+                    
+                    // Enter Vibe Mode button
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isVibeMode = true
+                        }
+                    } label: {
+                        Text("進入 Vibe 模式")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 30)
+                            .padding(.vertical, 15)
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(25)
+                            .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
+                    }
+                    .padding(.bottom, 20)
+                    
+                    actionButtonsView
+                        .padding(.bottom, 50)
+                }
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+            
+            // Action buttons overlay for Vibe mode (only when in vibe mode)
+            if isVibeMode {
+                VStack {
+                    Spacer()
+                    actionButtonsView
+                        .padding(.bottom, 50)
+                }
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+            
+
         }
         .task {
             if let userId = authViewModel.user?.id {
@@ -43,6 +115,8 @@ struct RatingTabView: View {
                 celebrationOverlay
             }
         }
+        .statusBarHidden(isVibeMode)
+        .animation(.easeInOut(duration: 0.3), value: isVibeMode)
     }
 }
 
@@ -108,6 +182,7 @@ private extension RatingTabView {
                     handleSwipeEnd(value)
                 } : nil
         )
+        .allowsHitTesting(isTopCard)
         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: currentCardOffset)
     }
     
@@ -155,15 +230,16 @@ private extension RatingTabView {
             } label: {
                 Circle()
                     .fill(.ultraThinMaterial)
-                    .frame(width: 70, height: 70)
+                    .frame(width: isVibeMode ? 80 : 70, height: isVibeMode ? 80 : 70)
                     .overlay(
                         Text("❌")
-                            .font(.system(size: 32))
+                            .font(.system(size: isVibeMode ? 36 : 32))
                     )
                     .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
             }
             .disabled(viewModel.currentPhoto == nil)
             .opacity(viewModel.currentPhoto == nil ? 0.5 : 1.0)
+            .scaleEffect(isVibeMode ? 1.1 : 1.0)
             
             // HOT button
             Button {
@@ -171,16 +247,18 @@ private extension RatingTabView {
             } label: {
                 Circle()
                     .fill(.ultraThinMaterial)
-                    .frame(width: 70, height: 70)
+                    .frame(width: isVibeMode ? 80 : 70, height: isVibeMode ? 80 : 70)
                     .overlay(
                         Text("❤️")
-                            .font(.system(size: 32))
+                            .font(.system(size: isVibeMode ? 36 : 32))
                     )
                     .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
             }
             .disabled(viewModel.currentPhoto == nil)
             .opacity(viewModel.currentPhoto == nil ? 0.5 : 1.0)
+            .scaleEffect(isVibeMode ? 1.1 : 1.0)
         }
+        .animation(.easeInOut(duration: 0.3), value: isVibeMode)
     }
     
     var loadingView: some View {
@@ -293,7 +371,7 @@ private extension RatingTabView {
 }
 
 #Preview {
-    RatingTabView()
+    RatingTabView(isVibeMode: .constant(false))
         .environmentObject(AuthenticationViewModel())
         .environmentObject(ThemeManager())
 }
