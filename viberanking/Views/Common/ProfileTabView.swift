@@ -12,6 +12,7 @@ struct ProfileTabView: View {
     @EnvironmentObject private var themeManager: ThemeManager
     @State private var showingImagePicker = false
     @State private var showingShareSheet = false
+    @State private var showingLogoutAlert = false
     
     var body: some View {
         NavigationStack {
@@ -37,6 +38,14 @@ struct ProfileTabView: View {
         .sheet(isPresented: $showingShareSheet) {
             // Share sheet implementation
         }
+        .alert("Sign Out", isPresented: $showingLogoutAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Sign Out", role: .destructive) {
+                authViewModel.signOut()
+            }
+        } message: {
+            Text("Are you sure you want to sign out?")
+        }
     }
 }
 
@@ -48,11 +57,11 @@ private extension ProfileTabView {
             // Top row: Name/Age/Location and Avatar
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("tsla")
+                    Text(authViewModel.user?.name ?? "User")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
                     
-                    Text("Ninja")
+                    Text(authViewModel.isGuest ? "Guest User" : "Member")
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.gray)
                 }
@@ -72,9 +81,25 @@ private extension ProfileTabView {
                         )
                         .frame(width: 60, height: 60)
                         .overlay(
-                            Image(systemName: "person.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
+                            Group {
+                                if let profileImageURL = authViewModel.user?.profileImageURL,
+                                   let url = URL(string: profileImageURL) {
+                                    AsyncImage(url: url) { image in
+                                        image
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                    } placeholder: {
+                                        Image(systemName: "person.fill")
+                                            .font(.system(size: 24))
+                                            .foregroundColor(.white)
+                                    }
+                                    .clipShape(Circle())
+                                } else {
+                                    Image(systemName: "person.fill")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(.white)
+                                }
+                            }
                         )
                 }
             }
@@ -160,18 +185,17 @@ private extension ProfileTabView {
                         .stroke(Color.white.opacity(0.3), lineWidth: 1)
                 )
                 
-                Button(action: {
-                    // Settings action
-                }) {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(.white)
-                        .frame(width: 44, height: 44)
-                        .background(
-                            Circle()
-                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                        )
+                Button("Sign Out") {
+                    showingLogoutAlert = true
                 }
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.red)
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
+                .background(
+                    RoundedRectangle(cornerRadius: 22)
+                        .stroke(Color.red.opacity(0.5), lineWidth: 1)
+                )
             }
         }
     }

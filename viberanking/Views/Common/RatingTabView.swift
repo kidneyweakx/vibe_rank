@@ -57,7 +57,7 @@ struct RatingTabView: View {
                             .cornerRadius(15)
                             .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 2)
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 90)
                     .padding(.top, 50) // 增加頂部間距，避免超出安全區域
                     
                     Spacer()
