@@ -13,13 +13,9 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            // Background gradient matching the cute star theme
-            LinearGradient(
-                colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // Background
+            themeManager.currentTheme.colors.background
+                .ignoresSafeArea()
             
             Group {
                 if viewModel.isAuthenticated {

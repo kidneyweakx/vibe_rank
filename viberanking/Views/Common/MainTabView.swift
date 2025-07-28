@@ -10,19 +10,19 @@ import SwiftUI
 struct MainTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @EnvironmentObject private var themeManager: ThemeManager
-    @State private var selectedTab: TabItem = .rating
+    @State private var selectedTab: TabItem = .home
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            // Profile Tab
-            ProfileTabView()
+            // Home Tab (New - Main Dashboard)
+            HomeView()
                 .tabItem {
-                    Image(systemName: "person.crop.circle.fill")
-                    Text(NSLocalizedString("tab.main.profile", comment: "Profile tab title"))
+                    Image(systemName: "house.fill")
+                    Text("首頁")
                 }
-                .tag(TabItem.profile)
+                .tag(TabItem.home)
             
-            // Rating Tab (Center - Most Important)
+            // Rating Tab
             RatingTabView()
                 .tabItem {
                     Image(systemName: "star.fill")
@@ -37,6 +37,14 @@ struct MainTabView: View {
                     Text(NSLocalizedString("tab.main.upload", comment: "Upload tab title"))
                 }
                 .tag(TabItem.upload)
+            
+            // Profile Tab
+            ProfileTabView()
+                .tabItem {
+                    Image(systemName: "person.crop.circle.fill")
+                    Text(NSLocalizedString("tab.main.profile", comment: "Profile tab title"))
+                }
+                .tag(TabItem.profile)
         }
         .modifier(CustomTabBar())
     }
@@ -44,7 +52,7 @@ struct MainTabView: View {
 
 // MARK: - Tab Items
 enum TabItem: CaseIterable {
-    case profile, rating, upload
+    case home, rating, upload, profile
 }
 
 #Preview {
