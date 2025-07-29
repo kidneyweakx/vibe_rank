@@ -12,6 +12,11 @@ struct MainTabView: View {
     @EnvironmentObject private var themeManager: ThemeManager
     @State private var selectedTab: TabItem = .home
     @State private var isVibeMode = false
+    @State private var showingUploadMenu = false
+    @State private var showingImagePicker = false
+    @State private var showingPhotoPicker = false
+    @State private var showingImagePreview = false
+    @State private var selectedImage: UIImage?
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -21,9 +26,6 @@ struct MainTabView: View {
                 
                 HomeView()
                     .tag(TabItem.home)
-
-                UploadTabView()
-                    .tag(TabItem.upload)
                 
                 JourneyTabView()
                     .tag(TabItem.journey)
@@ -34,21 +36,60 @@ struct MainTabView: View {
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             
             if !isVibeMode {
-                CustomTikTokTabBar(selectedTab: $selectedTab)
+                CustomTikTokTabBar(
+                    selectedTab: $selectedTab,
+                    onUploadTap: {
+                        if canUpload {
+                            showingUploadMenu = true
+                        }
+                    }
+                )
             }
         }
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $showingUploadMenu) {
+            UploadMenuView(
+                showingImagePicker: $showingImagePicker,
+                showingPhotoPicker: $showingPhotoPicker
+            )
+            .presentationDetents([.height(200)])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showingImagePicker) {
+            ImagePicker(sourceType: .camera) { image in
+                selectedImage = image
+                showingImagePreview = true
+            }
+        }
+        .sheet(isPresented: $showingPhotoPicker) {
+            PhotoPickerView { image in
+                selectedImage = image
+                showingImagePreview = true
+            }
+        }
+        .fullScreenCover(isPresented: $showingImagePreview) {
+            if let image = selectedImage {
+                ImagePreviewView(image: image) {
+                    selectedImage = nil
+                }
+            }
+        }
+    }
+    
+    private var canUpload: Bool {
+        !authViewModel.isGuest && (authViewModel.user?.ratingProgress.hasUnlockedUpload ?? false)
     }
 }
 
 // MARK: - Tab Items
 enum TabItem: CaseIterable {
-    case rating, home, upload, journey, profile
+    case rating, home, journey, profile
 }
 
 // MARK: - Custom TikTok Style Tab Bar
 struct CustomTikTokTabBar: View {
     @Binding var selectedTab: TabItem
+    let onUploadTap: () -> Void
     
     var body: some View {
         HStack(spacing: 0) {
@@ -75,16 +116,11 @@ struct CustomTikTokTabBar: View {
             Spacer()
             
             // Plus
-            Button(action: {
-                selectedTab = .upload
-            }) {
+            Button(action: onUploadTap) {
                 ZStack {
                     Circle()
-                        .fill(Color.white)
-                        .frame(width: 56, height: 56)
-                    Circle()
                         .fill(Color.red)
-                        .frame(width: 50, height: 50)
+                        .frame(width: 56, height: 56)
                     Image(systemName: "plus")
                         .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.white)
