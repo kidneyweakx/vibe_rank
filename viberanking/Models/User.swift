@@ -18,7 +18,6 @@ struct User: Codable, Identifiable {
     var lastActivityAt: Date?
     var ratingProgress: RatingProgress
     var uploadedPhotos: [Photo]
-    var styleReport: StyleReport?
     
     init(id: String, name: String, email: String, profileImageURL: String? = nil, gender: Gender? = nil) {
         self.id = id
@@ -30,17 +29,11 @@ struct User: Codable, Identifiable {
         self.lastActivityAt = Date()
         self.ratingProgress = RatingProgress()
         self.uploadedPhotos = []
-        self.styleReport = nil
     }
     
     /// Update last activity timestamp
     mutating func updateLastActivity() {
         lastActivityAt = Date()
-    }
-    
-    /// Update user's style report
-    mutating func updateStyleReport(_ report: StyleReport) {
-        self.styleReport = report
     }
     
     /// Check if user was active recently (within last 24 hours)

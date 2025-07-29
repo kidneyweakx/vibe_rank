@@ -11,7 +11,7 @@ import UIKit
 // MARK: - Sample Photo Service Protocol
 protocol SamplePhotoServiceProtocol {
     func getSamplePhotos() async throws -> [Photo]
-    func generateSamplePhoto(id: String, imageUrl: String, style: StyleType) -> Photo
+    func generateSamplePhoto(id: String, imageUrl: String) -> Photo
 }
 
 // MARK: - Sample Photo Service Implementation
@@ -44,16 +44,11 @@ class SamplePhotoService: ObservableObject, SamplePhotoServiceProtocol {
         defer { isLoading = false }
         
         var samplePhotos: [Photo] = []
-        
-        // Generate sample photos with different styles
-        let styles = StyleType.allCases
-        
+
         for (index, imageUrl) in sampleImageUrls.enumerated() {
-            let style = styles[index % styles.count]
             let photo = generateSamplePhoto(
                 id: "sample_\(index)",
                 imageUrl: imageUrl,
-                style: style
             )
             samplePhotos.append(photo)
         }
@@ -62,7 +57,7 @@ class SamplePhotoService: ObservableObject, SamplePhotoServiceProtocol {
     }
     
     /// Generate a sample photo with specified parameters
-    func generateSamplePhoto(id: String, imageUrl: String, style: StyleType) -> Photo {
+    func generateSamplePhoto(id: String, imageUrl: String) -> Photo {
         let url = URL(string: imageUrl)!
         let photoURLs = PhotoURLs(thumbnail: url, preview: url, highRes: url)
         
@@ -86,30 +81,6 @@ class SamplePhotoService: ObservableObject, SamplePhotoServiceProtocol {
         }
         
         return photo
-    }
-}
-
-// MARK: - Private Helper Methods
-private extension SamplePhotoService {
-    
-    /// Generate style-specific tags for sample photos
-    func generateStyleTags(for style: StyleType) -> [String] {
-        switch style {
-        case .elegant:
-            return "style.elegant.keywords".localized.components(separatedBy: ", ")
-        case .casual:
-            return "style.casual.keywords".localized.components(separatedBy: ", ")
-        case .trendy:
-            return "style.trendy.keywords".localized.components(separatedBy: ", ")
-        case .classic:
-            return "style.classic.keywords".localized.components(separatedBy: ", ")
-        case .sporty:
-            return "style.sporty.keywords".localized.components(separatedBy: ", ")
-        case .artistic:
-            return "style.artistic.keywords".localized.components(separatedBy: ", ")
-        default:
-            return []
-        }
     }
 }
 

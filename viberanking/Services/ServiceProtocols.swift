@@ -45,19 +45,6 @@ protocol PhotoUploadServiceProtocol {
     func cancelUpload(for photoId: String) async throws
 }
 
-// MARK: - Style Analysis Service Protocol
-protocol StyleAnalysisServiceProtocol {
-    func generateStyleReport(for userId: String) async throws -> StyleReport
-    func getUserPreferences(for userId: String) async throws -> UserPreferences
-}
-
-// MARK: - Gamification Service Protocol
-protocol GamificationServiceProtocol {
-    func updateUserProgress(_ progress: UserProgress) async throws
-    func checkAchievements(for userId: String) async throws -> [Achievement]
-    func getIncentiveStatus(for userId: String) async throws -> IncentiveStatus
-}
-
 // MARK: - Supporting Models for Gamification
 struct UserProgress: Codable {
     let userId: String

@@ -43,17 +43,3 @@ protocol RatingRepositoryProtocol: BaseRepositoryProtocol where Entity == Rating
     func getRatingsByUser(userId: String) async throws -> [Rating]
     func hasUserRatedPhoto(userId: String, photoId: String) async throws -> Bool
 }
-
-// MARK: - Style Report Repository Protocol
-protocol StyleReportRepositoryProtocol: BaseRepositoryProtocol where Entity == StyleReport {
-    func getLatestReport(userId: String) async throws -> StyleReport?
-    func getReportHistory(userId: String) async throws -> [StyleReport]
-    func generateReportId(userId: String) -> String
-}
-
-// MARK: - Achievement Repository Protocol
-protocol AchievementRepositoryProtocol: BaseRepositoryProtocol where Entity == Achievement {
-    func getUserAchievements(userId: String) async throws -> [Achievement]
-    func unlockAchievement(userId: String, achievementId: String) async throws
-    func checkUnlockedAchievements(userId: String) async throws -> [Achievement]
-}
