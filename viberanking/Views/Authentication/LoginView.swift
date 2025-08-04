@@ -395,21 +395,21 @@ struct LoginViewPreview: PreviewProvider {
 }
 
 // Preview helper class
+@MainActor
 class LoginPreviewAuthenticationViewModel: AuthenticationViewModel {
-    nonisolated init(isLoading: Bool = false, errorMessage: String? = nil) {
+    init(isLoading: Bool = false, errorMessage: String? = nil) {
         super.init(authenticationService: MockAuthenticationService())
         
         // For preview purposes, we'll set properties directly
-        Task { @MainActor in
-            self.isLoading = isLoading
-            self.errorMessage = errorMessage
-            self.isAuthenticated = false
-            self.authState = .signedOut
-        }
+        self.isLoading = isLoading
+        self.errorMessage = errorMessage
+        self.isAuthenticated = false
+        self.authState = .signedOut
     }
 }
 
 // Mock service for previews
+@MainActor
 class MockAuthenticationService: AuthenticationServiceProtocol {
     var currentUser: User? = nil
     var isAuthenticated: Bool = false

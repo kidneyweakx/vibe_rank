@@ -40,6 +40,13 @@ class AppleSignInTestHelper {
             print("❌ Apple Sign-In entitlement not found - check Xcode configuration")
         }
         
+        // Check API configuration
+        if let apiBaseURL = Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String {
+            print("✅ API Base URL configured: \(apiBaseURL)")
+        } else {
+            print("⚠️ API Base URL not configured - check Info.plist")
+        }
+        
         print("🎉 Apple Sign-In configuration test completed!")
     }
     

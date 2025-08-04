@@ -8,7 +8,6 @@
 import Foundation
 import Combine
 import SwiftUI
-import FirebaseAuth
 
 /// ViewModel that manages authentication state and user interactions
 @MainActor
@@ -26,7 +25,7 @@ class AuthenticationViewModel: ObservableObject {
     private let authenticationService: AuthenticationServiceProtocol
     private let userProfileService: UserProfileService
     private var cancellables = Set<AnyCancellable>()
-    private var authStateListener: AuthStateDidChangeListenerHandle?
+
     
     // MARK: - Auth State Enum
     
@@ -39,29 +38,22 @@ class AuthenticationViewModel: ObservableObject {
     
     // MARK: - Initializer
     
-    nonisolated init(authenticationService: AuthenticationServiceProtocol = AuthenticationService(),
-                     userProfileService: UserProfileService? = nil) {
-        self.authenticationService = authenticationService
+    init(authenticationService: AuthenticationServiceProtocol? = nil,
+         userProfileService: UserProfileService? = nil) {
+        self.authenticationService = authenticationService ?? AuthenticationService()
         self.userProfileService = userProfileService ?? UserProfileService()
         
-        Task { @MainActor in
-            // Set initial state from service
-            self.user = authenticationService.currentUser
-            self.isAuthenticated = authenticationService.isAuthenticated
-            self.authState = authenticationService.isAuthenticated ? .signedIn : .signedOut
-            
-            // Setup bindings and listeners
-            setupUserProfileBindings()
-            setupAuthStateListener()
-        }
+        // Set initial state from service
+        self.user = self.authenticationService.currentUser
+        self.isAuthenticated = self.authenticationService.isAuthenticated
+        self.authState = self.authenticationService.isAuthenticated ? .signedIn : .signedOut
+        
+        // Setup bindings and listeners
+        setupUserProfileBindings()
+        setupAuthStateListener()
     }
     
-    deinit {
-        // Remove auth state listener when ViewModel is deallocated
-        if let listener = authStateListener {
-            Auth.auth().removeStateDidChangeListener(listener)
-        }
-    }
+
     
     // MARK: - Setup Methods
     
@@ -95,24 +87,8 @@ class AuthenticationViewModel: ObservableObject {
     }
     
     private func setupAuthStateListener() {
-        authStateListener = Auth.auth().addStateDidChangeListener { [weak self] (_, user) in
-            guard let self = self else { return }
-            
-            Task { @MainActor in
-                if let firebaseUser = user {
-                    // User is signed in - UserProfileService will handle profile loading
-                    self.isAuthenticated = true
-                    self.authState = .signedIn
-                    self.isGuest = false
-                } else {
-                    // User is signed out
-                    self.user = nil
-                    self.isAuthenticated = false
-                    self.authState = .signedOut
-                    self.isGuest = false
-                }
-            }
-        }
+        // Since we're no longer using Firebase Auth, we'll monitor the authentication service directly
+        // The authentication state will be managed through the service's currentUser property
     }
     
     // MARK: - Public Methods

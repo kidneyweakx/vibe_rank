@@ -367,19 +367,18 @@ struct UserProfileView_Previews: PreviewProvider {
 }
 
 // Preview helper
+@MainActor
 class UserProfilePreviewAuthenticationViewModel: AuthenticationViewModel {
-    nonisolated init() {
+    init() {
         super.init()
         
-        Task { @MainActor in
-            self.user = User(
-                id: "preview_id",
-                name: "測試用戶",
-                email: "test@example.com",
-                profileImageURL: nil
-            )
-            self.isAuthenticated = true
-            self.authState = .signedIn
-        }
+        self.user = User(
+            id: "preview_id",
+            name: "測試用戶",
+            email: "test@example.com",
+            profileImageURL: nil
+        )
+        self.isAuthenticated = true
+        self.authState = .signedIn
     }
 }
