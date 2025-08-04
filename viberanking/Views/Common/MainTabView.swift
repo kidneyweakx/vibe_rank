@@ -17,6 +17,8 @@ struct MainTabView: View {
     @State private var showingPhotoPicker = false
     @State private var showingImagePreview = false
     @State private var selectedImage: UIImage?
+    @State private var showingUploadAlert = false
+    @State private var uploadAlertMessage = ""
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -41,6 +43,16 @@ struct MainTabView: View {
                     onUploadTap: {
                         if canUpload {
                             showingUploadMenu = true
+                        } else {
+                            // 顯示為什麼不能上傳的提示
+                            if authViewModel.isGuest {
+                                uploadAlertMessage = "請先登入才能上傳照片"
+                                showingUploadAlert = true
+                            } else {
+                                let remaining = authViewModel.user?.ratingProgress.remainingRatings ?? 20
+                                uploadAlertMessage = "還需要完成 \(remaining) 個評分才能解鎖上傳功能"
+                                showingUploadAlert = true
+                            }
                         }
                     }
                 )
@@ -74,10 +86,19 @@ struct MainTabView: View {
                 }
             }
         }
+        .alert("無法上傳", isPresented: $showingUploadAlert) {
+            Button("確定", role: .cancel) { }
+        } message: {
+            Text(uploadAlertMessage)
+        }
     }
     
     private var canUpload: Bool {
-        !authViewModel.isGuest && (authViewModel.user?.ratingProgress.hasUnlockedUpload ?? false)
+        // 臨時允許所有用戶上傳，用於測試
+        return true
+        
+        // 原本的邏輯：
+        // !authViewModel.isGuest && (authViewModel.user?.ratingProgress.hasUnlockedUpload ?? false)
     }
 }
 
@@ -116,7 +137,14 @@ struct CustomTikTokTabBar: View {
             Spacer()
             
             // Plus
-            Button(action: onUploadTap) {
+            Button(action: {
+                print("Upload button tapped")
+//                print("Can upload: \(canUpload)")
+//                print("Is guest: \(authViewModel.isGuest)")
+//                print("Has unlocked upload: \(authViewModel.user?.ratingProgress.hasUnlockedUpload ?? false)")
+//                print("Completed ratings: \(authViewModel.user?.ratingProgress.completedRatings ?? 0)")
+                onUploadTap()
+            }) {
                 ZStack {
                     Circle()
                         .fill(Color.red)
