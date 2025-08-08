@@ -11,7 +11,6 @@ import UniformTypeIdentifiers
 import os.log
 
 // MARK: - Photo Upload Service Implementation
-@MainActor
 class PhotoUploadService: PhotoUploadServiceProtocol {
     
     // MARK: - Dependencies
@@ -30,17 +29,28 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
     func uploadPhoto(_ image: UIImage, for userId: String) async throws -> Photo {
         let photoId = UUID().uuidString
         let uploadTask = UploadTask(photoId: photoId, userId: userId)
-        activeUploads[photoId] = uploadTask
+        
+        await MainActor.run {
+            activeUploads[photoId] = uploadTask
+        }
         
         logger.info("🚀 Starting photo upload - PhotoID: \(photoId), UserID: \(userId)")
         logger.debug("📊 Image size: \(image.size.width)x\(image.size.height)")
         
         do {
-            // Step 1: Convert to WebP
+            // Step 1: Convert to WebP (在背景線程執行)
             logger.info("🔄 Step 1: Converting to WebP - PhotoID: \(photoId)")
-            updateUploadStatus(photoId: photoId, status: .processing)
+            await updateUploadStatus(photoId: photoId, status: .processing)
             
-            guard let imageData = image.pngData() else {
+            // 在背景線程轉換圖片數據
+            let imageData = await withCheckedContinuation { continuation in
+                Task.detached {
+                    let data = image.pngData()
+                    continuation.resume(returning: data)
+                }
+            }
+            
+            guard let imageData = imageData else {
                 logger.error("❌ Failed to convert image to PNG data - PhotoID: \(photoId)")
                 throw AppError.invalidImageFormat
             }
@@ -52,7 +62,7 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
             
             // Step 2: Upload via API
             logger.info("📤 Step 2: Uploading to API - PhotoID: \(photoId)")
-            updateUploadStatus(photoId: photoId, status: .uploading(progress: 0.0))
+            await updateUploadStatus(photoId: photoId, status: .uploading(progress: 0.0))
             
             let response = try await fileAPI.uploadPhoto(webpData, userId: userId)
             logger.info("✅ API upload completed - PhotoID: \(photoId), ResponseID: \(response.photoId)")
@@ -67,8 +77,10 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
             
             // Step 4: Complete upload
             logger.info("🎉 Step 4: Upload completed successfully - PhotoID: \(photoId)")
-            updateUploadStatus(photoId: photoId, status: .completed)
-            activeUploads.removeValue(forKey: photoId)
+            await updateUploadStatus(photoId: photoId, status: .completed)
+            await MainActor.run {
+                activeUploads.removeValue(forKey: photoId)
+            }
             
             return photo
             
@@ -77,8 +89,10 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
             if let appError = error as? AppError {
                 logger.error("🔍 AppError details: \(appError)")
             }
-            updateUploadStatus(photoId: photoId, status: .failed(error))
-            activeUploads.removeValue(forKey: photoId)
+            await updateUploadStatus(photoId: photoId, status: .failed(error))
+            await MainActor.run {
+                activeUploads.removeValue(forKey: photoId)
+            }
             throw error
         }
     }
@@ -135,10 +149,16 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
     
     /// Cancel upload for a specific photo
     func cancelUpload(for photoId: String) async throws {
-        if let _ = activeUploads[photoId] {
+        let hasUpload = await MainActor.run {
+            return activeUploads[photoId] != nil
+        }
+        
+        if hasUpload {
             logger.info("🚫 Cancelling upload - PhotoID: \(photoId)")
-            updateUploadStatus(photoId: photoId, status: .cancelled)
-            activeUploads.removeValue(forKey: photoId)
+            await updateUploadStatus(photoId: photoId, status: .cancelled)
+            await MainActor.run {
+                activeUploads.removeValue(forKey: photoId)
+            }
             logger.info("✅ Upload cancelled successfully - PhotoID: \(photoId)")
         } else {
             logger.warning("⚠️ Attempted to cancel non-existent upload - PhotoID: \(photoId)")
@@ -150,31 +170,32 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
 private extension PhotoUploadService {
     
     /// Update upload status for tracking
-    func updateUploadStatus(photoId: String, status: UploadStatus) {
-        if var uploadTask = activeUploads[photoId] {
-            let oldStatus = uploadTask.status
-            uploadTask.status = status
-            
-            switch status {
-            case .uploading(let progress):
-                uploadTask.progress = progress
-                logger.debug("📈 Upload progress updated - PhotoID: \(photoId), Progress: \(String(format: "%.1f", progress * 100))%")
-            case .completed:
-                uploadTask.progress = 1.0
-                logger.info("✅ Upload status updated to completed - PhotoID: \(photoId)")
-            case .failed(let error):
-                logger.error("❌ Upload status updated to failed - PhotoID: \(photoId), Error: \(error.localizedDescription)")
-            case .cancelled:
-                logger.info("🚫 Upload status updated to cancelled - PhotoID: \(photoId)")
-            case .processing:
-                logger.info("🔄 Upload status updated to processing - PhotoID: \(photoId)")
-            case .pending:
-                logger.debug("⏳ Upload status updated to pending - PhotoID: \(photoId)")
+    func updateUploadStatus(photoId: String, status: UploadStatus) async {
+        await MainActor.run {
+            if var uploadTask = activeUploads[photoId] {
+                uploadTask.status = status
+                
+                switch status {
+                case .uploading(let progress):
+                    uploadTask.progress = progress
+                    logger.debug("📈 Upload progress updated - PhotoID: \(photoId), Progress: \(String(format: "%.1f", progress * 100))%")
+                case .completed:
+                    uploadTask.progress = 1.0
+                    logger.info("✅ Upload status updated to completed - PhotoID: \(photoId)")
+                case .failed(let error):
+                    logger.error("❌ Upload status updated to failed - PhotoID: \(photoId), Error: \(error.localizedDescription)")
+                case .cancelled:
+                    logger.info("🚫 Upload status updated to cancelled - PhotoID: \(photoId)")
+                case .processing:
+                    logger.info("🔄 Upload status updated to processing - PhotoID: \(photoId)")
+                case .pending:
+                    logger.debug("⏳ Upload status updated to pending - PhotoID: \(photoId)")
+                }
+                
+                activeUploads[photoId] = uploadTask
+            } else {
+                logger.warning("⚠️ Attempted to update status for non-existent upload task - PhotoID: \(photoId)")
             }
-            
-            activeUploads[photoId] = uploadTask
-        } else {
-            logger.warning("⚠️ Attempted to update status for non-existent upload task - PhotoID: \(photoId)")
         }
     }
 }

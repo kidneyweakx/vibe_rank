@@ -2,243 +2,200 @@
 //  ImagePreviewView.swift
 //  viberanking
 //
-//  Created by Kiro on 2025/07/29.
+//  Created by Kiro on 2025/08/08.
 //
 
 import SwiftUI
+import UIKit
 
 struct ImagePreviewView: View {
     let image: UIImage
-    let onDismiss: () -> Void
+    let onCancel: () -> Void
+    
+    @State private var croppedImage: UIImage?
+    @State private var isUploading = false
+    @State private var uploadProgress: Double = 0.0
+    @State private var showingCropView = false
+    @State private var uploadError: String?
+    @State private var uploadSuccess = false
     
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
-    @StateObject private var uploadViewModel = PhotoUploadViewModel()
-    @State private var isUploading = false
-    @State private var uploadSuccess = false
-    @State private var showingFilters = false
-    @State private var selectedFilter: FilterType = .none
-    @State private var filteredImage: UIImage?
+    @Environment(\.dismiss) private var dismiss
+    
+    init(image: UIImage, onCancel: @escaping () -> Void) {
+        self.image = image
+        self.onCancel = onCancel
+    }
     
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // Top navigation
-                HStack {
+        NavigationView {
+            ZStack {
+                Color.black.ignoresSafeArea()
+                
+                VStack(spacing: 20) {
+                    // 圖片預覽區域
+                    ZStack {
+                        let displayImage = croppedImage ?? image
+                        Image(uiImage: displayImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxHeight: UIScreen.main.bounds.height * 0.6)
+                            .cornerRadius(12)
+                        
+                        if isUploading {
+                            Color.black.opacity(0.5)
+                                .cornerRadius(12)
+                            
+                            VStack(spacing: 16) {
+                                ProgressView(value: uploadProgress)
+                                    .progressViewStyle(LinearProgressViewStyle(tint: .white))
+                                    .frame(width: 200)
+                                
+                                Text("上傳中... \(Int(uploadProgress * 100))%")
+                                    .foregroundColor(.white)
+                                    .font(.subheadline)
+                            }
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    // 操作按鈕
+                    if !isUploading {
+                        HStack(spacing: 20) {
+                            // 裁切按鈕
+                            Button {
+                                print("🔧 裁切按鈕被點擊")
+                                print("🔧 當前 showingCropView: \(showingCropView)")
+                                showingCropView = true
+                                print("🔧 設置後 showingCropView: \(showingCropView)")
+                            } label: {
+                                VStack(spacing: 8) {
+                                    Image(systemName: "crop")
+                                        .font(.title2)
+                                    Text("裁切")
+                                        .font(.caption)
+                                }
+                                .foregroundColor(.white)
+                                .frame(width: 60, height: 60)
+                                .background(Color.gray.opacity(0.3))
+                                .cornerRadius(30)
+                            }
+                            
+                            Spacer()
+                            
+                            // 上傳按鈕
+                            Button {
+                                uploadImage()
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "arrow.up.circle.fill")
+                                        .font(.title2)
+                                    Text(croppedImage == nil ? "請先裁切" : "上傳")
+                                        .font(.headline)
+                                }
+                                .foregroundColor(.white)
+                                .frame(height: 50)
+                                .frame(maxWidth: .infinity)
+                                .background(croppedImage == nil ? Color.gray : Color.blue)
+                                .cornerRadius(25)
+                            }
+                            .disabled(croppedImage == nil)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 40)
+                    }
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("取消") {
-                        onDismiss()
+                        onCancel()
+                        dismiss()
                     }
                     .foregroundColor(.white)
-                    
-                    Spacer()
-                    
-                    Text("編輯照片")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                    
-                    Spacer()
-                    
-                    Button("上傳") {
-                        uploadPhoto()
-                    }
-                    .foregroundColor(isUploading ? .gray : .blue)
-                    .disabled(isUploading)
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
-                
-                // Image preview
-                GeometryReader { geometry in
-                    Image(uiImage: filteredImage ?? image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                        .clipped()
-                }
-                .padding(.vertical, 20)
-                
-                // Bottom controls
-                VStack(spacing: 20) {
-                    // Filter toggle
-                    Button {
-                        showingFilters.toggle()
-                    } label: {
-                        HStack {
-                            Image(systemName: "camera.filters")
-                                .font(.title3)
-                            Text("濾鏡")
-                                .font(.headline)
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(Color.white.opacity(0.2))
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                    }
-                    
-                    // Filter options
-                    if showingFilters {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 15) {
-                                ForEach(FilterType.allCases, id: \.self) { filter in
-                                    FilterButton(
-                                        filter: filter,
-                                        isSelected: selectedFilter == filter,
-                                        originalImage: image
-                                    ) {
-                                        selectedFilter = filter
-                                        applyFilter(filter)
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 20)
-                        }
-                    }
-                }
-                .padding(.bottom, 40)
-            }
-            
-            // Upload progress overlay
-            if isUploading {
-                Color.black.opacity(0.7)
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 20) {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                        .tint(.white)
-                    
-                    Text("上傳中...")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                }
-            }
-            
-            // Success overlay
-            if uploadSuccess {
-                Color.black.opacity(0.7)
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 20) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.green)
-                    
-                    Text("上傳成功！")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                }
-                .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        onDismiss()
-                    }
                 }
             }
         }
+        .onAppear {
+            print("🎯 ImagePreviewView 顯示 - 圖片尺寸: \(image.size)")
+        }
+        .sheet(isPresented: $showingCropView) {
+            ImageCropView(image: croppedImage ?? image) { croppedResult in
+                print("✅ 裁切完成，獲得新圖片")
+                croppedImage = croppedResult
+            }
+        }
+        .onChange(of: showingCropView) { isShowing in
+            print("📱 裁切視圖狀態變更: \(isShowing)")
+        }
+        .alert("上傳失敗", isPresented: .constant(uploadError != nil)) {
+            Button("確定") {
+                uploadError = nil
+            }
+        } message: {
+            if let error = uploadError {
+                Text(error)
+            }
+        }
+        .alert("上傳成功", isPresented: $uploadSuccess) {
+            Button("確定") {
+                onCancel()
+                dismiss()
+            }
+        } message: {
+            Text("照片已成功上傳！")
+        }
     }
     
-    private func applyFilter(_ filter: FilterType) {
-        filteredImage = filter.apply(to: image)
-    }
-    
-    private func uploadPhoto() {
+    private func uploadImage() {
+        // 檢查是否已裁切為正方形
+        if croppedImage == nil {
+            uploadError = "請先裁切圖片為正方形後再上傳"
+            return
+        }
+        
+        guard let userId = authViewModel.user?.id else {
+            uploadError = "請先登入"
+            return
+        }
+        
+        guard let imageToUpload = croppedImage else {
+            uploadError = "請先裁切圖片"
+            return
+        }
+        
+        print("🚀 開始上傳圖片 - 尺寸: \(imageToUpload.size)")
         isUploading = true
+        uploadProgress = 0.0
         
         Task {
-            let imageToUpload = filteredImage ?? image
-            uploadViewModel.handleSelectedImage(imageToUpload)
-            await uploadViewModel.performUpload(
-                image: imageToUpload,
-                userId: authViewModel.user?.id ?? ""
-            )
-            
-            await MainActor.run {
-                isUploading = false
-                uploadSuccess = true
-            }
-        }
-    }
-}
-
-// MARK: - Filter Types
-enum FilterType: CaseIterable {
-    case none, sepia, noir, vintage, bright, contrast
-    
-    var name: String {
-        switch self {
-        case .none: return "原圖"
-        case .sepia: return "復古"
-        case .noir: return "黑白"
-        case .vintage: return "懷舊"
-        case .bright: return "明亮"
-        case .contrast: return "對比"
-        }
-    }
-    
-    func apply(to image: UIImage) -> UIImage {
-        guard self != .none else { return image }
-        
-        let context = CIContext()
-        guard let ciImage = CIImage(image: image) else { return image }
-        
-        let filter: CIFilter?
-        
-        switch self {
-        case .none:
-            return image
-        case .sepia:
-            filter = CIFilter(name: "CISepiaTone")
-            filter?.setValue(ciImage, forKey: kCIInputImageKey)
-            filter?.setValue(0.8, forKey: kCIInputIntensityKey)
-        case .noir:
-            filter = CIFilter(name: "CIPhotoEffectNoir")
-            filter?.setValue(ciImage, forKey: kCIInputImageKey)
-        case .vintage:
-            filter = CIFilter(name: "CIPhotoEffectInstant")
-            filter?.setValue(ciImage, forKey: kCIInputImageKey)
-        case .bright:
-            filter = CIFilter(name: "CIExposureAdjust")
-            filter?.setValue(ciImage, forKey: kCIInputImageKey)
-            filter?.setValue(0.5, forKey: kCIInputEVKey)
-        case .contrast:
-            filter = CIFilter(name: "CIColorControls")
-            filter?.setValue(ciImage, forKey: kCIInputImageKey)
-            filter?.setValue(1.5, forKey: kCIInputContrastKey)
-        }
-        
-        guard let outputImage = filter?.outputImage,
-              let cgImage = context.createCGImage(outputImage, from: outputImage.extent) else {
-            return image
-        }
-        
-        return UIImage(cgImage: cgImage)
-    }
-}
-
-// MARK: - Filter Button
-struct FilterButton: View {
-    let filter: FilterType
-    let isSelected: Bool
-    let originalImage: UIImage
-    let onTap: () -> Void
-    
-    var body: some View {
-        Button(action: onTap) {
-            VStack(spacing: 8) {
-                Image(uiImage: filter.apply(to: originalImage))
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 60, height: 60)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
-                    )
+            do {
+                let photoUploadService = PhotoUploadService()
                 
-                Text(filter.name)
-                    .font(.caption)
-                    .foregroundColor(isSelected ? .blue : .white)
+                // 模擬上傳進度
+                for i in 1...10 {
+                    await MainActor.run {
+                        uploadProgress = Double(i) / 10.0
+                    }
+                    try await Task.sleep(nanoseconds: 200_000_000) // 0.2秒
+                }
+                
+                print("📤 調用 PhotoUploadService.uploadPhoto")
+                let _ = try await photoUploadService.uploadPhoto(imageToUpload, for: userId)
+                print("✅ 上傳完成")
+                
+                await MainActor.run {
+                    isUploading = false
+                    uploadSuccess = true
+                }
+            } catch {
+                print("❌ 上傳失敗: \(error)")
+                await MainActor.run {
+                    isUploading = false
+                    uploadError = error.localizedDescription
+                }
             }
         }
     }
@@ -247,7 +204,7 @@ struct FilterButton: View {
 #Preview {
     ImagePreviewView(
         image: UIImage(systemName: "photo") ?? UIImage(),
-        onDismiss: {}
+        onCancel: {}
     )
     .environmentObject(AuthenticationViewModel())
 }

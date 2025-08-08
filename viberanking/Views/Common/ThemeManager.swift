@@ -73,7 +73,7 @@ struct NavyOrangeTheme: ColorScheme {
 class ThemeManager: ObservableObject {
     @Published var currentTheme: Theme = .light
     
-    let themes: [Theme] = [.light, .dark, .blueYellow, .navyOrange]
+    let themes: [Theme] = [.light, .dark]
     
     func applyTheme(_ theme: Theme) {
         self.currentTheme = theme

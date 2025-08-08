@@ -23,17 +23,27 @@ class WebPConverter {
     
     /// Convert image data to WebP format with specified quality
     func convertToWebP(_ imageData: Data, quality: Float) async throws -> Data {
-        guard let image = UIImage(data: imageData) else {
-            throw AppError.invalidImageFormat
+        return try await withCheckedThrowingContinuation { continuation in
+            Task.detached {
+                do {
+                    guard let image = UIImage(data: imageData) else {
+                        continuation.resume(throwing: AppError.invalidImageFormat)
+                        return
+                    }
+                    
+                    let webpData = self.webPCoder.encodedData(with: image, format: .webP, options: [SDImageCoderOption.encodeCompressionQuality: quality])
+                    
+                    guard let data = webpData else {
+                        continuation.resume(throwing: AppError.imageUploadFailed)
+                        return
+                    }
+                    
+                    continuation.resume(returning: data)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
         }
-        
-        let webpData = webPCoder.encodedData(with: image, format: .webP, options: [SDImageCoderOption.encodeCompressionQuality: quality])
-        
-        guard let data = webpData else {
-            throw AppError.imageUploadFailed
-        }
-        
-        return data
     }
     
     /// Generate thumbnails in optimized format (WebP-like compression)
@@ -82,17 +92,28 @@ private extension WebPConverter {
     
     /// Resize and compress image data with optimal settings
     func resizeAndCompress(_ imageData: Data, targetSize: CGSize, quality: Float) async throws -> Data {
-        guard let image = UIImage(data: imageData) else {
-            throw AppError.invalidImageFormat
+        return try await withCheckedThrowingContinuation { continuation in
+            Task.detached {
+                do {
+                    guard let image = UIImage(data: imageData) else {
+                        continuation.resume(throwing: AppError.invalidImageFormat)
+                        return
+                    }
+                    
+                    let resizedImage = image.resize(targetSize: targetSize)
+                    
+                    guard let resizedImageData = resizedImage.pngData() else {
+                        continuation.resume(throwing: AppError.imageUploadFailed)
+                        return
+                    }
+                    
+                    let webpData = try await self.convertToWebP(resizedImageData, quality: quality)
+                    continuation.resume(returning: webpData)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
         }
-        
-        let resizedImage = image.resize(targetSize: targetSize)
-        
-        guard let resizedImageData = resizedImage.pngData() else {
-            throw AppError.imageUploadFailed
-        }
-        
-        return try await convertToWebP(resizedImageData, quality: quality)
     }
 }
 
@@ -112,11 +133,12 @@ extension UIImage {
         
         let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
         
-        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
-        self.draw(in: rect)
-        let newImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
+        // 使用更高效的圖片處理方式
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        let newImage = renderer.image { _ in
+            self.draw(in: rect)
+        }
         
-        return newImage ?? self
+        return newImage
     }
 }

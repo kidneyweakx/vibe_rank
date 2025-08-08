@@ -2,67 +2,68 @@
 //  PhotoPickerView.swift
 //  viberanking
 //
-//  Created by Kiro on 2025/07/29.
+//  Created by Kiro on 2025/08/08.
 //
 
 import SwiftUI
 import PhotosUI
 
-struct PhotoPickerView: View {
+struct PhotoPickerView: UIViewControllerRepresentable {
     let onImageSelected: (UIImage) -> Void
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedItems: [PhotosPickerItem] = []
     
-    var body: some View {
-        NavigationView {
-            PhotosPicker(
-                selection: $selectedItems,
-                maxSelectionCount: 1,
-                matching: .images
-            ) {
-                VStack(spacing: 20) {
-                    Image(systemName: "photo.on.rectangle.angled")
-                        .font(.system(size: 60))
-                        .foregroundColor(.blue)
-                    
-                    Text("選擇照片")
-                        .font(.title2)
-                        .foregroundColor(.primary)
-                    
-                    Text("從相簿中選擇一張照片")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(.systemBackground))
+    func makeUIViewController(context: Context) -> PHPickerViewController {
+        var configuration = PHPickerConfiguration()
+        configuration.filter = .images
+        configuration.selectionLimit = 1
+        configuration.preferredAssetRepresentationMode = .current
+        
+        let controller = PHPickerViewController(configuration: configuration)
+        controller.delegate = context.coordinator
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, PHPickerViewControllerDelegate {
+        let parent: PhotoPickerView
+        
+        init(_ parent: PhotoPickerView) {
+            self.parent = parent
+        }
+        
+        func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+            print("📸 PhotoPicker didFinishPicking 被調用")
+            
+            guard let result = results.first else {
+                print("❌ 沒有選擇圖片")
+                parent.dismiss()
+                return
             }
-            .navigationTitle("選擇照片")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden()
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("取消") {
-                        dismiss()
+            
+            print("🔄 開始加載圖片")
+            result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] object, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        print("❌ 圖片加載失敗: \(error)")
+                        self?.parent.dismiss()
+                        return
                     }
-                }
-            }
-            .onChange(of: selectedItems) { _, newItems in
-                guard let item = newItems.first else { return }
-                
-                Task {
-                    if let data = try? await item.loadTransferable(type: Data.self),
-                       let image = UIImage(data: data) {
-                        await MainActor.run {
-                            onImageSelected(image)
-                            dismiss()
-                        }
+                    
+                    if let image = object as? UIImage {
+                        print("✅ 圖片加載成功 - 尺寸: \(image.size)")
+                        self?.parent.onImageSelected(image)
+                        self?.parent.dismiss()
+                    } else {
+                        print("❌ 無法轉換為 UIImage")
+                        self?.parent.dismiss()
                     }
                 }
             }
         }
     }
-}
-
-#Preview {
-    PhotoPickerView { _ in }
 }

@@ -61,8 +61,12 @@ struct MainTabView: View {
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showingUploadMenu) {
             UploadMenuView(
-                showingImagePicker: $showingImagePicker,
-                showingPhotoPicker: $showingPhotoPicker
+                onCameraSelected: {
+                    showingImagePicker = true
+                },
+                onPhotoLibrarySelected: {
+                    showingPhotoPicker = true
+                }
             )
             .presentationDetents([.height(200)])
             .presentationDragIndicator(.visible)
@@ -75,14 +79,35 @@ struct MainTabView: View {
         }
         .sheet(isPresented: $showingPhotoPicker) {
             PhotoPickerView { image in
+                print("📸 MainTabView 收到圖片 - 尺寸: \(image.size)")
                 selectedImage = image
-                showingImagePreview = true
+                print("🔄 延遲設置 showingImagePreview = true")
+                // 延遲一點時間確保 selectedImage 被正確設置
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    showingImagePreview = true
+                    print("✅ MainTabView 圖片處理完成")
+                }
             }
         }
         .fullScreenCover(isPresented: $showingImagePreview) {
-            if let image = selectedImage {
-                ImagePreviewView(image: image) {
-                    selectedImage = nil
+            Group {
+                if let image = selectedImage {
+                    ImagePreviewView(image: image) {
+                        print("❌ ImagePreviewView 取消，重置 selectedImage")
+                        selectedImage = nil
+                    }
+                    .onAppear {
+                        print("🖼️ 顯示 ImagePreviewView - 圖片尺寸: \(image.size)")
+                    }
+                } else {
+                    Text("圖片加載失敗")
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.black)
+                        .onAppear {
+                            print("❌ selectedImage 為 nil，無法顯示 ImagePreviewView")
+                            print("❌ 當前 showingImagePreview: \(showingImagePreview)")
+                        }
                 }
             }
         }
@@ -91,10 +116,23 @@ struct MainTabView: View {
         } message: {
             Text(uploadAlertMessage)
         }
+        .onChange(of: selectedImage) { newImage in
+            if let image = newImage {
+                print("🔄 selectedImage 更新 - 尺寸: \(image.size)")
+            } else {
+                print("🔄 selectedImage 被重置為 nil")
+            }
+        }
+        .onChange(of: showingImagePreview) { isShowing in
+            print("🔄 showingImagePreview 變更: \(isShowing)")
+            if isShowing {
+                print("🔄 當前 selectedImage 是否為 nil: \(selectedImage == nil)")
+            }
+        }
     }
     
     private var canUpload: Bool {
-        // 臨時允許所有用戶上傳，用於測試
+        // @TODO: limit only logined user can upload files
         return true
         
         // 原本的邏輯：
@@ -138,11 +176,6 @@ struct CustomTikTokTabBar: View {
             
             // Plus
             Button(action: {
-                print("Upload button tapped")
-//                print("Can upload: \(canUpload)")
-//                print("Is guest: \(authViewModel.isGuest)")
-//                print("Has unlocked upload: \(authViewModel.user?.ratingProgress.hasUnlockedUpload ?? false)")
-//                print("Completed ratings: \(authViewModel.user?.ratingProgress.completedRatings ?? 0)")
                 onUploadTap()
             }) {
                 ZStack {

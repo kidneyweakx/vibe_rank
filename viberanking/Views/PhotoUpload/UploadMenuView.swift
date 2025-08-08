@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct UploadMenuView: View {
-    @Binding var showingImagePicker: Bool
-    @Binding var showingPhotoPicker: Bool
+    let onCameraSelected: () -> Void
+    let onPhotoLibrarySelected: () -> Void
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -26,12 +26,12 @@ struct UploadMenuView: View {
                     .foregroundColor(.white)
                     .padding(.top, 20)
                 
-                HStack(spacing: 40) {
+                HStack(spacing: 70) {
                     // Camera option
                     Button {
                         dismiss()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            showingImagePicker = true
+                            onCameraSelected()
                         }
                     } label: {
                         VStack(spacing: 12) {
@@ -55,7 +55,7 @@ struct UploadMenuView: View {
                     Button {
                         dismiss()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            showingPhotoPicker = true
+                            onPhotoLibrarySelected()
                         }
                     } label: {
                         VStack(spacing: 12) {
@@ -85,7 +85,7 @@ struct UploadMenuView: View {
 
 #Preview {
     UploadMenuView(
-        showingImagePicker: .constant(false),
-        showingPhotoPicker: .constant(false)
+        onCameraSelected: {},
+        onPhotoLibrarySelected: {}
     )
 }
