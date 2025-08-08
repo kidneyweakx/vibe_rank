@@ -9,146 +9,119 @@ import Foundation
 
 // MARK: - Photo Repository Implementation
 class PhotoRepository: PhotoRepositoryProtocol {
-    // In-memory cache for offline support
-    private var photosCache: [String: Photo] = [:]
-    private var userPhotosCache: [String: [Photo]] = [:]
-    private var uploadProgressCache: [String: UploadProgress] = [:]
+    private let apiClient = APIClient.shared
     
     // MARK: - CRUD Operations
     func create(_ entity: Photo) async throws -> Photo {
-        photosCache[entity.id] = entity
-        updateUserPhotosCache(entity)
-        return entity
+        print("🔄 Creating photo record via API: \(entity.id)")
+        do {
+            let photoDict = try entity.toDictionary()
+            return try await apiClient.performRequest(
+                endpoint: "/photos",
+                method: .POST,
+                body: photoDict,
+                responseType: Photo.self
+            )
+        } catch {
+            throw AppError.apiError(error)
+        }
     }
     
     func read(id: String) async throws -> Photo? {
-        return photosCache[id]
+        print("🔄 Getting photo by id from API: \(id)")
+        do {
+            return try await apiClient.performRequest(
+                endpoint: "/photos/\(id)",
+                method: .GET,
+                responseType: Photo.self
+            )
+        } catch {
+            print("API error while getting photo: \(error)")
+            return nil
+        }
     }
     
     func update(_ entity: Photo) async throws -> Photo {
-        photosCache[entity.id] = entity
-        updateUserPhotosCache(entity)
-        return entity
+        print("🔄 Updating photo record via API: \(entity.id)")
+        do {
+            let photoDict = try entity.toDictionary()
+            return try await apiClient.performRequest(
+                endpoint: "/photos/\(entity.id)",
+                method: .PUT,
+                body: photoDict,
+                responseType: Photo.self
+            )
+        } catch {
+            throw AppError.apiError(error)
+        }
     }
     
     func delete(id: String) async throws {
-        if let photo = photosCache.removeValue(forKey: id) {
-            removeFromUserPhotosCache(photo)
+        print("🔄 Deleting photo record via API: \(id)")
+        do {
+            try await apiClient.performRequest(
+                endpoint: "/photos/\(id)",
+                method: .DELETE
+            )
+        } catch {
+            throw AppError.apiError(error)
         }
     }
     
     func list(limit: Int? = 20, offset: Int? = nil) async throws -> [Photo] {
-        let cachedPhotos = Array(photosCache.values)
-            .sorted { $0.uploadedAt > $1.uploadedAt }
-            .prefix(limit ?? 20)
-        
-        return Array(cachedPhotos)
+        print("🔄 Listing photos from API with limit: \(limit ?? 20)")
+        // TODO: API does not support pagination yet.
+        throw AppError.apiError(NSError(domain: "PhotoRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "List functionality not implemented"]))
     }
     
     func getPhotosForRating(excludingUserId: String, limit: Int = 10) async throws -> [Photo] {
-        let cachedPhotos = Array(photosCache.values)
-            .filter { $0.userId != excludingUserId }
-            .sorted { $0.uploadedAt > $1.uploadedAt }
-            .prefix(limit)
-        
-        if cachedPhotos.isEmpty {
-            return generateSamplePhotos(excludingUserId: excludingUserId, limit: limit)
+        print("🔄 Getting photos for rating from API, excluding user: \(excludingUserId)")
+        do {
+            return try await apiClient.performRequest(
+                endpoint: "/photos/for-rating?excludeUser=\(excludingUserId)&limit=\(limit)",
+                method: .GET,
+                responseType: [Photo].self
+            )
+        } catch {
+            throw AppError.apiError(error)
         }
-        
-        return Array(cachedPhotos)
     }
     
     func getPhotosByUser(userId: String) async throws -> [Photo] {
-        if let cachedPhotos = userPhotosCache[userId] {
-            return cachedPhotos
+        print("🔄 Getting photos by user from API: \(userId)")
+        do {
+            return try await apiClient.performRequest(
+                endpoint: "/users/\(userId)/photos",
+                method: .GET,
+                responseType: [Photo].self
+            )
+        } catch {
+            throw AppError.apiError(error)
         }
-        
-        return generateSampleUserPhotos(for: userId)
     }
     
     func updatePhotoRatings(photoId: String, ratings: [Rating]) async throws {
-        guard var photo = photosCache[photoId] else {
-            throw AppError.photoNotFound
+        print("🔄 Updating photo ratings via API for photo: \(photoId)")
+        do {
+            let ratingsDict = try ratings.map { try $0.toDictionary() }
+            try await apiClient.performRequest(
+                endpoint: "/photos/\(photoId)/ratings",
+                method: .PUT,
+                body: ["ratings": ratingsDict]
+            )
+        } catch {
+            throw AppError.apiError(error)
         }
-        
-        photo.ratings = ratings
-        photo.totalRatings = ratings.count
-        
-        let hotRatings = ratings.filter { $0.isHot }.count
-        photo.averageScore = ratings.isEmpty ? 0.0 : Double(hotRatings) / Double(ratings.count)
-        
-        _ = try await update(photo)
     }
-    
+
+    // Note: The upload progress methods are removed as they were part of the in-memory cache.
+    // Real upload progress should be handled by the upload service itself.
     func getUploadProgress(photoId: String) async throws -> UploadProgress? {
-        return uploadProgressCache[photoId]
+        // This should be handled by a download/upload manager, not in the repository.
+        return nil
     }
     
     func updateUploadProgress(_ progress: UploadProgress) async throws {
-        uploadProgressCache[progress.photoId] = progress
-    }
-    
-    // MARK: - Cache Management
-    private func updateUserPhotosCache(_ photo: Photo) {
-        if userPhotosCache[photo.userId] != nil {
-            userPhotosCache[photo.userId]?.append(photo)
-        } else {
-            userPhotosCache[photo.userId] = [photo]
-        }
-    }
-    
-    private func removeFromUserPhotosCache(_ photo: Photo) {
-        userPhotosCache[photo.userId]?.removeAll { $0.id == photo.id }
-    }
-    
-    // MARK: - Sample Data Generation (for demo purposes)
-    private func generateSamplePhotos(excludingUserId: String, limit: Int) -> [Photo] {
-        var photos: [Photo] = []
-        
-        for i in 0..<limit {
-            let urlString = "https://picsum.photos/400/400?random=\(i)"
-            let url = URL(string: urlString)!
-            let photoURLs = PhotoURLs(thumbnail: url, preview: url, highRes: url)
-            
-            let photo = Photo(
-                id: "sample_photo_\(i)",
-                userId: "sample_user_\(i)",
-                imageURL: photoURLs
-            )
-            photos.append(photo)
-        }
-        
-        // Cache the sample photos
-        for photo in photos {
-            photosCache[photo.id] = photo
-        }
-        
-        return photos
-    }
-    
-    private func generateSampleUserPhotos(for userId: String) -> [Photo] {
-        let sampleCount = Int.random(in: 1...5)
-        var photos: [Photo] = []
-        
-        for i in 0..<sampleCount {
-            let urlString = "https://picsum.photos/400/400?random=\(userId.hashValue + i)"
-            let url = URL(string: urlString)!
-            let photoURLs = PhotoURLs(thumbnail: url, preview: url, highRes: url)
-            
-            let photo = Photo(
-                id: "user_photo_\(userId)_\(i)",
-                userId: userId,
-                imageURL: photoURLs
-            )
-            photos.append(photo)
-        }
-        
-        // Cache the sample photos
-        userPhotosCache[userId] = photos
-        for photo in photos {
-            photosCache[photo.id] = photo
-        }
-        
-        return photos
+        // This should be handled by a download/upload manager, not in the repository.
     }
 }

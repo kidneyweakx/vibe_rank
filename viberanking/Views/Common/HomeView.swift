@@ -17,9 +17,6 @@ struct HomeView: View {
                 VStack(spacing: 24) {
                     // Trend Chart Section
                     trendChartSection
-                    
-                    // Quick Actions - Function Cards
-                    quickActionsSection
                 }
                 .padding()
             }
@@ -50,57 +47,7 @@ struct HomeView: View {
             .padding(.horizontal, -16)
         }
     }
-    
-    // MARK: - Quick Actions Section
-    private var quickActionsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            sectionHeader("快速操作")
-            
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: AppTheme.Spacing.sm),
-                GridItem(.flexible(), spacing: AppTheme.Spacing.sm)
-            ], spacing: AppTheme.Spacing.md) {
-                QuickActionCard(
-                    title: "開始評分",
-                    icon: "star.fill",
-                    color: themeManager.currentTheme.colors.primary,
-                    onTap: {
-                        print("導航到評分頁面")
-                    }
-                )
-                
-                QuickActionCard(
-                    title: "上傳照片",
-                    icon: "camera.fill",
-                    color: .green,
-                    onTap: {
-                        print("導航到上傳頁面")
-                    }
-                )
-                
-                QuickActionCard(
-                    title: "個人資料",
-                    icon: "person.circle.fill",
-                    color: .purple,
-                    onTap: {
-                        print("導航到個人資料頁面")
-                    }
-                )
-                
-                QuickActionCard(
-                    title: "排行榜",
-                    icon: "trophy.fill",
-                    color: .orange,
-                    onTap: {
-                        print("導航到排行榜頁面")
-                    }
-                )
-            }
-        }
-    }
-    
 
-    
     // MARK: - Helper Methods
     private func sectionHeader(_ title: String) -> some View {
         HStack {
@@ -187,46 +134,6 @@ struct PhotoGalleryCard: View {
                         .padding(8)
                     )
             }
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-// MARK: - Quick Action Card Component
-struct QuickActionCard: View {
-    let title: String
-    let icon: String
-    let color: Color
-    let onTap: () -> Void
-    
-    var body: some View {
-        Button(action: onTap) {
-            VStack(spacing: 12) {
-                Circle()
-                    .fill(color.opacity(0.2))
-                    .frame(width: 50, height: 50)
-                    .overlay(
-                        Image(systemName: icon)
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(color)
-                    )
-                
-                Text(title)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 100)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.gray.opacity(0.2))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
-                    .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
-            )
         }
         .buttonStyle(PlainButtonStyle())
     }

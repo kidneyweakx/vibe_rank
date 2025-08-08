@@ -50,24 +50,6 @@ struct AppConfiguration {
         static let shadowRadius: CGFloat = 8.0
     }
     
-    // MARK: - Firebase Collection Names
-    struct Collections {
-        static let users = "users"
-        static let photos = "photos"
-        static let ratings = "ratings"
-        static let styleReports = "styleReports"
-        static let achievements = "achievements"
-        static let userPreferences = "userPreferences"
-    }
-    
-    // MARK: - Firebase Storage Paths
-    struct StoragePaths {
-        static let photos = "photos"
-        static let thumbnails = "thumbnails"
-        static let previews = "previews"
-        static let highRes = "highres"
-    }
-
     // MARK: - R2 Configuration
     struct R2 {
         private static let r2Config: [String: Any] = {
@@ -120,7 +102,7 @@ struct AppConfiguration {
         static let shareRewardThreshold = 5
         static let evolutionAnalysisMinPhotos = 3
         static let achievementCategories = [
-            "first_rating", "rating_milestone", "upload_milestone", 
+            "first_rating", "rating_milestone", "upload_milestone",
             "style_evolution", "social_sharing", "consistency"
         ]
     }

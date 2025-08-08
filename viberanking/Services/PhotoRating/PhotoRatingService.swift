@@ -7,23 +7,13 @@
 
 import Foundation
 import Combine
-import FirebaseFirestore
 
 // MARK: - Photo Rating Service Implementation
 @MainActor
 class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
     
     // MARK: - Properties
-    private let db = Firestore.firestore()
-    private var photosCollection: CollectionReference {
-        return db.collection("photos")
-    }
-    private var ratingsCollection: CollectionReference {
-        return db.collection("ratings")
-    }
-    private var usersCollection: CollectionReference {
-        return db.collection("users")
-    }
+    private let apiClient = APIClient.shared
     
     @Published var isLoading = false
     @Published var error: AppError?
@@ -51,13 +41,11 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
                 return photosCache.filter { $0.userId != userId }
             }
             
-            let query = photosCollection
-                .whereField("userId", isNotEqualTo: userId)
-                .order(by: "uploadedAt", descending: true)
-                .limit(to: 50)
-            
-            let snapshot = try await query.getDocuments()
-            let photos = try snapshot.documents.compactMap { try $0.data(as: Photo.self) }
+            let photos = try await apiClient.performRequest(
+                endpoint: "/photos/for-rating?excludeUserId=\(userId)&limit=50",
+                method: .GET,
+                responseType: [Photo].self
+            )
             
             // If no real photos available, use sample photos
             if photos.isEmpty {
@@ -78,14 +66,14 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
             return photos
             
         } catch {
-            // If Firebase fails, try to use sample photos as fallback
-            print("⚠️ Firebase error, falling back to sample photos: \(error.localizedDescription)")
+            // If API fails, try to use sample photos as fallback
+            print("⚠️ API error, falling back to sample photos: \(error.localizedDescription)")
             
             do {
                 let samplePhotos = try await samplePhotoService.getSamplePhotos()
                 return samplePhotos.filter { $0.userId != userId }
             } catch {
-                let appError = AppError.firebaseError(.firestoreError(error.localizedDescription))
+                let appError = AppError.apiError(error)
                 self.error = appError
                 throw appError
             }
@@ -102,8 +90,14 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
             let isSamplePhoto = rating.photoId.hasPrefix("sample_")
             
             if !isSamplePhoto {
-                // Only save to Firebase if it's a real photo
-                try await ratingsCollection.document(rating.id).setData(from: rating)
+                // Only save to API if it's a real photo
+                let ratingDict = try rating.toDictionary()
+                _ = try await apiClient.performRequest(
+                    endpoint: "/ratings",
+                    method: .POST,
+                    body: ratingDict ?? [:],
+                    responseType: Rating.self
+                )
             } else {
                 print("📝 Rating submitted for sample photo: \(rating.photoId)")
                 // For sample photos, we just update the local cache
@@ -115,7 +109,7 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
             }
             
         } catch {
-            let appError = AppError.firebaseError(.firestoreError(error.localizedDescription))
+            let appError = AppError.apiError(error)
             self.error = appError
             throw appError
         }
@@ -139,14 +133,16 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
             // Analyze style preferences based on rated photos
             try await analyzeStylePreferences(for: &preferences, from: ratings)
             
-            try await usersCollection
-                .document(preferences.userId)
-                .collection("preferences")
-                .document("current")
-                .setData(from: preferences)
+            let preferencesDict = try preferences.toDictionary()
+            _ = try await apiClient.performRequest(
+                endpoint: "/users/\(preferences.userId)/preferences",
+                method: .PUT,
+                body: preferencesDict ?? [:],
+                responseType: UserPreferences.self
+            )
             
         } catch {
-            let appError = AppError.firebaseError(.firestoreError(error.localizedDescription))
+            let appError = AppError.apiError(error)
             self.error = appError
             throw appError
         }

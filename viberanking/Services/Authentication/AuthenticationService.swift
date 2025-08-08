@@ -11,16 +11,18 @@ import CryptoKit
 import AuthenticationServices
 import SwiftUI
 
+import Combine
+
 @MainActor
-class AuthenticationService: NSObject, AuthenticationServiceProtocol, ASAuthorizationControllerDelegate {
+class AuthenticationService: NSObject, ObservableObject, AuthenticationServiceProtocol, ASAuthorizationControllerDelegate {
+    
+    @Published var currentUser: User?
     
     private var currentNonce: String?
     private var appleSignInCompletion: ((Result<User, Error>) -> Void)?
-    private var _currentUser: User?
     private let authAPI = AuthAPI()
     
-    var currentUser: User? { _currentUser }
-    var isAuthenticated: Bool { _currentUser != nil }
+    var isAuthenticated: Bool { currentUser != nil }
     
     private var rootViewController: UIViewController? {
         UIApplication.shared.connectedScenes
@@ -53,7 +55,7 @@ class AuthenticationService: NSObject, AuthenticationServiceProtocol, ASAuthoriz
                 accessToken: result.user.accessToken.tokenString
             )
             
-            _currentUser = user
+            currentUser = user
             return user
             
         } catch let error as NSError where error.domain == "com.google.GIDSignIn" {
@@ -67,11 +69,6 @@ class AuthenticationService: NSObject, AuthenticationServiceProtocol, ASAuthoriz
     }
     
     private func getGoogleClientID() -> String? {
-        if let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
-           let plist = NSDictionary(contentsOfFile: path),
-           let clientID = plist["CLIENT_ID"] as? String {
-            return clientID
-        }
         return Bundle.main.object(forInfoDictionaryKey: "GOOGLE_CLIENT_ID") as? String
     }
     
@@ -150,7 +147,7 @@ class AuthenticationService: NSObject, AuthenticationServiceProtocol, ASAuthoriz
                     throw AppError.validationError("未知的憑證類型")
                 }
                 
-                _currentUser = user
+                currentUser = user
                 appleSignInCompletion?(.success(user))
                 
             } catch {
@@ -267,7 +264,7 @@ class AuthenticationService: NSObject, AuthenticationServiceProtocol, ASAuthoriz
         }
         
         clearUserIdentifier()
-        _currentUser = nil
+        currentUser = nil
         
         // Optional API notification
         try? await authAPI.signOut()

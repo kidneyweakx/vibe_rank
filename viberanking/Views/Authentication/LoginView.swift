@@ -398,7 +398,7 @@ struct LoginViewPreview: PreviewProvider {
 @MainActor
 class LoginPreviewAuthenticationViewModel: AuthenticationViewModel {
     init(isLoading: Bool = false, errorMessage: String? = nil) {
-        super.init(authenticationService: MockAuthenticationService())
+        super.init(authenticationService: PreviewAuthenticationService())
         
         // For preview purposes, we'll set properties directly
         self.isLoading = isLoading
@@ -410,19 +410,21 @@ class LoginPreviewAuthenticationViewModel: AuthenticationViewModel {
 
 // Mock service for previews
 @MainActor
-class MockAuthenticationService: AuthenticationServiceProtocol {
-    var currentUser: User? = nil
-    var isAuthenticated: Bool = false
+class PreviewAuthenticationService: AuthenticationService {
     
-    func signInWithGoogle() async throws -> User {
-        return User(id: "preview_id", name: "Preview User", email: "preview@example.com")
+    override func signInWithGoogle() async throws -> User {
+        let user = User(id: "preview_id", name: "Preview User", email: "preview@example.com")
+        currentUser = user
+        return user
     }
     
-    func signInWithApple() async throws -> User {
-        return User(id: "preview_id", name: "Preview User", email: "preview@example.com")
+    override func signInWithApple() async throws -> User {
+        let user = User(id: "preview_id", name: "Preview User", email: "preview@example.com")
+        currentUser = user
+        return user
     }
     
-    func signOut() async throws {
-        // No implementation needed for preview
+    override func signOut() async throws {
+        currentUser = nil
     }
 }

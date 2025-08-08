@@ -7,17 +7,13 @@
 
 import Foundation
 import Combine
-import FirebaseFirestore
 
 // MARK: - Photo Rating Repository Implementation
 @MainActor
 class PhotoRatingRepository: ObservableObject {
     
     // MARK: - Properties
-    private let db = Firestore.firestore()
-    private var ratingsCollection: CollectionReference {
-        return db.collection("ratings")
-    }
+    private let apiClient = APIClient.shared
     
     @Published var isLoading = false
     @Published var error: AppError?
@@ -39,13 +35,19 @@ class PhotoRatingRepository: ObservableObject {
                 throw AppError.validationError("用戶已經評分過這張照片")
             }
             
-            try await ratingsCollection.document(rating.id).setData(from: rating)
+            let ratingDict = try rating.toDictionary()
+            _ = try await apiClient.performRequest(
+                endpoint: "/ratings",
+                method: .POST,
+                body: ratingDict ?? [:],
+                responseType: Rating.self
+            )
             
             // Update local cache
             updateLocalCache(with: rating)
             
         } catch {
-            let appError = error as? AppError ?? AppError.firebaseError(.firestoreError(error.localizedDescription))
+            let appError = error as? AppError ?? AppError.apiError(error)
             self.error = appError
             throw appError
         }
@@ -62,12 +64,11 @@ class PhotoRatingRepository: ObservableObject {
                 return cachedRatings
             }
             
-            let query = ratingsCollection
-                .whereField("photoId", isEqualTo: photoId)
-                .order(by: "createdAt", descending: true)
-            
-            let snapshot = try await query.getDocuments()
-            let ratings = try snapshot.documents.compactMap { try $0.data(as: Rating.self) }
+            let ratings = try await apiClient.performRequest(
+                endpoint: "/photos/\(photoId)/ratings",
+                method: .GET,
+                responseType: [Rating].self
+            )
             
             // Update cache
             ratingsCache[photoId] = ratings
@@ -75,7 +76,7 @@ class PhotoRatingRepository: ObservableObject {
             return ratings
             
         } catch {
-            let appError = AppError.firebaseError(.firestoreError(error.localizedDescription))
+            let appError = AppError.apiError(error)
             self.error = appError
             throw appError
         }
@@ -92,12 +93,11 @@ class PhotoRatingRepository: ObservableObject {
                 return cachedRatings
             }
             
-            let query = ratingsCollection
-                .whereField("raterId", isEqualTo: userId)
-                .order(by: "createdAt", descending: true)
-            
-            let snapshot = try await query.getDocuments()
-            let ratings = try snapshot.documents.compactMap { try $0.data(as: Rating.self) }
+            let ratings = try await apiClient.performRequest(
+                endpoint: "/users/\(userId)/ratings",
+                method: .GET,
+                responseType: [Rating].self
+            )
             
             // Update cache
             userRatingsCache[userId] = ratings
@@ -105,7 +105,7 @@ class PhotoRatingRepository: ObservableObject {
             return ratings
             
         } catch {
-            let appError = AppError.firebaseError(.firestoreError(error.localizedDescription))
+            let appError = AppError.apiError(error)
             self.error = appError
             throw appError
         }
@@ -114,8 +114,16 @@ class PhotoRatingRepository: ObservableObject {
     /// Check if a user has already rated a specific photo
     func hasUserRatedPhoto(userId: String, photoId: String) async throws -> Bool {
         do {
-            let userRatings = try await getRatingsByUser(userId: userId)
-            return userRatings.contains { $0.photoId == photoId }
+            struct HasRatedResponse: Codable {
+                let hasRated: Bool
+            }
+            
+            let response = try await apiClient.performRequest(
+                endpoint: "/ratings/has-rated?userId=\(userId)&photoId=\(photoId)",
+                method: .GET,
+                responseType: HasRatedResponse.self
+            )
+            return response.hasRated
         } catch {
             throw error
         }

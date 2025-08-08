@@ -16,10 +16,8 @@ class ErrorHandler: ObservableObject {
     func handle(_ error: Error) {
         if let appError = error as? AppError {
             currentError = appError
-        } else if let firebaseError = error as? FirebaseError {
-            currentError = AppError.firebaseError(firebaseError)
         } else {
-            currentError = AppError.networkError(error)
+            currentError = AppError.apiError(error)
         }
     }
     

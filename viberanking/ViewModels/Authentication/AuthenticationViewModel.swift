@@ -38,19 +38,18 @@ class AuthenticationViewModel: ObservableObject {
     
     // MARK: - Initializer
     
-    init(authenticationService: AuthenticationServiceProtocol? = nil,
-         userProfileService: UserProfileService? = nil) {
-        self.authenticationService = authenticationService ?? AuthenticationService()
-        self.userProfileService = userProfileService ?? UserProfileService()
+    init(authenticationService: AuthenticationService? = nil) {
+        let authService = authenticationService ?? AuthenticationService()
+        self.authenticationService = authService
+        self.userProfileService = UserProfileService(authenticationService: authService)
         
         // Set initial state from service
-        self.user = self.authenticationService.currentUser
-        self.isAuthenticated = self.authenticationService.isAuthenticated
-        self.authState = self.authenticationService.isAuthenticated ? .signedIn : .signedOut
+        self.user = self.userProfileService.currentUser
+        self.isAuthenticated = self.userProfileService.isAuthenticated
+        self.authState = self.userProfileService.isAuthenticated ? .signedIn : .signedOut
         
         // Setup bindings and listeners
         setupUserProfileBindings()
-        setupAuthStateListener()
     }
     
 

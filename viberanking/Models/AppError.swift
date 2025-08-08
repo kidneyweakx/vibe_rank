@@ -7,34 +7,11 @@
 
 import Foundation
 
-// MARK: - Firebase Error Types
-enum FirebaseError: Error, LocalizedError {
-    case authenticationError
-    case firestoreError(String)
-    case storageError(String)
-    case networkError
-    case unknownError
-    
-    var errorDescription: String? {
-        switch self {
-        case .authenticationError:
-            return "Firebase 認證錯誤"
-        case .firestoreError(let message):
-            return "資料庫錯誤: \(message)"
-        case .storageError(let message):
-            return "儲存錯誤: \(message)"
-        case .networkError:
-            return "Firebase 網路連接錯誤"
-        case .unknownError:
-            return "未知的 Firebase 錯誤"
-        }
-    }
-}
-
 // MARK: - Application Error Types
 enum AppError: Error, LocalizedError {
     case authenticationFailed
     case networkError(Error)
+    case apiError(Error)
     case imageUploadFailed
     case insufficientRatings
     case reportGenerationFailed
@@ -46,7 +23,6 @@ enum AppError: Error, LocalizedError {
     case invalidURL
     case ratingSubmissionFailed
     case validationError(String)
-    case firebaseError(FirebaseError)
     
     var errorDescription: String? {
         switch self {
@@ -54,6 +30,8 @@ enum AppError: Error, LocalizedError {
             return "登入失敗，請重試"
         case .networkError(let error):
             return "網路連接問題，請檢查網路設定: \(error.localizedDescription)"
+        case .apiError(let error):
+            return "API 錯誤: \(error.localizedDescription)"
         case .imageUploadFailed:
             return "照片上傳失敗，請重試"
         case .insufficientRatings:
@@ -76,8 +54,6 @@ enum AppError: Error, LocalizedError {
             return "無效的網址"
         case .validationError(let message):
             return message
-        case .firebaseError(let firebaseError):
-            return firebaseError.errorDescription
         }
     }
     
@@ -85,7 +61,7 @@ enum AppError: Error, LocalizedError {
         switch self {
         case .authenticationFailed:
             return "請檢查網路連接並重新登入"
-        case .networkError:
+        case .networkError, .apiError:
             return "請檢查網路連接並重試"
         case .imageUploadFailed:
             return "請檢查網路連接並重新上傳"
@@ -107,8 +83,6 @@ enum AppError: Error, LocalizedError {
             return "請檢查輸入資料並重試"
         case .validationError:
             return "請檢查輸入資料並重試"
-        case .firebaseError:
-            return "請檢查網路連接並重試"
         }
     }
 }

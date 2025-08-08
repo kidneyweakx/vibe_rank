@@ -7,11 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F1FA31722E312EF100964891 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = F1FA31712E312EF100964891 /* FirebaseAuth */; };
-		F1FA31742E312EF100964891 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = F1FA31732E312EF100964891 /* FirebaseCore */; };
 		F1FA31772E312FBE00964891 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = F1FA31762E312FBE00964891 /* GoogleSignIn */; };
-		F1FA317B2E3130AC00964891 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = F1FA317A2E3130AC00964891 /* FirebaseStorage */; };
-		F1FA317D2E3130C600964891 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = F1FA317C2E3130C600964891 /* FirebaseFirestore */; };
 		F1FA31C72E32926800964891 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = F1FA31C62E32926800964891 /* Kingfisher */; };
 		F1FA31CA2E3299F000964891 /* SDWebImageWebPCoder in Frameworks */ = {isa = PBXBuildFile; productRef = F1FA31C92E3299F000964891 /* SDWebImageWebPCoder */; };
 /* End PBXBuildFile section */
@@ -77,10 +73,6 @@
 			files = (
 				F1FA31CA2E3299F000964891 /* SDWebImageWebPCoder in Frameworks */,
 				F1FA31C72E32926800964891 /* Kingfisher in Frameworks */,
-				F1FA31742E312EF100964891 /* FirebaseCore in Frameworks */,
-				F1FA317B2E3130AC00964891 /* FirebaseStorage in Frameworks */,
-				F1FA31722E312EF100964891 /* FirebaseAuth in Frameworks */,
-				F1FA317D2E3130C600964891 /* FirebaseFirestore in Frameworks */,
 				F1FA31772E312FBE00964891 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -150,11 +142,7 @@
 			);
 			name = viberanking;
 			packageProductDependencies = (
-				F1FA31712E312EF100964891 /* FirebaseAuth */,
-				F1FA31732E312EF100964891 /* FirebaseCore */,
 				F1FA31762E312FBE00964891 /* GoogleSignIn */,
-				F1FA317A2E3130AC00964891 /* FirebaseStorage */,
-				F1FA317C2E3130C600964891 /* FirebaseFirestore */,
 				F1FA31C62E32926800964891 /* Kingfisher */,
 				F1FA31C92E3299F000964891 /* SDWebImageWebPCoder */,
 			);
@@ -687,30 +675,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		F1FA31712E312EF100964891 /* FirebaseAuth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F1608CFF2E30738200404170 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAuth;
-		};
-		F1FA31732E312EF100964891 /* FirebaseCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F1608CFF2E30738200404170 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseCore;
-		};
 		F1FA31762E312FBE00964891 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F1FA31752E312FB200964891 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignIn;
-		};
-		F1FA317A2E3130AC00964891 /* FirebaseStorage */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F1608CFF2E30738200404170 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseStorage;
-		};
-		F1FA317C2E3130C600964891 /* FirebaseFirestore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F1608CFF2E30738200404170 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFirestore;
 		};
 		F1FA31C62E32926800964891 /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;

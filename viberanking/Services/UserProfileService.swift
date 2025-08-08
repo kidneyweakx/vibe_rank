@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import FirebaseAuth
 import Combine
 
 /// Service for managing user profiles and state persistence
@@ -20,96 +19,62 @@ class UserProfileService: ObservableObject {
     @Published var error: AppError?
     
     private let userRepository = UserRepository()
+    private let authenticationService: AuthenticationService
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
     
-    nonisolated init() {
-        Task { @MainActor in
-            setupAuthStateListener()
-        }
+    init(authenticationService: AuthenticationService) {
+        self.authenticationService = authenticationService
+        setupSubscribers()
     }
     
     // MARK: - Authentication State Monitoring
     
-    /// Set up Firebase Auth state listener
-    private func setupAuthStateListener() {
-        Auth.auth().addStateDidChangeListener { [weak self] _, user in
-            Task { @MainActor in
-                if let user = user {
-                    await self?.handleUserSignedIn(firebaseUser: user)
-                } else {
-                    await self?.handleUserSignedOut()
+    private func setupSubscribers() {
+        authenticationService.$currentUser
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] user in
+                Task {
+                    if let user = user {
+                        await self?.handleUserSignedIn(user: user)
+                    } else {
+                        await self?.handleUserSignedOut()
+                    }
                 }
             }
-        }
+            .store(in: &cancellables)
     }
     
     /// Handle user signed in event
-    private func handleUserSignedIn(firebaseUser: FirebaseAuth.User) async {
-        print("🔄 User signed in, loading profile: \(firebaseUser.uid)")
+    private func handleUserSignedIn(user: User) async {
+        print("🔄 User signed in, loading profile: \(user.id)")
         isLoading = true
         error = nil
         
-        // Validate Firebase user UID
-        guard !firebaseUser.uid.isEmpty, !firebaseUser.uid.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            print("⚠️ Firebase user UID is empty")
-            error = AppError.firebaseError(.firestoreError("Invalid user ID"))
-            isLoading = false
-            return
-        }
-        
         do {
-            // Try to load existing user profile
-            if let existingUser = try await userRepository.getUser(by: firebaseUser.uid) {
+            // Try to load existing user profile from our backend
+            if let existingUser = try await userRepository.getUser(by: user.id) {
                 print("✅ Existing user profile loaded: \(existingUser.name)")
                 currentUser = existingUser
                 
-                // Try to update last activity, but don't fail if offline
-                do {
-                    try await userRepository.updateLastActivity(userId: existingUser.id)
-                } catch {
-                    print("⚠️ Could not update last activity (offline mode): \(error.localizedDescription)")
-                }
+                // Try to update last activity
+                try? await userRepository.updateLastActivity(userId: existingUser.id)
                 
             } else {
                 print("ℹ️ No existing profile found, creating new user profile")
-                
-                // Create new user profile from Firebase user data
-                let newUser = User(
-                    id: firebaseUser.uid,
-                    name: firebaseUser.displayName ?? "User",
-                    email: firebaseUser.email ?? "no-email@example.com",
-                    profileImageURL: firebaseUser.photoURL?.absoluteString
-                )
-                
-                do {
-                    let savedUser = try await userRepository.createOrUpdateUserProfile(newUser)
-                    currentUser = savedUser
-                    print("✅ New user profile created: \(savedUser.name)")
-                } catch {
-                    print("⚠️ Could not save user profile (offline mode), using local user: \(error.localizedDescription)")
-                    // In offline mode, use the local user object
-                    currentUser = newUser
-                }
+                // The user from AuthenticationService is already a full user object from our API
+                let savedUser = try await userRepository.createOrUpdateUserProfile(user)
+                currentUser = savedUser
+                print("✅ New user profile created: \(savedUser.name)")
             }
             
+        } catch let appError as AppError {
+            print("❌ Failed to handle user sign in: \(appError.localizedDescription)")
+            self.error = appError
         } catch {
-            print("⚠️ Failed to handle user sign in (offline mode): \(error.localizedDescription)")
-            
-            // In offline mode, create a basic user from Firebase Auth data
-            if error.localizedDescription.contains("offline") || error.localizedDescription.contains("network") {
-                print("📱 Creating offline user profile from Firebase Auth data")
-                let offlineUser = User(
-                    id: firebaseUser.uid,
-                    name: firebaseUser.displayName ?? "User",
-                    email: firebaseUser.email ?? "no-email@example.com",
-                    profileImageURL: firebaseUser.photoURL?.absoluteString
-                )
-                currentUser = offlineUser
-            } else {
-                self.error = error as? AppError ?? AppError.userNotFound
-            }
+            print("❌ Failed to handle user sign in with unknown error: \(error.localizedDescription)")
+            self.error = .apiError(error)
         }
         
         isLoading = false
@@ -133,72 +98,14 @@ class UserProfileService: ObservableObject {
         do {
             let updatedUser = try await userRepository.update(user)
             currentUser = updatedUser
-            
             print("✅ User profile updated successfully")
         } catch {
             print("❌ Failed to update user profile: \(error.localizedDescription)")
-            self.error = error as? AppError ?? AppError.validationError("Failed to update profile")
+            self.error = error as? AppError ?? .validationError("Failed to update profile")
             throw error
         }
         
         isLoading = false
-    }
-    
-    /// Update user rating progress
-    func updateRatingProgress(_ progress: RatingProgress) async throws {
-        guard let currentUser = currentUser else {
-            throw AppError.userNotFound
-        }
-        
-        print("🔄 Updating rating progress for user: \(currentUser.id)")
-        
-        do {
-            try await userRepository.updateRatingProgress(userId: currentUser.id, progress: progress)
-            
-            // Update local user state
-            var updatedUser = currentUser
-            updatedUser.ratingProgress = progress
-            self.currentUser = updatedUser
-            
-            print("✅ Rating progress updated successfully")
-        } catch {
-            print("❌ Failed to update rating progress: \(error.localizedDescription)")
-            self.error = error as? AppError ?? AppError.validationError("Failed to update rating progress")
-            throw error
-        }
-    }
-    
-    /// Get user preferences
-    func getUserPreferences() async throws -> UserPreferences? {
-        guard let currentUser = currentUser else {
-            throw AppError.userNotFound
-        }
-        
-        print("🔄 Getting user preferences: \(currentUser.id)")
-        
-        do {
-            let preferences = try await userRepository.getUserPreferences(userId: currentUser.id)
-            print("✅ User preferences retrieved successfully")
-            return preferences
-        } catch {
-            print("❌ Failed to get user preferences: \(error.localizedDescription)")
-            self.error = error as? AppError ?? AppError.validationError("Failed to get preferences")
-            throw error
-        }
-    }
-    
-    /// Update user preferences
-    func updateUserPreferences(_ preferences: UserPreferences) async throws {
-        print("🔄 Updating user preferences: \(preferences.userId)")
-        
-        do {
-            try await userRepository.updateUserPreferences(preferences)
-            print("✅ User preferences updated successfully")
-        } catch {
-            print("❌ Failed to update user preferences: \(error.localizedDescription)")
-            self.error = error as? AppError ?? AppError.validationError("Failed to update preferences")
-            throw error
-        }
     }
     
     /// Delete user account and all data
@@ -212,52 +119,35 @@ class UserProfileService: ObservableObject {
         error = nil
         
         do {
-            // Delete user profile from Firestore
+            // Delete user profile from our backend
             try await userRepository.delete(id: currentUser.id)
             
-            // Delete Firebase Auth account
-            if let firebaseUser = Auth.auth().currentUser {
-                try await firebaseUser.delete()
-            }
+            // Sign out from the authentication service
+            try await authenticationService.signOut()
             
-            // Clear local state
-            self.currentUser = nil
-            
+            // Clear local state is handled by the subscriber to authenticationService
             print("✅ User account deleted successfully")
         } catch {
             print("❌ Failed to delete user account: \(error.localizedDescription)")
-            self.error = error as? AppError ?? AppError.validationError("Failed to delete account")
+            self.error = error as? AppError ?? .validationError("Failed to delete account")
             throw error
         }
         
         isLoading = false
     }
     
-    /// Check if user exists
-    func userExists(id: String) async throws -> Bool {
-        return try await userRepository.userExists(id: id)
-    }
-    
     /// Refresh current user data
     func refreshUserData() async throws {
-        guard let currentUser = currentUser else {
+        guard let currentUserId = currentUser?.id else {
             throw AppError.userNotFound
         }
         
-        print("🔄 Refreshing user data: \(currentUser.id)")
+        print("🔄 Refreshing user data: \(currentUserId)")
         isLoading = true
         error = nil
         
-        // Validate current user ID
-        guard !currentUser.id.isEmpty, !currentUser.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            print("⚠️ Current user ID is empty")
-            self.error = AppError.firebaseError(.firestoreError("Invalid user ID"))
-            isLoading = false
-            throw AppError.firebaseError(.firestoreError("Invalid user ID"))
-        }
-        
         do {
-            if let refreshedUser = try await userRepository.getUser(by: currentUser.id) {
+            if let refreshedUser = try await userRepository.getUser(by: currentUserId) {
                 self.currentUser = refreshedUser
                 print("✅ User data refreshed successfully")
             } else {
@@ -265,7 +155,7 @@ class UserProfileService: ObservableObject {
             }
         } catch {
             print("❌ Failed to refresh user data: \(error.localizedDescription)")
-            self.error = error as? AppError ?? AppError.validationError("Failed to refresh user data")
+            self.error = error as? AppError ?? .validationError("Failed to refresh user data")
             throw error
         }
         
@@ -276,7 +166,7 @@ class UserProfileService: ObservableObject {
     
     /// Check if user is authenticated
     var isAuthenticated: Bool {
-        return currentUser != nil && Auth.auth().currentUser != nil
+        return currentUser != nil
     }
     
     /// Check if user has unlocked upload functionality
@@ -287,5 +177,35 @@ class UserProfileService: ObservableObject {
     /// Get remaining ratings needed to unlock upload
     var remainingRatingsForUpload: Int {
         return currentUser?.ratingProgress.remainingRatings ?? 20
+    }
+    
+    // MARK: - Rating Progress Management
+    
+    /// Update user rating progress
+    func updateRatingProgress(_ progress: RatingProgress) async throws {
+        guard var user = currentUser else {
+            throw AppError.userNotFound
+        }
+        
+        print("🔄 Updating rating progress: \(progress.completedRatings)/\(progress.requiredRatings)")
+        isLoading = true
+        error = nil
+        
+        do {
+            // Update the user's rating progress
+            user.ratingProgress = progress
+            
+            // Save to backend
+            let updatedUser = try await userRepository.update(user)
+            currentUser = updatedUser
+            
+            print("✅ Rating progress updated successfully")
+        } catch {
+            print("❌ Failed to update rating progress: \(error.localizedDescription)")
+            self.error = error as? AppError ?? .validationError("Failed to update rating progress")
+            throw error
+        }
+        
+        isLoading = false
     }
 }

@@ -6,8 +6,6 @@
 //
 
 import SwiftUI
-import Firebase
-import GoogleSignIn
 
 @main
 struct viberankingApp: App {
@@ -18,15 +16,6 @@ struct viberankingApp: App {
     @StateObject private var themeManager = ThemeManager()
 
     init() {
-        // Configure Firebase first
-        FirebaseApp.configure()
-        
-        // Configure Google Sign-In
-        guard let clientID = FirebaseApp.app()?.options.clientID else {
-            fatalError("No client ID found in GoogleService-Info.plist")
-        }
-        GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
-        
         // Test Apple Sign-In configuration
         AppleSignInTestHelper.testConfiguration()
         AppleSignInTestHelper.checkDeviceSupport()
@@ -75,10 +64,6 @@ struct viberankingApp: App {
                 .onAppear {
                     // Log app start event
                     AnalyticsService.shared.logEvent(.featureUsed(feature: "app_launch"))
-                }
-                .onOpenURL { url in
-                    // Handle Google Sign-In URL
-                    GIDSignIn.sharedInstance.handle(url)
                 }
                 .alert(
                     errorHandler.currentError?.localizedDescription ?? "Error",
