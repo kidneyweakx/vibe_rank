@@ -150,9 +150,9 @@ struct ImagePreviewView: View {
     }
     
     private func uploadImage() {
-        // 檢查是否已裁切為正方形
+        // 檢查是否已裁切為直板
         if croppedImage == nil {
-            uploadError = "請先裁切圖片為正方形後再上傳"
+            uploadError = "請先裁切圖片為直板後再上傳"
             return
         }
         
