@@ -91,9 +91,7 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
         }
     }
     
-    private func getGoogleClientID() -> String? {
-        return Bundle.main.object(forInfoDictionaryKey: "GOOGLE_CLIENT_ID") as? String
-    }
+
     
     // MARK: - Apple Sign-In
     
@@ -378,6 +376,18 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
         let inputData = Data(input.utf8)
         let hashedData = SHA256.hash(data: inputData)
         return hashedData.compactMap { String(format: "%02x", $0) }.joined()
+    }
+    
+    private func getGoogleClientID() -> String? {
+        // First try to get from GoogleService-Info.plist
+        if let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
+           let plist = NSDictionary(contentsOfFile: path),
+           let clientID = plist["CLIENT_ID"] as? String {
+            return clientID
+        }
+        
+        // Fallback to Info.plist
+        return Bundle.main.object(forInfoDictionaryKey: "GOOGLE_CLIENT_ID") as? String
     }
     
     private func convertAPIErrorToAppError(_ apiError: APIError) -> AppError {

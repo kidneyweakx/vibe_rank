@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import GoogleSignIn
 
 @main
 struct viberankingApp: App {
@@ -16,6 +17,9 @@ struct viberankingApp: App {
     @StateObject private var themeManager = ThemeManager()
 
     init() {
+        // Configure Google Sign-In
+        configureGoogleSignIn()
+        
         // Test Apple Sign-In configuration
         AppleSignInTestHelper.testConfiguration()
         AppleSignInTestHelper.checkDeviceSupport()
@@ -27,6 +31,19 @@ struct viberankingApp: App {
         
         // Check Apple ID credential state at launch
         checkAppleIDCredentialStateAtLaunch()
+    }
+    
+    /// Configure Google Sign-In
+    private func configureGoogleSignIn() {
+        guard let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
+              let plist = NSDictionary(contentsOfFile: path),
+              let clientID = plist["CLIENT_ID"] as? String else {
+            print("❌ Google Sign-In configuration failed: CLIENT_ID not found")
+            return
+        }
+        
+        GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
+        print("✅ Google Sign-In configured with CLIENT_ID: \(clientID)")
     }
     
     /// Check Apple ID credential state when app launches
@@ -64,6 +81,10 @@ struct viberankingApp: App {
                 .onAppear {
                     // Log app start event
                     AnalyticsService.shared.logEvent(.featureUsed(feature: "app_launch"))
+                }
+                .onOpenURL { url in
+                    // Handle Google Sign-In URL callback
+                    GIDSignIn.sharedInstance.handle(url)
                 }
                 .alert(
                     errorHandler.currentError?.localizedDescription ?? "Error",

@@ -16,190 +16,144 @@ struct LoginView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Background gradient that adapts to light/dark mode
+                // Black background with subtle gradient
                 LinearGradient(
                     gradient: Gradient(
-                        colors: [themeManager.currentTheme.colors.background, themeManager.currentTheme.colors.background.opacity(0.8)]
+                        colors: [Color.black, Color(hex: "1A1A1A")]
                     ),
                     startPoint: .top,
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
                 
-                VStack(spacing: 30) {
+                VStack(spacing: 0) {
                     Spacer()
                     
-                    // App logo with animation
-                    LogoView()
-                        .frame(width: 120, height: 120)
-                        .padding(.bottom, 10)
+                    // Artistic title
+                    VStack(spacing: 8) {
+                        Text("VIBE")
+                            .font(.system(size: 48, weight: .black, design: .rounded))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.white, Color(hex: "E0E0E0")],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .shadow(color: Color.white.opacity(0.3), radius: 10, x: 0, y: 0)
+                        
+                        Text("RANK")
+                            .font(.system(size: 48, weight: .black, design: .rounded))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color(hex: "FF6B6B"), Color(hex: "4ECDC4")],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .shadow(color: Color(hex: "FF6B6B").opacity(0.5), radius: 15, x: 0, y: 0)
+                    }
                     
-                    // App title with dynamic text styling
-                    Text("auth.title".localized)
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(themeManager.currentTheme.colors.text)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                    
-                    // App subtitle
-                    Text("auth.subtitle".localized)
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
-                        .padding(.bottom, 20)
-                    
+                    Spacer()
                     Spacer()
                     
                     // Authentication buttons or loading state
                     if viewModel.isLoading {
-                        LoadingView()
+                        ModernLoadingView()
                     } else {
-                        AuthButtonsView(viewModel: viewModel)
+                        ModernAuthButtonsView(viewModel: viewModel)
                     }
                     
                     // Error message display with animation
                     if let errorMessage = viewModel.errorMessage {
-                        ErrorMessageView(message: errorMessage)
+                        ModernErrorMessageView(message: errorMessage)
+                            .padding(.bottom, 20)
                     }
-                    
-                    Spacer()
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 32)
                 .frame(width: geometry.size.width)
             }
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("auth.screen_label".localized)
+        .preferredColorScheme(.dark)
     }
 }
 
-// MARK: - Logo View
-struct LogoView: View {
-    @State private var isAnimating = false
-    @EnvironmentObject private var themeManager: ThemeManager
-    
-    var body: some View {
-        ZStack {
-            // Outer circle with gradient
-            Circle()
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(
-                            colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary]
-                        ),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 120, height: 120)
-                .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 5)
-            
-            // Inner star icon
-            Image(systemName: "star.fill")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 60, height: 60)
-                .foregroundColor(.white)
-                .scaleEffect(isAnimating ? 1.1 : 1.0)
-                .animation(
-                    Animation.easeInOut(duration: 1.2)
-                        .repeatForever(autoreverses: true),
-                    value: isAnimating
-                )
-        }
-        .onAppear {
-            isAnimating = true
-        }
-    }
-}
 
-// MARK: - Authentication Buttons View
-struct AuthButtonsView: View {
+
+// MARK: - Modern Authentication Buttons View
+struct ModernAuthButtonsView: View {
     @ObservedObject var viewModel: AuthenticationViewModel
-    @EnvironmentObject private var themeManager: ThemeManager
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            // Google Sign In Button - Native Style
-            GoogleSignInButton {
-                withAnimation {
-                    viewModel.signInWithGoogle()
-                }
-            }
-            .frame(height: 54)
-            .cornerRadius(12)
-            .accessibilityLabel("auth.sign_in_google".localized)
-            
-            // Apple Sign In Button - Using official ASAuthorizationAppleIDButton
-            AppleSignInButton(
-                type: .signIn,
-                style: themeManager.currentTheme == .dark ? .white : .black
-            ) {
-                withAnimation {
-                    viewModel.signInWithApple()
-                }
-            }
-            .frame(height: 54)
-            .cornerRadius(12)
-            .accessibilityLabel("auth.sign_in_apple".localized)
-            
-            // Guest mode button
-            Button(action: {
-                withAnimation {
-                    viewModel.signInAsGuest()
-                }
-            }) {
-                Text("auth.continue_guest".localized)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(themeManager.currentTheme.colors.text.opacity(0.7))
-                    .underline()
-                    .padding(.top, 8)
-            }
-            .buttonStyle(ScaleButtonStyle())
-            .accessibilityLabel("auth.continue_guest".localized)
-        }
-        .padding(.horizontal, 16)
-        .padding(.bottom, 20)
-    }
-}
-
-// MARK: - Loading View
-struct LoadingView: View {
-    @State private var isAnimating = false
-    @EnvironmentObject private var themeManager: ThemeManager
     
     var body: some View {
         VStack(spacing: 20) {
-            // Custom loading animation
+            // Google Sign In Button
+            ModernGoogleSignInButton {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    viewModel.signInWithGoogle()
+                }
+            }
+            
+            // Apple Sign In Button
+            ModernAppleSignInButton {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    viewModel.signInWithApple()
+                }
+            }
+            
+            // Guest mode button
+            Button(action: {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    viewModel.signInAsGuest()
+                }
+            }) {
+                Text("訪客模式")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.white.opacity(0.7))
+                    .underline()
+                    .padding(.top, 16)
+            }
+            .buttonStyle(ScaleButtonStyle())
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 60)
+    }
+}
+
+// MARK: - Modern Loading View
+struct ModernLoadingView: View {
+    @State private var isAnimating = false
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            // Modern loading animation
             ZStack {
                 Circle()
-                    .stroke(lineWidth: 4)
-                    .frame(width: 50, height: 50)
-                    .foregroundColor(Color.gray.opacity(0.3))
+                    .stroke(lineWidth: 3)
+                    .frame(width: 60, height: 60)
+                    .foregroundColor(Color.white.opacity(0.2))
                 
                 Circle()
-                    .trim(from: 0, to: 0.7)
+                    .trim(from: 0, to: 0.8)
                     .stroke(
                         LinearGradient(
-                            gradient: Gradient(colors: [themeManager.currentTheme.colors.primary, themeManager.currentTheme.colors.secondary]),
+                            colors: [Color(hex: "FF6B6B"), Color(hex: "4ECDC4")],
                             startPoint: .leading,
                             endPoint: .trailing
                         ),
-                        style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                        style: StrokeStyle(lineWidth: 3, lineCap: .round)
                     )
-                    .frame(width: 50, height: 50)
+                    .frame(width: 60, height: 60)
                     .rotationEffect(Angle(degrees: isAnimating ? 360 : 0))
                     .animation(
-                        Animation.linear(duration: 1)
+                        Animation.linear(duration: 1.2)
                             .repeatForever(autoreverses: false),
                         value: isAnimating
                     )
             }
             
-            Text("auth.signing_in".localized)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(themeManager.currentTheme.colors.text)
+            Text("登入中...")
+                .font(.system(size: 18, weight: .medium))
+                .foregroundColor(.white)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 150)
@@ -209,105 +163,144 @@ struct LoadingView: View {
     }
 }
 
-// MARK: - Error Message View
-struct ErrorMessageView: View {
+// MARK: - Modern Error Message View
+struct ModernErrorMessageView: View {
     let message: String
     @State private var isShowing = false
     
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundColor(.red)
+                .foregroundColor(Color(hex: "FF6B6B"))
+                .font(.system(size: 16))
             
             Text(message)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.red)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(.white)
                 .multilineTextAlignment(.leading)
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 20)
         .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.red.opacity(0.1))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.red.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(hex: "2D2D2D"))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color(hex: "FF6B6B").opacity(0.3), lineWidth: 1)
+                )
         )
         .opacity(isShowing ? 1 : 0)
         .offset(y: isShowing ? 0 : 20)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isShowing)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isShowing)
         .onAppear {
             isShowing = true
         }
-        .accessibilityLabel("auth.error_message".localized(with: message))
     }
 }
 
-// MARK: - Google Sign-In Button
-struct GoogleSignInButton: View {
+// MARK: - Modern Google Sign-In Button
+struct ModernGoogleSignInButton: View {
     let action: () -> Void
-    @EnvironmentObject private var themeManager: ThemeManager
     @State private var isPressed = false
     
     var body: some View {
         Button(action: action) {
             HStack(spacing: 16) {
                 // Google Logo
-                GoogleLogoView()
-                    .frame(width: 20, height: 20)
+                ModernGoogleLogoView()
+                    .frame(width: 24, height: 24)
                 
-                Text("auth.sign_in_google".localized)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(themeManager.currentTheme.colors.text)
+                Text("Google 登入")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
                 
                 Spacer()
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 24)
             .frame(maxWidth: .infinity)
-            .frame(height: 54)
+            .frame(height: 56)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(themeManager.currentTheme.colors.background)
+                RoundedRectangle(cornerRadius: 28)
+                    .fill(Color(hex: "2D2D2D"))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 28)
+                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                    )
                     .shadow(
-                        color: isPressed ? Color.black.opacity(0.2) : Color.black.opacity(0.1),
-                        radius: isPressed ? 1 : 2,
+                        color: Color.black.opacity(0.3),
+                        radius: isPressed ? 5 : 10,
                         x: 0,
-                        y: isPressed ? 1 : 2
+                        y: isPressed ? 2 : 5
                     )
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(
-                        themeManager.currentTheme.colors.text.opacity(0.2),
-                        lineWidth: 1
-                    )
-            )
-            .scaleEffect(isPressed ? 0.98 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: isPressed)
+            .scaleEffect(isPressed ? 0.96 : 1.0)
+            .animation(.spring(response: 0.2, dampingFraction: 0.8), value: isPressed)
         }
         .buttonStyle(PlainButtonStyle())
         .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
             isPressed = pressing
         }, perform: {})
-        .accessibilityLabel("auth.sign_in_google".localized)
-        .accessibilityHint("auth.google_sign_in_hint".localized)
     }
 }
 
-// MARK: - Google Logo View
-struct GoogleLogoView: View {
+// MARK: - Modern Apple Sign-In Button
+struct ModernAppleSignInButton: View {
+    let action: () -> Void
+    @State private var isPressed = false
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                // Apple Logo
+                Image(systemName: "apple.logo")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(.white)
+                
+                Text("Apple 登入")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
+                
+                Spacer()
+            }
+            .padding(.horizontal, 24)
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
+            .background(
+                RoundedRectangle(cornerRadius: 28)
+                    .fill(Color(hex: "2D2D2D"))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 28)
+                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                    )
+                    .shadow(
+                        color: Color.black.opacity(0.3),
+                        radius: isPressed ? 5 : 10,
+                        x: 0,
+                        y: isPressed ? 2 : 5
+                    )
+            )
+            .scaleEffect(isPressed ? 0.96 : 1.0)
+            .animation(.spring(response: 0.2, dampingFraction: 0.8), value: isPressed)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
+            isPressed = pressing
+        }, perform: {})
+    }
+}
+
+// MARK: - Modern Google Logo View
+struct ModernGoogleLogoView: View {
     var body: some View {
         ZStack {
-            // Background circle
+            // Google "G" logo recreation
             Circle()
                 .fill(Color.white)
-                .frame(width: 20, height: 20)
-                .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
+                .frame(width: 24, height: 24)
             
-            // Google logo using system image with custom coloring
-            Image(systemName: "globe")
-                .font(.system(size: 12, weight: .medium))
+            // Simplified Google G
+            Text("G")
+                .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [
@@ -334,50 +327,17 @@ struct ScaleButtonStyle: ButtonStyle {
     }
 }
 
-// MARK: - Color Extension (if not already defined elsewhere)
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (255, 0, 0, 0)
-        }
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue: Double(b) / 255,
-            opacity: Double(a) / 255
-        )
-    }
-}
+
 
 // MARK: - Preview
 struct LoginViewPreview: PreviewProvider {
     static var previews: some View {
         Group {
-            // Light Mode Preview
+            // Default Preview
             LoginView()
                 .environmentObject(LoginPreviewAuthenticationViewModel())
                 .environmentObject(ThemeManager())
-                .preferredColorScheme(.light)
-                .previewDisplayName("Light Mode")
-            
-            // Dark Mode Preview
-            LoginView()
-                .environmentObject(LoginPreviewAuthenticationViewModel())
-                .environmentObject(ThemeManager())
-                .preferredColorScheme(.dark)
-                .previewDisplayName("Dark Mode")
+                .previewDisplayName("Default")
             
             // Loading State Preview
             LoginView()
@@ -387,7 +347,7 @@ struct LoginViewPreview: PreviewProvider {
             
             // Error State Preview
             LoginView()
-                .environmentObject(LoginPreviewAuthenticationViewModel(errorMessage: "auth.login_failed".localized))
+                .environmentObject(LoginPreviewAuthenticationViewModel(errorMessage: "登入失敗，請重試"))
                 .environmentObject(ThemeManager())
                 .previewDisplayName("Error State")
         }
