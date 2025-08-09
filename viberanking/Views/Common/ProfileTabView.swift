@@ -12,8 +12,8 @@ struct ProfileTabView: View {
     @EnvironmentObject private var themeManager: ThemeManager
     @StateObject private var viewModel = ProfileViewModel()
     @State private var showingImagePicker = false
-    @State private var showingShareSheet = false
-    @State private var showingLogoutAlert = false
+    @State private var showingQRCode = false
+    @State private var showingSettings = false
     
     var body: some View {
         NavigationStack {
@@ -28,24 +28,24 @@ struct ProfileTabView: View {
                     
                     // Weekly Photos ScrollView
                     weeklyPhotosScrollView
-                        .padding(.top, 20)
+                        .padding(.top, 24)
                 }
             }
             .navigationBarHidden(true)
         }
         .sheet(isPresented: $showingImagePicker) {
-            // Image picker implementation
-        }
-        .sheet(isPresented: $showingShareSheet) {
-            // Share sheet implementation
-        }
-        .alert("Sign Out", isPresented: $showingLogoutAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Sign Out", role: .destructive) {
-                authViewModel.signOut()
+            ImagePicker(sourceType: .photoLibrary) { image in
+                uploadProfileImage(image)
             }
-        } message: {
-            Text("Are you sure you want to sign out?")
+        }
+        .sheet(isPresented: $showingQRCode) {
+            QRCodeShareView(
+                userId: authViewModel.user?.id ?? "",
+                isPresented: $showingQRCode
+            )
+        }
+        .fullScreenCover(isPresented: $showingSettings) {
+            SettingsView()
         }
         .task {
             if let userId = authViewModel.user?.id {
@@ -56,27 +56,22 @@ struct ProfileTabView: View {
             await viewModel.refreshData()
         }
     }
+    
+    private func uploadProfileImage(_ image: UIImage) {
+        // Handle profile image upload
+        Task {
+            // Upload logic here
+        }
+    }
 }
 
 // MARK: - View Components
 private extension ProfileTabView {
     
     var profileHeader: some View {
-        VStack(spacing: 16) {
-            // Top row: Name/Age/Location and Avatar
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(authViewModel.user?.name ?? "User")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.white)
-                    
-                    Text(authViewModel.isGuest ? "Guest User" : "Member")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.gray)
-                }
-                
-                Spacer()
-                
+        VStack(spacing: 20) {
+            // Top row: Avatar and basic info
+            HStack(spacing: 16) {
                 Button(action: {
                     showingImagePicker = true
                 }) {
@@ -88,7 +83,7 @@ private extension ProfileTabView {
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .frame(width: 60, height: 60)
+                        .frame(width: 80, height: 80)
                         .overlay(
                             Group {
                                 if let profileImageURL = authViewModel.user?.profileImageURL,
@@ -99,131 +94,93 @@ private extension ProfileTabView {
                                             .aspectRatio(contentMode: .fill)
                                     } placeholder: {
                                         Image(systemName: "person.fill")
-                                            .font(.system(size: 24))
+                                            .font(.system(size: 32))
                                             .foregroundColor(.white)
                                     }
                                     .clipShape(Circle())
                                 } else {
                                     Image(systemName: "person.fill")
-                                        .font(.system(size: 24))
+                                        .font(.system(size: 32))
                                         .foregroundColor(.white)
                                 }
                             }
                         )
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(0.2), lineWidth: 2)
+                        )
                 }
-            }
-            
-            // Middle row: Stats
-            HStack(spacing: 20) {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "heart.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(.pink)
-                        
-                        Text("❤️ 獲得: \(viewModel.likeCount)")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white)
-                    }
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(authViewModel.user?.name ?? "User")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.white)
                     
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 14))
-                            .foregroundColor(.blue)
-                        
-                        Text("🔄 獲得: \(viewModel.normalCount)")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white)
-                    }
+                    Text("@\(String((authViewModel.user?.id ?? "user").prefix(8)))")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.white.opacity(0.6))
                     
-                    HStack(spacing: 8) {
-                        Image(systemName: "chart.bar.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(.green)
+                    // Simple stats
+                    HStack(spacing: 16) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(viewModel.likeCount)")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.pink)
+                            Text("Likes")
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.6))
+                        }
                         
-                        Text("總分: \(viewModel.totalScore)")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white)
-                    }
-                    
-                    HStack(spacing: 8) {
-                        Image(systemName: "trophy.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(.yellow)
-                        
-                        Text("排名: \(viewModel.overallRank)")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("#\(viewModel.overallRank)")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.yellow)
+                            Text("Rank")
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.6))
+                        }
                     }
                 }
                 
                 Spacer()
                 
-                HStack(spacing: 12) {
-                    Button(action: {
-                        // Settings action
-                    }) {
-                        Image(systemName: "gearshape.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white)
-                            .frame(width: 40, height: 40)
-                            .background(
-                                Circle()
-                                    .fill(Color.white.opacity(0.1))
-                            )
-                    }
-                    
-                    Button(action: {
-                        showingShareSheet = true
-                    }) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white)
-                            .frame(width: 40, height: 40)
-                            .background(
-                                Circle()
-                                    .fill(Color.white.opacity(0.1))
-                            )
-                    }
+                Button(action: {
+                    showingSettings = true
+                }) {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.white.opacity(0.8))
                 }
             }
             
-            // Bottom row: Action buttons
+            // Action buttons
             HStack(spacing: 12) {
-                Button("Recaps") {
-                    // Recaps action
-                }
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 44)
-                .background(
-                    RoundedRectangle(cornerRadius: 22)
-                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                )
-                
                 Button("Share Profile") {
-                    showingShareSheet = true
+                    showingQRCode = true
                 }
-                .font(.system(size: 16, weight: .medium))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 44)
+                .frame(height: 48)
                 .background(
-                    RoundedRectangle(cornerRadius: 22)
-                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(Color.blue)
                 )
                 
-                Button("Sign Out") {
-                    showingLogoutAlert = true
+                Button("Edit Profile") {
+                    showingSettings = true
                 }
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.red)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 44)
+                .frame(height: 48)
                 .background(
-                    RoundedRectangle(cornerRadius: 22)
-                        .stroke(Color.red.opacity(0.5), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(Color.white.opacity(0.1))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        )
                 )
             }
         }
@@ -231,12 +188,12 @@ private extension ProfileTabView {
     
     var weeklyPhotosScrollView: some View {
         ScrollView {
-            LazyVStack(spacing: 20) {
+            LazyVStack(spacing: 24) {
                 ForEach(getRecentWeeks(), id: \.weekNumber) { week in
                     WeeklyPhotoSection(week: week)
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 16)
             .padding(.bottom, 100)
         }
     }
@@ -312,10 +269,13 @@ struct WeeklyPhotoSection: View {
                 }
             }
             
-            HStack(spacing: 8) {
-                ForEach(Array(week.days.enumerated()), id: \.offset) { index, day in
-                    DayPhotoCard(day: day)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(Array(week.days.enumerated()), id: \.offset) { index, day in
+                        DayPhotoCard(day: day)
+                    }
                 }
+                .padding(.horizontal, 4)
             }
         }
     }
@@ -323,37 +283,69 @@ struct WeeklyPhotoSection: View {
 
 struct DayPhotoCard: View {
     let day: DayData
+    @State private var isPressed = false
     
     var body: some View {
-        VStack(spacing: 4) {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(day.hasPhoto ? Color.gray.opacity(0.3) : Color.gray.opacity(0.1))
-                .frame(height: 80)
-                .overlay(
-                    Group {
-                        if day.hasPhoto {
-                            Image(systemName: "photo.fill")
-                                .font(.system(size: 20))
-                                .foregroundColor(.gray)
+        Button(action: {
+            // Handle photo tap - could open photo viewer or add photo
+        }) {
+            VStack(spacing: 8) {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(day.hasPhoto ? Color.gray.opacity(0.3) : Color.gray.opacity(0.1))
+                    .frame(width: 120, height: 160)
+                    .overlay(
+                        Group {
+                            if day.hasPhoto {
+                                VStack(spacing: 8) {
+                                    Image(systemName: "photo.fill")
+                                        .font(.system(size: 32))
+                                        .foregroundColor(.gray)
+                                    
+                                    Text("Photo")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(.gray)
+                                }
+                            } else {
+                                VStack(spacing: 8) {
+                                    Image(systemName: "plus.circle.dashed")
+                                        .font(.system(size: 32))
+                                        .foregroundColor(.gray.opacity(0.5))
+                                    
+                                    Text("Add Photo")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(.gray.opacity(0.7))
+                                }
+                            }
                         }
-                    }
-                )
-            
-            VStack(spacing: 2) {
-                Text(day.monthName)
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.gray)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(day.hasPhoto ? Color.white.opacity(0.2) : Color.gray.opacity(0.1), lineWidth: 1)
+                    )
                 
-                Text("\(day.dayNumber)")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.white)
-                
-                Text(day.weekdayName)
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.gray)
+                VStack(spacing: 4) {
+                    Text(day.monthName)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.gray)
+                    
+                    Text("\(day.dayNumber)")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
+                    
+                    Text(day.weekdayName)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.gray)
+                }
             }
         }
-        .frame(maxWidth: .infinity)
+        .frame(width: 120)
+        .scaleEffect(isPressed ? 0.95 : 1.0)
+        .animation(.easeInOut(duration: 0.1), value: isPressed)
+        .onLongPressGesture(minimumDuration: 0) { pressing in
+            isPressed = pressing
+        } perform: {
+            // Long press action
+        }
     }
 }
 

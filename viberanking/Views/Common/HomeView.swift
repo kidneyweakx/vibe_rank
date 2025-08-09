@@ -10,115 +10,250 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var themeManager: ThemeManager
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
+    @State private var recommendedUsers: [RecommendedUser] = []
+    @State private var eventPhotos: [EventPhoto] = []
     
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 24) {
-                    // Trend Chart Section
-                    trendChartSection
+                VStack(spacing: 32) {
+                    // Recommended Users Section
+                    recommendedSection
+                    
+                    // Divider
+                    divider
+                    
+                    // Event Photos Section
+                    eventSection
                 }
-                .padding()
+                .padding(.horizontal, 20)
+                .padding(.bottom, 100)
             }
             .background(Color.black)
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarHidden(true)
             .preferredColorScheme(.dark)
+        }
+        .onAppear {
+            loadData()
         }
     }
 
-    // MARK: - Photo Gallery Section
-    private var trendChartSection: some View {
+    // MARK: - Recommended Section
+    private var recommendedSection: some View {
         VStack(alignment: .leading, spacing: 16) {
+            sectionHeader("Recommended", subtitle: "Top ranked users")
+            
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
-                    ForEach(0..<5, id: \.self) { index in
-                        PhotoGalleryCard(
-                            imageName: "photo\(index + 1)",
-                            title: "照片 \(index + 1)",
-                            rating: Double.random(in: 7.0...9.5),
-                            onTap: {
-                                print("點擊照片 \(index + 1)")
-                            }
-                        )
+                    ForEach(recommendedUsers, id: \.id) { user in
+                        RecommendedUserCard(user: user) {
+                            print("點擊用戶 \(user.name)")
+                        }
                     }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 4)
             }
-            .padding(.horizontal, -16)
         }
+    }
+    
+    // MARK: - Event Section
+    private var eventSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader("Events", subtitle: "Latest photo submissions")
+            
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12)
+            ], spacing: 16) {
+                ForEach(eventPhotos, id: \.id) { photo in
+                    EventPhotoCard(photo: photo) {
+                        print("點擊照片 \(photo.id)")
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Divider
+    private var divider: some View {
+        Rectangle()
+            .fill(Color.white.opacity(0.1))
+            .frame(height: 1)
+            .padding(.horizontal, 20)
     }
 
     // MARK: - Helper Methods
-    private func sectionHeader(_ title: String) -> some View {
-        HStack {
+    private func sectionHeader(_ title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(AppTheme.Typography.title2)
-                .fontWeight(.bold)
+                .font(.system(size: 24, weight: .bold))
                 .foregroundColor(.white)
             
-            Spacer()
+            Text(subtitle)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.white.opacity(0.6))
         }
-        .padding(.top, 8)
+    }
+    
+    private func loadData() {
+        // Load recommended users (mock data)
+        recommendedUsers = [
+            RecommendedUser(id: "1", name: "Alice", rank: 1, score: 9.8, avatarURL: nil),
+            RecommendedUser(id: "2", name: "Bob", rank: 2, score: 9.5, avatarURL: nil),
+            RecommendedUser(id: "3", name: "Charlie", rank: 3, score: 9.2, avatarURL: nil),
+            RecommendedUser(id: "4", name: "Diana", rank: 4, score: 8.9, avatarURL: nil),
+            RecommendedUser(id: "5", name: "Eve", rank: 5, score: 8.7, avatarURL: nil)
+        ]
+        
+        // Load event photos (mock data)
+        eventPhotos = [
+            EventPhoto(id: "1", imageURL: nil, likes: 45, timestamp: Date()),
+            EventPhoto(id: "2", imageURL: nil, likes: 32, timestamp: Date()),
+            EventPhoto(id: "3", imageURL: nil, likes: 28, timestamp: Date()),
+            EventPhoto(id: "4", imageURL: nil, likes: 19, timestamp: Date()),
+            EventPhoto(id: "5", imageURL: nil, likes: 15, timestamp: Date()),
+            EventPhoto(id: "6", imageURL: nil, likes: 12, timestamp: Date())
+        ]
     }
 }
 
 // MARK: - Preview
-struct HomeView_Previews: PreviewProvider {
-    static var previews: some View {
-        HomeView()
-            .environmentObject(ThemeManager())
-            .environmentObject(AuthenticationViewModel())
-    }
+#Preview {
+    HomeView()
+        .environmentObject(ThemeManager())
+        .environmentObject(AuthenticationViewModel())
 }
 
 
-// MARK: - Photo Gallery Card Component
-struct PhotoGalleryCard: View {
-    let imageName: String
-    let title: String
-    let rating: Double
+// MARK: - Data Models
+struct RecommendedUser {
+    let id: String
+    let name: String
+    let rank: Int
+    let score: Double
+    let avatarURL: String?
+}
+
+struct EventPhoto {
+    let id: String
+    let imageURL: String?
+    let likes: Int
+    let timestamp: Date
+}
+
+// MARK: - Recommended User Card
+struct RecommendedUserCard: View {
+    let user: RecommendedUser
     let onTap: () -> Void
     
     var body: some View {
         Button(action: onTap) {
-            VStack(spacing: 0) {
-                // 圖片區域
-                RoundedRectangle(cornerRadius: 12)
+            VStack(spacing: 12) {
+                // Rank badge
+                ZStack {
+                    Circle()
+                        .fill(rankColor)
+                        .frame(width: 24, height: 24)
+                    
+                    Text("\(user.rank)")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white)
+                }
+                .offset(x: 60, y: 12)
+                .zIndex(1)
+                
+                // Avatar
+                Circle()
                     .fill(
                         LinearGradient(
-                            colors: [
-                                Color.gray.opacity(0.8),
-                                Color.black.opacity(0.9),
-                                Color.gray.opacity(0.7)
-                            ],
+                            colors: [Color.pink.opacity(0.8), Color.purple.opacity(0.6)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 140, height: 200)
+                    .frame(width: 80, height: 80)
                     .overlay(
-                        VStack {
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 32))
+                            .foregroundColor(.white)
+                    )
+                
+                // User info
+                VStack(spacing: 4) {
+                    Text(user.name)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                    
+                    HStack(spacing: 4) {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 12))
+                            .foregroundColor(.yellow)
+                        
+                        Text(String(format: "%.1f", user.score))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white.opacity(0.8))
+                    }
+                }
+            }
+            .frame(width: 120)
+            .padding(.vertical, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.white.opacity(0.05))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private var rankColor: Color {
+        switch user.rank {
+        case 1: return .yellow
+        case 2: return .gray
+        case 3: return Color.orange
+        default: return .blue
+        }
+    }
+}
+
+// MARK: - Event Photo Card
+struct EventPhotoCard: View {
+    let photo: EventPhoto
+    let onTap: () -> Void
+    @State private var isPressed = false
+    
+    var body: some View {
+        Button(action: onTap) {
+            VStack(spacing: 0) {
+                // Photo area
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.white.opacity(0.05))
+                    .aspectRatio(0.8, contentMode: .fit)
+                    .overlay(
+                        VStack(spacing: 8) {
                             Image(systemName: "photo.fill")
-                                .font(.system(size: 30))
-                                .foregroundColor(.white)
+                                .font(.system(size: 40))
+                                .foregroundColor(.white.opacity(0.6))
                             
-                            Text(title)
+                            Text("Event Photo")
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.white)
-                                .padding(.top, 4)
+                                .foregroundColor(.white.opacity(0.6))
                         }
                     )
                     .overlay(
-                        // 評分標籤
+                        // Like badge
                         VStack {
                             HStack {
                                 Spacer()
                                 HStack(spacing: 4) {
-                                    Image(systemName: "star.fill")
+                                    Image(systemName: "heart.fill")
                                         .font(.system(size: 10))
-                                        .foregroundColor(.yellow)
+                                        .foregroundColor(.pink)
                                     
-                                    Text(String(format: "%.1f", rating))
+                                    Text("\(photo.likes)")
                                         .font(.system(size: 11, weight: .semibold))
                                         .foregroundColor(.white)
                                 }
@@ -126,15 +261,42 @@ struct PhotoGalleryCard: View {
                                 .padding(.vertical, 4)
                                 .background(
                                     Capsule()
-                                        .fill(.black.opacity(0.8))
+                                        .fill(Color.black.opacity(0.7))
                                 )
                             }
                             Spacer()
                         }
                         .padding(8)
                     )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    )
+                
+                // Time info
+                HStack {
+                    Text(timeAgo)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white.opacity(0.6))
+                    
+                    Spacer()
+                }
+                .padding(.top, 8)
             }
         }
         .buttonStyle(PlainButtonStyle())
+        .scaleEffect(isPressed ? 0.95 : 1.0)
+        .animation(.easeInOut(duration: 0.1), value: isPressed)
+        .onLongPressGesture(minimumDuration: 0) { pressing in
+            isPressed = pressing
+        } perform: {
+            // Long press action
+        }
+    }
+    
+    private var timeAgo: String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: photo.timestamp, relativeTo: Date())
     }
 }
