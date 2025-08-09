@@ -10,6 +10,7 @@ import SwiftUI
 struct ProfileTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @EnvironmentObject private var themeManager: ThemeManager
+    @StateObject private var viewModel = ProfileViewModel()
     @State private var showingImagePicker = false
     @State private var showingShareSheet = false
     @State private var showingLogoutAlert = false
@@ -45,6 +46,14 @@ struct ProfileTabView: View {
             }
         } message: {
             Text("Are you sure you want to sign out?")
+        }
+        .task {
+            if let userId = authViewModel.user?.id {
+                await viewModel.loadUserProfile(userId: userId)
+            }
+        }
+        .refreshable {
+            await viewModel.refreshData()
         }
     }
 }
@@ -108,21 +117,41 @@ private extension ProfileTabView {
             HStack(spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
-                        Image(systemName: "calendar")
+                        Image(systemName: "heart.fill")
                             .font(.system(size: 14))
-                            .foregroundColor(.gray)
+                            .foregroundColor(.pink)
                         
-                        Text("Weeks posted: 3")
+                        Text("❤️ 獲得: \(viewModel.likeCount)")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.white)
                     }
                     
                     HStack(spacing: 8) {
-                        Image(systemName: "location")
+                        Image(systemName: "arrow.clockwise")
                             .font(.system(size: 14))
-                            .foregroundColor(.gray)
+                            .foregroundColor(.blue)
                         
-                        Text("Homebase: space")
+                        Text("🔄 獲得: \(viewModel.normalCount)")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                    }
+                    
+                    HStack(spacing: 8) {
+                        Image(systemName: "chart.bar.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(.green)
+                        
+                        Text("總分: \(viewModel.totalScore)")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                    }
+                    
+                    HStack(spacing: 8) {
+                        Image(systemName: "trophy.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(.yellow)
+                        
+                        Text("排名: \(viewModel.overallRank)")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.white)
                     }

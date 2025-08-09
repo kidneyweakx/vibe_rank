@@ -9,9 +9,8 @@ import SwiftUI
 
 struct JourneyTabView: View {
     @EnvironmentObject private var themeManager: ThemeManager
-    
-    // 模擬數據
-    private let chartData: [CGFloat] = [0.3, 0.7, 0.4, 0.8, 0.6, 0.9, 0.5, 0.8, 0.7]
+    @EnvironmentObject private var authViewModel: AuthenticationViewModel
+    @StateObject private var viewModel = JourneyViewModel()
     
     var body: some View {
         NavigationView {
@@ -42,6 +41,14 @@ struct JourneyTabView: View {
             }
             .navigationBarHidden(true)
         }
+        .task {
+            if let userId = authViewModel.user?.id {
+                await viewModel.loadUserJourney(userId: userId)
+            }
+        }
+        .refreshable {
+            await viewModel.refreshData()
+        }
     }
     
     private var chartView: some View {
@@ -63,49 +70,53 @@ struct JourneyTabView: View {
                 GeometryReader { geometry in
                     let width = geometry.size.width
                     let height = geometry.size.height
-                    let stepX = width / CGFloat(chartData.count - 1)
+                    let chartData = viewModel.chartData.map { CGFloat($0.score / 100.0) }
                     
-                    // 主線條
-                    Path { path in
-                        for (index, value) in chartData.enumerated() {
-                            let x = CGFloat(index) * stepX
-                            let y = height - (value * height)
-                            
-                            if index == 0 {
-                                path.move(to: CGPoint(x: x, y: y))
-                            } else {
-                                path.addLine(to: CGPoint(x: x, y: y))
+                    if !chartData.isEmpty {
+                        let stepX = width / CGFloat(chartData.count - 1)
+                        
+                        // 主線條
+                        Path { path in
+                            for (index, value) in chartData.enumerated() {
+                                let x = CGFloat(index) * stepX
+                                let y = height - (value * height)
+                                
+                                if index == 0 {
+                                    path.move(to: CGPoint(x: x, y: y))
+                                } else {
+                                    path.addLine(to: CGPoint(x: x, y: y))
+                                }
                             }
                         }
-                    }
-                    .stroke(
-                        LinearGradient(colors: [.cyan, .blue], startPoint: .leading, endPoint: .trailing),
-                        style: StrokeStyle(lineWidth: 3, lineCap: .round)
-                    )
-                    
-                    // 陰影填充
-                    Path { path in
-                        for (index, value) in chartData.enumerated() {
-                            let x = CGFloat(index) * stepX
-                            let y = height - (value * height)
-                            
-                            if index == 0 {
-                                path.move(to: CGPoint(x: x, y: y))
-                            } else {
-                                path.addLine(to: CGPoint(x: x, y: y))
-                            }
-                        }
-                        path.addLine(to: CGPoint(x: width, y: height))
-                        path.addLine(to: CGPoint(x: 0, y: height))
-                        path.closeSubpath()
-                    }
-                    .fill(
-                        LinearGradient(
-                            colors: [.cyan.opacity(0.3), .clear],
-                            startPoint: .top,
-                            endPoint: .bottom
+                        .stroke(
+                            LinearGradient(colors: [.cyan, .blue], startPoint: .leading, endPoint: .trailing),
+                            style: StrokeStyle(lineWidth: 3, lineCap: .round)
                         )
-                    )
+                        
+                        // 陰影填充
+                        Path { path in
+                            for (index, value) in chartData.enumerated() {
+                                let x = CGFloat(index) * stepX
+                                let y = height - (value * height)
+                                
+                                if index == 0 {
+                                    path.move(to: CGPoint(x: x, y: y))
+                                } else {
+                                    path.addLine(to: CGPoint(x: x, y: y))
+                                }
+                            }
+                            path.addLine(to: CGPoint(x: width, y: height))
+                            path.addLine(to: CGPoint(x: 0, y: height))
+                            path.closeSubpath()
+                        }
+                        .fill(
+                            LinearGradient(
+                                colors: [.cyan.opacity(0.3), .clear],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                    }
                 }
                 .frame(height: 180)
             }
@@ -116,12 +127,27 @@ struct JourneyTabView: View {
     private var statsGrid: some View {
         VStack(spacing: 16) {
             // 整體表現
-            StatCards(title: "整體表現", value: "85%", color: .cyan, icon: "chart.line.uptrend.xyaxis")
+            StatCards(
+                title: "整體表現", 
+                value: String(format: "%.0f%%", viewModel.overallPerformance), 
+                color: .cyan, 
+                icon: "chart.line.uptrend.xyaxis"
+            )
             
             // 吸引力評分
             HStack(spacing: 16) {
-                StatCards(title: "女性吸引力", value: "8.2", color: .pink, icon: "heart.fill")
-                StatCards(title: "男性吸引力", value: "7.8", color: .blue, icon: "star.fill")
+                StatCards(
+                    title: "女性吸引力", 
+                    value: String(format: "%.1f", viewModel.femaleAttraction / 10), 
+                    color: .pink, 
+                    icon: "heart.fill"
+                )
+                StatCards(
+                    title: "男性吸引力", 
+                    value: String(format: "%.1f", viewModel.maleAttraction / 10), 
+                    color: .blue, 
+                    icon: "star.fill"
+                )
             }
             
             // 個人歷程
@@ -135,7 +161,21 @@ struct JourneyTabView: View {
                     Spacer()
                 }
                 
-            // @TODO: ProgressBar 
+                if let stats = viewModel.userStats {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("❤️ 獲得: \(stats.likeCount)")
+                                .foregroundColor(.white)
+                            Spacer()
+                            Text("🔄 獲得: \(stats.normalCount)")
+                                .foregroundColor(.white)
+                        }
+                        
+                        Text("總評分: \(stats.totalRatings)")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                }
             }
             .padding(16)
             .background(RoundedRectangle(cornerRadius: 16).fill(Color.gray.opacity(0.1)))
@@ -156,7 +196,7 @@ struct JourneyTabView: View {
                         Text("你的排名")
                             .font(.caption)
                             .foregroundColor(.gray)
-                        Text("前 15%")
+                        Text(viewModel.currentRankPercentage)
                             .font(.title2)
                             .fontWeight(.bold)
                             .foregroundColor(.yellow)
@@ -168,7 +208,7 @@ struct JourneyTabView: View {
                         Text("總用戶")
                             .font(.caption)
                             .foregroundColor(.gray)
-                        Text("12,847")
+                        Text(viewModel.totalUsers)
                             .font(.title3)
                             .foregroundColor(.white)
                     }

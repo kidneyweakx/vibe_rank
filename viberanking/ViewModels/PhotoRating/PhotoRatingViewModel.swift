@@ -21,16 +21,13 @@ class PhotoRatingViewModel: BaseViewModel {
     @Published var dragOffset: CGSize = .zero
     @Published var rotationAngle: Double = 0
     @Published var showRatingFeedback: Bool = false
-    @Published var lastRatingWasHot: Bool = false
+    @Published var lastRatingType: RatingType = .normal
     @Published var showUnlockCelebration: Bool = false
     
     // MARK: - Private Properties
-    private let photoRatingService: PhotoRatingServiceProtocol
-    private let userRepository: UserRepositoryProtocol
-    private let ratingProgressService: RatingProgressServiceProtocol
+    private let rateAPI = RateAPI()
     private var cancellables = Set<AnyCancellable>()
     private var currentUserId: String = ""
-    private var userRatings: [Rating] = []
     
     // Preloading configuration
     private let preloadCount = 3
@@ -61,36 +58,8 @@ class PhotoRatingViewModel: BaseViewModel {
     }
     
     // MARK: - Initialization
-    init(photoRatingService: PhotoRatingServiceProtocol, 
-         userRepository: UserRepositoryProtocol,
-         ratingProgressService: RatingProgressServiceProtocol) {
-        self.photoRatingService = photoRatingService
-        self.userRepository = userRepository
-        self.ratingProgressService = ratingProgressService
+    override init() {
         super.init()
-        setupBindings()
-    }
-    
-    override convenience init() {
-        self.init(
-            photoRatingService: PhotoRatingService(),
-            userRepository: UserRepository(),
-            ratingProgressService: RatingProgressService(
-                userRepository: UserRepository(),
-                ratingRepository: RatingRepository()
-            )
-        )
-    }
-    
-    // MARK: - Setup
-    private func setupBindings() {
-        // Observe photo rating service loading state
-        if let service = photoRatingService as? PhotoRatingService {
-            service.$isLoading
-                .receive(on: DispatchQueue.main)
-                .assign(to: \.isLoading, on: self)
-                .store(in: &cancellables)
-        }
     }
     
     // MARK: - Public Methods
@@ -99,80 +68,68 @@ class PhotoRatingViewModel: BaseViewModel {
     func loadPhotosForRating(userId: String) async {
         currentUserId = userId
         await performAsyncTask {
-            // Load user's current rating progress
-            if let user = try await self.userRepository.getUser(by: userId) {
-                self.ratingProgress = user.ratingProgress
+            do {
+                // Fetch random photos for rating from API
+                let response = try await self.rateAPI.getRandomPhotos(userId: userId, limit: 20)
+                
+                // Convert RatingPhoto to Photo model
+                self.photos = response.data.map { ratingPhoto in
+                    Photo(
+                        id: ratingPhoto.id,
+                        userId: ratingPhoto.userId,
+                        imageURL: PhotoURLs(
+                            original: ratingPhoto.url
+                        )
+                    )
+                }
+                
+                self.currentPhotoIndex = 0
+                
+                // Start preloading images
+                await self.preloadImages()
+                
+                print("✅ Successfully loaded \(self.photos.count) photos for rating")
+            } catch {
+                print("❌ Failed to load photos for rating: \(error)")
+                // Set empty photos array on error
+                self.photos = []
+                self.currentPhotoIndex = 0
             }
-            
-            // Fetch photos for rating
-            let fetchedPhotos = try await self.photoRatingService.fetchPhotosForRating(excludingUser: userId)
-            self.photos = fetchedPhotos
-            self.currentPhotoIndex = 0
-            
-            // Start preloading images
-            await self.preloadImages()
         }
     }
     
     /// Submit rating with gesture animation
-    func submitRating(isHot: Bool, withAnimation: Bool = true) async {
+    func submitRating(type: RatingType, withAnimation: Bool = true) async {
         guard let photo = currentPhoto else { return }
         
-        let rating = Rating(
-            photoId: photo.id,
-            raterId: currentUserId,
-            isHot: isHot
-        )
-        
         await performAsyncTask {
-            // Submit rating through photo rating service
-            try await self.photoRatingService.submitRating(rating)
-            
-            // Check if this will unlock the feature
-            let wasLocked = !self.ratingProgress.hasUnlockedUpload
-            
-            // Update progress through rating progress service
-            self.ratingProgress = try await self.ratingProgressService.updateRatingProgress(
-                userId: self.currentUserId, 
-                rating: rating
+            // Submit rating through API
+            let response = try await self.rateAPI.ratePhoto(
+                raterId: self.currentUserId,
+                photoId: photo.id,
+                type: type
             )
             
-            // Show unlock celebration if just unlocked
-            if wasLocked && self.ratingProgress.hasUnlockedUpload {
-                self.showUnlockCelebration = true
-                
-                // Provide haptic feedback for unlock
-                #if canImport(UIKit)
-                let notificationFeedback = UINotificationFeedbackGenerator()
-                notificationFeedback.notificationOccurred(.success)
-                #endif
-                
-                // Hide celebration after delay
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    self.showUnlockCelebration = false
+            if response.success {
+                // Show feedback animation
+                if withAnimation {
+                    self.lastRatingType = type
+                    self.showRatingFeedback = true
+                    
+                    // Provide haptic feedback
+                    #if canImport(UIKit)
+                    let impactFeedback = UIImpactFeedbackGenerator(style: type == .like ? .heavy : .medium)
+                    impactFeedback.impactOccurred()
+                    #endif
+                    
+                    // Hide feedback after delay
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.showRatingFeedback = false
+                    }
                 }
-            }
-            
-            // Update local state
-            self.userRatings.append(rating)
-            
-            // Show feedback animation
-            if withAnimation {
-                self.lastRatingWasHot = isHot
-                self.showRatingFeedback = true
                 
-                // Hide feedback after delay
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.showRatingFeedback = false
-                }
-            }
-            
-            // Move to next photo
-            await self.moveToNextPhoto()
-            
-            // Check if sync is needed for offline ratings
-            if self.ratingProgressService.needsSync(userId: self.currentUserId) {
-                try await self.ratingProgressService.syncLocalRatings(userId: self.currentUserId)
+                // Move to next photo
+                await self.moveToNextPhoto()
             }
         }
     }
@@ -197,7 +154,7 @@ class PhotoRatingViewModel: BaseViewModel {
         
         if abs(dragDistance) > maxDragDistance {
             // Determine rating based on drag direction
-            let isHot = dragDistance > 0
+            let ratingType: RatingType = dragDistance > 0 ? .like : .normal
             
             // Animate card off screen
             withAnimation(.easeOut(duration: 0.3)) {
@@ -208,7 +165,7 @@ class PhotoRatingViewModel: BaseViewModel {
             // Submit rating after animation
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 Task {
-                    await self.submitRating(isHot: isHot, withAnimation: false)
+                    await self.submitRating(type: ratingType, withAnimation: false)
                     await MainActor.run {
                         self.resetCardPosition()
                     }
@@ -233,26 +190,17 @@ class PhotoRatingViewModel: BaseViewModel {
         await loadPhotosForRating(userId: currentUserId)
     }
     
-    /// Sync any pending offline ratings
-    func syncPendingRatings() async {
-        await performAsyncTask {
-            if self.ratingProgressService.needsSync(userId: self.currentUserId) {
-                try await self.ratingProgressService.syncLocalRatings(userId: self.currentUserId)
-                
-                // Refresh progress after sync
-                self.ratingProgress = try await self.ratingProgressService.getRatingProgress(userId: self.currentUserId)
-            }
+    /// Get user stats for journey/profile
+    func getUserStats() async -> UserStats? {
+        guard !currentUserId.isEmpty else { return nil }
+        
+        do {
+            let response = try await rateAPI.getUserStats(userId: currentUserId)
+            return response.success ? response.data : nil
+        } catch {
+            print("Failed to get user stats: \(error)")
+            return nil
         }
-    }
-    
-    /// Get pending ratings count for UI display
-    var pendingRatingsCount: Int {
-        return ratingProgressService.getPendingRatingsCount(userId: currentUserId)
-    }
-    
-    /// Check if user needs to sync
-    var needsSync: Bool {
-        return ratingProgressService.needsSync(userId: currentUserId)
     }
 }
 
@@ -273,7 +221,18 @@ private extension PhotoRatingViewModel {
     /// Load more photos when running low
     func loadMorePhotos() async {
         await performAsyncTask {
-            let newPhotos = try await self.photoRatingService.fetchPhotosForRating(excludingUser: self.currentUserId)
+            let response = try await self.rateAPI.getRandomPhotos(userId: self.currentUserId, limit: 10)
+            
+            let newPhotos = response.data.map { ratingPhoto in
+                Photo(
+                    id: ratingPhoto.id,
+                    userId: ratingPhoto.userId,
+                    imageURL: PhotoURLs(
+                        original: ratingPhoto.url
+                    )
+                )
+            }
+            
             self.photos.append(contentsOf: newPhotos)
         }
     }

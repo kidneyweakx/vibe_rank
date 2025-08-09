@@ -188,14 +188,14 @@ private extension RatingTabView {
     
     var swipeIndicators: some View {
         ZStack {
-            // HOT indicator (right)
+            // LIKE indicator (right)
             if currentCardOffset.width > 30 {
                 VStack(spacing: AppTheme.Spacing.xs) {
                     Text("❤️")
                         .font(.system(size: 80))
                         .scaleEffect(1.0 + min(Double(currentCardOffset.width) / 200, 0.5))
                     
-                    Text("HOT")
+                    Text("LIKE")
                         .font(.system(size: 32, weight: .black, design: .rounded))
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 2)
@@ -204,15 +204,15 @@ private extension RatingTabView {
                 .scaleEffect(0.8 + min(Double(currentCardOffset.width) / 300, 0.4))
             }
             
-            // NOT indicator (left)
+            // NORMAL indicator (left)
             if currentCardOffset.width < -30 {
                 VStack(spacing: AppTheme.Spacing.xs) {
-                    Text("❌")
+                    Text("🔄")
                         .font(.system(size: 80))
                         .scaleEffect(1.0 + min(Double(-currentCardOffset.width) / 200, 0.5))
                     
-                    Text("NOT")
-                        .font(.system(size: 32, weight: .black, design: .rounded))
+                    Text("NORMAL")
+                        .font(.system(size: 28, weight: .black, design: .rounded))
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 2)
                 }
@@ -224,15 +224,15 @@ private extension RatingTabView {
     
     var actionButtonsView: some View {
         HStack(spacing: 60) {
-            // NOT button
+            // NORMAL button
             Button {
-                submitRating(isHot: false)
+                submitRating(type: .normal)
             } label: {
                 Circle()
                     .fill(.ultraThinMaterial)
                     .frame(width: isVibeMode ? 80 : 70, height: isVibeMode ? 80 : 70)
                     .overlay(
-                        Text("❌")
+                        Text("🔄")
                             .font(.system(size: isVibeMode ? 36 : 32))
                     )
                     .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
@@ -241,9 +241,9 @@ private extension RatingTabView {
             .opacity(viewModel.currentPhoto == nil ? 0.5 : 1.0)
             .scaleEffect(isVibeMode ? 1.1 : 1.0)
             
-            // HOT button
+            // LIKE button
             Button {
-                submitRating(isHot: true)
+                submitRating(type: .like)
             } label: {
                 Circle()
                     .fill(.ultraThinMaterial)
@@ -312,7 +312,7 @@ private extension RatingTabView {
                     .scaleEffect(showCelebration ? 1.0 : 0.3)
                     .animation(.spring(response: 0.8, dampingFraction: 0.6), value: showCelebration)
                 
-                Text("❤️ HOT ❤️")
+                Text("❤️ LIKE ❤️")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
                     .padding(.horizontal, AppTheme.Spacing.lg)
@@ -337,31 +337,31 @@ private extension RatingTabView {
         let threshold: CGFloat = 100
         
         if value.translation.width > threshold {
-            // Swiped right - HOT
-            submitRating(isHot: true)
+            // Swiped right - LIKE
+            submitRating(type: .like)
         } else if value.translation.width < -threshold {
-            // Swiped left - NOT
-            submitRating(isHot: false)
+            // Swiped left - NORMAL
+            submitRating(type: .normal)
         } else {
             // Return to center
             currentCardOffset = .zero
         }
     }
     
-    func submitRating(isHot: Bool) {
+    func submitRating(type: RatingType) {
         // Animate card away
         withAnimation(.easeInOut(duration: 0.3)) {
-            currentCardOffset = CGSize(width: isHot ? 500 : -500, height: 0)
+            currentCardOffset = CGSize(width: type == .like ? 500 : -500, height: 0)
         }
         
         // Show celebration
-        if isHot {
+        if type == .like {
             showCelebration = true
         }
         
         // Submit rating and reset
         Task {
-            await viewModel.submitRating(isHot: isHot)
+            await viewModel.submitRating(type: type)
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 currentCardOffset = .zero
