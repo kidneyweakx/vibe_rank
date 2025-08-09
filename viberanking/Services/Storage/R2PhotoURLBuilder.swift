@@ -16,17 +16,9 @@ struct R2PhotoURLBuilder {
     }
     
     func buildURLs(forKey key: String) -> PhotoURLs {
-        let thumb = imageService.makePublicURL(for: key, variant: .thumbnail)
-        let preview = imageService.makePublicURL(for: key, variant: .preview)
-        let high = imageService.makePublicURL(for: key, variant: .highRes)
-        // Original with no variant param
+        // Use original/public object URL only for now (no variant pipeline)
         let original = imageService.makePublicURL(for: key, variant: nil)
-        
-        return PhotoURLs(
-            thumbnail: thumb,
-            preview: preview,
-            highRes: high
-        )
+        return PhotoURLs(original: original.absoluteString)
     }
 }
 

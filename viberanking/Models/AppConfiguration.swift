@@ -148,9 +148,9 @@ enum AppEnvironment {
         case .development:
             return "http://localhost:8181"
         case .staging:
-            return "https://staging-api.viberanking.com"
+            return "https://vibe-backend.kidneyweakx.workers.devm"
         case .production:
-            return "https://api.viberanking.com"
+            return "https://vibe-backend.kidneyweakx.workers.dev"
         }
     }
     

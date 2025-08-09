@@ -51,6 +51,7 @@ final class R2ImageService: R2ImageServiceProtocol {
             urlString += "?variant=\(variant.rawValue)"
         }
         
+        logger.debug("R2 makePublicURL -> \(urlString)")
         guard let url = URL(string: urlString) else {
             fatalError("Failed to construct R2 public URL for key: \(key)")
         }
@@ -68,15 +69,18 @@ final class R2ImageService: R2ImageServiceProtocol {
         let (data, response) = try await URLSession.shared.data(for: request)
         
         guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
-            logger.error("❌ R2 image fetch failed: \(url.absoluteString)")
+            let status = (response as? HTTPURLResponse)?.statusCode ?? -1
+            logger.error("❌ R2 image fetch failed (status: \(status)): \(url.absoluteString)")
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? -1)
         }
+        logger.debug("✅ R2 image fetch success, bytes: \(data.count)")
         return data
     }
     
     // MARK: - Preload
     func preload(keys: [String], variant: R2ImageVariant? = .preview) async {
         await withTaskGroup(of: Void.self) { group in
+            logger.debug("🔄 Preloading R2 images, count: \(keys.count), variant: \(variant?.rawValue ?? "none")")
             for key in keys {
                 group.addTask { [weak self] in
                     guard let self else { return }

@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+import os.log
+
+private let ratingLogger = Logger(subsystem: "com.viberanking.app", category: "RatingTabView")
 
 struct RatingTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
@@ -101,30 +104,45 @@ private extension RatingTabView {
     
     func photoCard(photo: Photo, index: Int) -> some View {
         let isTopCard = index == viewModel.currentPhotoIndex
+        let urlString = photo.imageURL.bestAvailableURL
         
         return ZStack {
             // Full screen photo
-            AsyncImage(url: URL(string: photo.imageURL.bestAvailableURL)) { image in
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .clipped()
-            } placeholder: {
-                ZStack {
-                    Color.gray.opacity(0.3)
-                    
-                    VStack(spacing: AppTheme.Spacing.sm) {
-                        Text("📷")
-                            .font(.system(size: 60))
-                        
-                        Text("載入中...")
-                            .font(AppTheme.Typography.body)
-                            .foregroundColor(.white)
-                        
-                        ProgressView()
-                            .tint(.white)
+            AsyncImage(url: URL(string: urlString)) { phase in
+                switch phase {
+                case .empty:
+                    ZStack {
+                        Color.gray.opacity(0.3)
+                        VStack(spacing: AppTheme.Spacing.sm) {
+                            Text("📷").font(.system(size: 60))
+                            Text("載入中...")
+                                .font(AppTheme.Typography.body)
+                                .foregroundColor(.white)
+                            ProgressView().tint(.white)
+                        }
                     }
+                    .onAppear { ratingLogger.debug("AsyncImage empty/loading: \(urlString)") }
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .clipped()
+                        .onAppear { ratingLogger.debug("AsyncImage success: \(urlString)") }
+                case .failure:
+                    ZStack {
+                        Color.gray.opacity(0.3)
+                        VStack(spacing: AppTheme.Spacing.sm) {
+                            Text("⚠️").font(.system(size: 60))
+                            Text("無法載入圖片")
+                                .font(AppTheme.Typography.body)
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .onAppear { ratingLogger.error("AsyncImage failure: \(urlString)") }
+                @unknown default:
+                    Color.gray.opacity(0.3)
+                        .onAppear { ratingLogger.error("AsyncImage unknown phase for: \(urlString)") }
                 }
             }
             
