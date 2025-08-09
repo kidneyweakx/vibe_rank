@@ -21,6 +21,8 @@ class AuthenticationViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isGuest: Bool = false
     @Published var authState: AuthState = .signedOut
+    @Published var needsProfileSetup: Bool = false
+    @Published var initialUserData: InitialUserData?
     
     private let authenticationService: AuthenticationServiceProtocol
     private let userProfileService: UserProfileService
@@ -29,11 +31,26 @@ class AuthenticationViewModel: ObservableObject {
     
     // MARK: - Auth State Enum
     
-    enum AuthState {
+    enum AuthState: Equatable {
         case signedOut
         case signingIn
         case signedIn
+        case needsProfileSetup
         case error(String)
+        
+        static func == (lhs: AuthState, rhs: AuthState) -> Bool {
+            switch (lhs, rhs) {
+            case (.signedOut, .signedOut),
+                 (.signingIn, .signingIn),
+                 (.signedIn, .signedIn),
+                 (.needsProfileSetup, .needsProfileSetup):
+                return true
+            case (.error(let lhsMessage), .error(let rhsMessage)):
+                return lhsMessage == rhsMessage
+            default:
+                return false
+            }
+        }
     }
     
     // MARK: - Initializer
@@ -105,15 +122,26 @@ class AuthenticationViewModel: ObservableObject {
                 self.user = user
                 self.isAuthenticated = true
                 self.authState = .signedIn
+                self.needsProfileSetup = false
                 
                 // Log analytics event
                 logAuthenticationEvent(provider: "google", success: true)
             } catch {
-                self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
-                self.authState = .error(self.errorMessage ?? "Unknown error")
-                
-                // Log analytics event
-                logAuthenticationEvent(provider: "google", success: false)
+                // Check if this is a 404 error indicating new user needs profile setup
+                if let appError = error as? AppError,
+                   case .serverError(let statusCode) = appError,
+                   statusCode == 404 {
+                    
+                    // Extract user data from the authentication attempt
+                    // This would need to be passed from the authentication service
+                    self.handleNewUserProfileSetup(provider: "google")
+                } else {
+                    self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
+                    self.authState = .error(self.errorMessage ?? "Unknown error")
+                    
+                    // Log analytics event
+                    logAuthenticationEvent(provider: "google", success: false)
+                }
             }
             isLoading = false
         }
@@ -132,15 +160,25 @@ class AuthenticationViewModel: ObservableObject {
                 self.user = user
                 self.isAuthenticated = true
                 self.authState = .signedIn
+                self.needsProfileSetup = false
                 
                 // Log analytics event
                 logAuthenticationEvent(provider: "apple", success: true)
             } catch {
-                self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
-                self.authState = .error(self.errorMessage ?? "Unknown error")
-                
-                // Log analytics event
-                logAuthenticationEvent(provider: "apple", success: false)
+                // Check if this is a 404 error indicating new user needs profile setup
+                if let appError = error as? AppError,
+                   case .serverError(let statusCode) = appError,
+                   statusCode == 404 {
+                    
+                    // Extract user data from the authentication attempt
+                    self.handleNewUserProfileSetup(provider: "apple")
+                } else {
+                    self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
+                    self.authState = .error(self.errorMessage ?? "Unknown error")
+                    
+                    // Log analytics event
+                    logAuthenticationEvent(provider: "apple", success: false)
+                }
             }
             isLoading = false
         }
@@ -260,6 +298,56 @@ class AuthenticationViewModel: ObservableObject {
     }
     
     // MARK: - Private Methods
+    
+    /// Handle new user profile setup flow
+    private func handleNewUserProfileSetup(provider: String) {
+        // Get the pending user data from the authentication service
+        if let userData = authenticationService.getPendingUserData() {
+            self.initialUserData = userData
+        } else {
+            // Fallback if no data is available
+            self.initialUserData = InitialUserData(
+                name: "New User",
+                email: "user@example.com",
+                profileImageURL: nil,
+                authProvider: provider,
+                providerUserID: "temp_id"
+            )
+        }
+        
+        self.needsProfileSetup = true
+        self.authState = .needsProfileSetup
+        
+        // Log analytics event
+        logAuthenticationEvent(provider: "\(provider)_new_user", success: true)
+    }
+    
+    /// Complete profile setup for new user
+    func completeProfileSetup(_ profileData: UserProfileData) async throws {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            let user = try await authenticationService.completeProfileSetup(profileData)
+            self.user = user
+            self.isAuthenticated = true
+            self.needsProfileSetup = false
+            self.authState = .signedIn
+            self.initialUserData = nil
+            
+            // Log analytics event
+            logAuthenticationEvent(provider: "profile_setup", success: true)
+        } catch {
+            self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
+            self.authState = .error(self.errorMessage ?? "Unknown error")
+            
+            // Log analytics event
+            logAuthenticationEvent(provider: "profile_setup", success: false)
+            throw error
+        }
+        
+        isLoading = false
+    }
     
     /// Log authentication events to analytics
     private func logAuthenticationEvent(provider: String, success: Bool) {

@@ -137,7 +137,7 @@ private extension RatingTabView {
         
         return ZStack {
             // Full screen photo
-            AsyncImage(url: URL(string: photo.imageURL.highRes)) { image in
+            AsyncImage(url: URL(string: photo.imageURL.bestAvailableURL)) { image in
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)

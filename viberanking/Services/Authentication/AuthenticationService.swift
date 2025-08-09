@@ -21,6 +21,7 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
     private var currentNonce: String?
     private var appleSignInCompletion: ((Result<User, Error>) -> Void)?
     private let authAPI = AuthAPI()
+    private var pendingUserData: InitialUserData?
     
     var isAuthenticated: Bool { currentUser != nil }
     
@@ -50,13 +51,35 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
                 throw AppError.validationError("無法獲取 Google ID Token")
             }
             
-            let user = try await verifyGoogleToken(
-                idToken: idToken,
-                accessToken: result.user.accessToken.tokenString
-            )
-            
-            currentUser = user
-            return user
+            do {
+                let user = try await verifyGoogleToken(
+                    idToken: idToken,
+                    accessToken: result.user.accessToken.tokenString
+                )
+                
+                currentUser = user
+                return user
+                
+            } catch let error as AppError {
+                if case .serverError(let statusCode) = error, statusCode == 404 {
+                    // Store the user data for profile setup
+                    let userData = InitialUserData(
+                        name: result.user.profile?.name ?? "Google User",
+                        email: result.user.profile?.email ?? "",
+                        profileImageURL: result.user.profile?.imageURL(withDimension: 200)?.absoluteString,
+                        authProvider: "google",
+                        providerUserID: result.user.userID ?? ""
+                    )
+                    
+                    // Store this data temporarily for profile setup
+                    pendingUserData = userData
+                    
+                    // Re-throw the 404 error so the ViewModel can handle it
+                    throw error
+                } else {
+                    throw error
+                }
+            }
             
         } catch let error as NSError where error.domain == "com.google.GIDSignIn" {
             switch error.code {
@@ -89,12 +112,22 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
         controller.delegate = self
         controller.presentationContextProvider = self
         
-        return try await withCheckedThrowingContinuation { continuation in
-            appleSignInCompletion = { result in
-                continuation.resume(with: result)
+        do {
+            return try await withCheckedThrowingContinuation { continuation in
+                appleSignInCompletion = { result in
+                    continuation.resume(with: result)
+                }
+                DispatchQueue.main.async {
+                    controller.performRequests()
+                }
             }
-            DispatchQueue.main.async {
-                controller.performRequests()
+        } catch let error as AppError {
+            if case .serverError(let statusCode) = error, statusCode == 404 {
+                // The user data should have been stored in the delegate method
+                // Re-throw the 404 error so the ViewModel can handle it
+                throw error
+            } else {
+                throw error
             }
         }
     }
@@ -129,13 +162,38 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
                         throw AppError.validationError("無法獲取 Apple ID Token")
                     }
                     
-                    user = try await verifyAppleToken(
-                        idToken: idTokenString,
-                        nonce: nonce,
-                        userIdentifier: appleIDCredential.user,
-                        fullName: appleIDCredential.fullName,
-                        email: appleIDCredential.email
-                    )
+                    do {
+                        user = try await verifyAppleToken(
+                            idToken: idTokenString,
+                            nonce: nonce,
+                            userIdentifier: appleIDCredential.user,
+                            fullName: appleIDCredential.fullName,
+                            email: appleIDCredential.email
+                        )
+                    } catch let error as AppError {
+                        if case .serverError(let statusCode) = error, statusCode == 404 {
+                            // Store the user data for profile setup
+                            let displayName = [appleIDCredential.fullName?.givenName, appleIDCredential.fullName?.familyName]
+                                .compactMap { $0 }
+                                .joined(separator: " ")
+                            
+                            let userData = InitialUserData(
+                                name: displayName.isEmpty ? "Apple User" : displayName,
+                                email: appleIDCredential.email ?? "",
+                                profileImageURL: nil, // Apple doesn't provide profile images
+                                authProvider: "apple",
+                                providerUserID: appleIDCredential.user
+                            )
+                            
+                            // Store this data temporarily for profile setup
+                            pendingUserData = userData
+                            
+                            // Re-throw the 404 error so the ViewModel can handle it
+                            throw error
+                        } else {
+                            throw error
+                        }
+                    }
                     
                 case let passwordCredential as ASPasswordCredential:
                     user = try await verifyPasswordCredential(
@@ -178,39 +236,51 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
     // MARK: - API Verification
     
     private func verifyGoogleToken(idToken: String, accessToken: String) async throws -> User {
-        let response = try await authAPI.verifyGoogleToken(idToken: idToken, accessToken: accessToken)
-        return User(
-            id: response.user.id,
-            name: response.user.name,
-            email: response.user.email,
-            profileImageURL: response.user.profileImageURL
-        )
+        do {
+            let response = try await authAPI.verifyGoogleToken(idToken: idToken, accessToken: accessToken)
+            return User(
+                id: response.user.id,
+                name: response.user.name,
+                email: response.user.email,
+                profileImageURL: response.user.profileImageURL
+            )
+        } catch let apiError as APIError {
+            throw convertAPIErrorToAppError(apiError)
+        }
     }
     
     private func verifyAppleToken(idToken: String, nonce: String, userIdentifier: String, fullName: PersonNameComponents?, email: String?) async throws -> User {
-        let response = try await authAPI.verifyAppleToken(
-            idToken: idToken,
-            nonce: nonce,
-            userIdentifier: userIdentifier,
-            fullName: fullName,
-            email: email
-        )
-        return User(
-            id: response.user.id,
-            name: response.user.name,
-            email: response.user.email,
-            profileImageURL: response.user.profileImageURL
-        )
+        do {
+            let response = try await authAPI.verifyAppleToken(
+                idToken: idToken,
+                nonce: nonce,
+                userIdentifier: userIdentifier,
+                fullName: fullName,
+                email: email
+            )
+            return User(
+                id: response.user.id,
+                name: response.user.name,
+                email: response.user.email,
+                profileImageURL: response.user.profileImageURL
+            )
+        } catch let apiError as APIError {
+            throw convertAPIErrorToAppError(apiError)
+        }
     }
     
     private func verifyPasswordCredential(username: String, password: String) async throws -> User {
-        let response = try await authAPI.verifyPasswordCredential(username: username, password: password)
-        return User(
-            id: response.user.id,
-            name: response.user.name,
-            email: response.user.email,
-            profileImageURL: response.user.profileImageURL
-        )
+        do {
+            let response = try await authAPI.verifyPasswordCredential(username: username, password: password)
+            return User(
+                id: response.user.id,
+                name: response.user.name,
+                email: response.user.email,
+                profileImageURL: response.user.profileImageURL
+            )
+        } catch let apiError as APIError {
+            throw convertAPIErrorToAppError(apiError)
+        }
     }
     
     // MARK: - Keychain Management
@@ -256,6 +326,30 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
         }
     }
     
+    // MARK: - Profile Setup
+    
+    func getPendingUserData() -> InitialUserData? {
+        return pendingUserData
+    }
+    
+    func completeProfileSetup(_ profileData: UserProfileData) async throws -> User {
+        do {
+            let response = try await authAPI.createUserProfile(profileData)
+            let user = User(
+                id: response.user.id,
+                name: response.user.name,
+                email: response.user.email,
+                profileImageURL: response.user.profileImageURL
+            )
+            
+            currentUser = user
+            pendingUserData = nil // Clear pending data
+            return user
+        } catch let apiError as APIError {
+            throw convertAPIErrorToAppError(apiError)
+        }
+    }
+    
     // MARK: - Sign Out
     
     func signOut() async throws {
@@ -284,6 +378,19 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
         let inputData = Data(input.utf8)
         let hashedData = SHA256.hash(data: inputData)
         return hashedData.compactMap { String(format: "%02x", $0) }.joined()
+    }
+    
+    private func convertAPIErrorToAppError(_ apiError: APIError) -> AppError {
+        switch apiError {
+        case .invalidURL:
+            return .invalidURL
+        case .invalidResponse:
+            return .networkError(apiError)
+        case .serverError(let statusCode):
+            return .serverError(statusCode)
+        case .decodingError(let error):
+            return .apiError(error)
+        }
     }
 }
 

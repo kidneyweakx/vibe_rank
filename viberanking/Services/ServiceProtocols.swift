@@ -12,6 +12,8 @@ import SwiftUI
 protocol AuthenticationServiceProtocol {
     func signInWithGoogle() async throws -> User
     func signInWithApple() async throws -> User
+    func getPendingUserData() -> InitialUserData?
+    func completeProfileSetup(_ profileData: UserProfileData) async throws -> User
     func signOut() async throws
     var currentUser: User? { get }
     var isAuthenticated: Bool { get }

@@ -83,6 +83,27 @@ class AuthAPI {
         )
     }
     
+    // MARK: - Profile Setup
+    
+    func createUserProfile(_ profileData: UserProfileData) async throws -> AuthResponse {
+        let body: [String: Any] = [
+            "customUserID": profileData.customUserID,
+            "displayName": profileData.displayName,
+            "gender": profileData.gender.rawValue,
+            "email": profileData.email,
+            "profileImageURL": profileData.profileImageURL as Any,
+            "authProvider": profileData.authProvider,
+            "providerUserID": profileData.providerUserID
+        ]
+        
+        return try await apiClient.performRequest(
+            endpoint: "/auth/profile/create",
+            method: .POST,
+            body: body,
+            responseType: AuthResponse.self
+        )
+    }
+    
     // MARK: - Sign Out
     
     func signOut() async throws {

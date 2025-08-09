@@ -15,6 +15,12 @@ struct PhotoUploadResponse: Codable {
     let uploadedAt: Date
 }
 
+// API 包裝響應結構
+struct APIResponse<T: Codable>: Codable {
+    let success: Bool
+    let data: T
+}
+
 struct PhotoListResponse: Codable {
     let photos: [PhotoInfo]
     let totalCount: Int
@@ -38,7 +44,11 @@ class FileAPI {
     
     /// Upload photo
     func uploadPhoto(_ imageData: Data, userId: String) async throws -> PhotoUploadResponse {
-        print("upload files")
+        print("🚀 開始上傳文件到 API")
+        print("📤 API 端點: /file/photos/upload")
+        print("👤 用戶 ID: \(userId)")
+        print("📦 圖片數據大小: \(imageData.count) bytes")
+        
         let base64Image = imageData.base64EncodedString()
         
         let body: [String: Any] = [
@@ -47,12 +57,25 @@ class FileAPI {
             "format": "png"
         ]
         
-        return try await apiClient.performRequest(
-            endpoint: "/file/upload",
-            method: .POST,
-            body: body,
-            responseType: PhotoUploadResponse.self
-        )
+        do {
+            let wrappedResponse = try await apiClient.performRequest(
+                endpoint: "/file/photos/upload",
+                method: .POST,
+                body: body,
+                responseType: APIResponse<PhotoUploadResponse>.self
+            )
+            
+            if wrappedResponse.success {
+                print("✅ API 上傳成功")
+                return wrappedResponse.data
+            } else {
+                print("❌ API 返回失敗狀態")
+                throw APIError.serverError(400)
+            }
+        } catch {
+            print("❌ API 上傳失敗: \(error)")
+            throw error
+        }
     }
     
     /// Verify file exists
