@@ -240,7 +240,7 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
                 id: response.user.id,
                 name: response.user.name,
                 email: response.user.email,
-                profileImageURL: response.user.profileImageURL
+                profileImageURL: response.user.avatar
             )
         } catch let apiError as APIError {
             throw convertAPIErrorToAppError(apiError)
@@ -260,7 +260,7 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
                 id: response.user.id,
                 name: response.user.name,
                 email: response.user.email,
-                profileImageURL: response.user.profileImageURL
+                profileImageURL: response.user.avatar
             )
         } catch let apiError as APIError {
             throw convertAPIErrorToAppError(apiError)
@@ -274,7 +274,7 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
                 id: response.user.id,
                 name: response.user.name,
                 email: response.user.email,
-                profileImageURL: response.user.profileImageURL
+                profileImageURL: response.user.avatar
             )
         } catch let apiError as APIError {
             throw convertAPIErrorToAppError(apiError)
@@ -337,7 +337,7 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
                 id: response.user.id,
                 name: response.user.name,
                 email: response.user.email,
-                profileImageURL: response.user.profileImageURL
+                profileImageURL: response.user.avatar
             )
             
             currentUser = user

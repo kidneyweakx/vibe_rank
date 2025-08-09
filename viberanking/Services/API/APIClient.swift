@@ -14,6 +14,7 @@ class APIClient {
     
     private let session: URLSession
     private let baseURL: String
+    private let accessToken = "vibe_api_2025_secure_token_8f9a2b3c4d5e6f7g8h9i0j1k2l3m4n5o"
     
     private init() {
         self.session = URLSession.shared
@@ -21,7 +22,7 @@ class APIClient {
     }
     
     /// Perform a generic API request
-    func performRequest<T: Codable>(
+    func performRequest<T: Decodable>(
         endpoint: String,
         method: HTTPMethod = .GET,
         body: [String: Any]? = nil,
@@ -35,6 +36,7 @@ class APIClient {
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(accessToken, forHTTPHeaderField: "X-Access-Token")
         
         if let body = body {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -95,6 +97,7 @@ class APIClient {
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(accessToken, forHTTPHeaderField: "X-Access-Token")
         
         if let body = body {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)

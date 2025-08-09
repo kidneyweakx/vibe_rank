@@ -106,7 +106,7 @@ class RateAPI {
         ]
         
         return try await apiClient.performRequest(
-            endpoint: "/rate/photo",
+            endpoint: "/api/rate/photo",
             method: .POST,
             body: body,
             responseType: RatePhotoResponse.self
@@ -116,7 +116,7 @@ class RateAPI {
     /// Get user statistics and ranking
     func getUserStats(userId: String) async throws -> UserStatsResponse {
         return try await apiClient.performRequest(
-            endpoint: "/rate/user/\(userId)/stats",
+            endpoint: "/api/rate/user/\(userId)/stats",
             method: .GET,
             responseType: UserStatsResponse.self
         )
@@ -125,7 +125,7 @@ class RateAPI {
     /// Get rankings
     func getRankings(limit: Int = 50) async throws -> RankingsResponse {
         return try await apiClient.performRequest(
-            endpoint: "/rate/rankings?limit=\(limit)",
+            endpoint: "/api/rate/rankings?limit=\(limit)",
             method: .GET,
             responseType: RankingsResponse.self
         )
@@ -135,7 +135,7 @@ class RateAPI {
     func getRandomPhotos(userId: String, limit: Int = 10) async throws -> RandomPhotosResponse {
         print("🔍 Fetching random photos for userId: \(userId), limit: \(limit)")
         let response = try await apiClient.performRequest(
-            endpoint: "/rate/photos/random?userId=\(userId)&limit=\(limit)",
+            endpoint: "/api/rate/photos/random?userId=\(userId)&limit=\(limit)",
             method: .GET,
             responseType: RandomPhotosResponse.self
         )

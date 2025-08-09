@@ -16,13 +16,27 @@ class AuthAPI {
     // MARK: - Google Authentication
     
     func verifyGoogleToken(idToken: String, accessToken: String) async throws -> AuthResponse {
+        // Backend expects a single 'token' field containing the Google ID token
         let body = [
-            "idToken": idToken,
-            "accessToken": accessToken
+            "token": idToken
         ]
-        
         return try await apiClient.performRequest(
-            endpoint: "/auth/google/verify",
+            endpoint: "/api/auth/google",
+            method: .POST,
+            body: body,
+            responseType: AuthResponse.self
+        )
+    }
+    
+    // MARK: - Test Authentication
+    
+    func testLogin(email: String, name: String) async throws -> AuthResponse {
+        let body = [
+            "email": email,
+            "name": name
+        ]
+        return try await apiClient.performRequest(
+            endpoint: "/api/auth/test",
             method: .POST,
             body: body,
             responseType: AuthResponse.self
@@ -38,17 +52,14 @@ class AuthAPI {
         fullName: PersonNameComponents?,
         email: String?
     ) async throws -> AuthResponse {
-        
         var body: [String: Any] = [
             "idToken": idToken,
             "nonce": nonce,
             "userIdentifier": userIdentifier
         ]
-        
         if let email = email {
             body["email"] = email
         }
-        
         if let fullName = fullName {
             let nameComponents = [
                 "givenName": fullName.givenName,
@@ -58,9 +69,8 @@ class AuthAPI {
                 body["fullName"] = nameComponents
             }
         }
-        
         return try await apiClient.performRequest(
-            endpoint: "/auth/apple/verify",
+            endpoint: "/api/auth/apple/verify",
             method: .POST,
             body: body,
             responseType: AuthResponse.self
@@ -74,9 +84,8 @@ class AuthAPI {
             "username": username,
             "password": password
         ]
-        
         return try await apiClient.performRequest(
-            endpoint: "/auth/password/verify",
+            endpoint: "/api/auth/password/verify",
             method: .POST,
             body: body,
             responseType: AuthResponse.self
@@ -95,9 +104,8 @@ class AuthAPI {
             "authProvider": profileData.authProvider,
             "providerUserID": profileData.providerUserID
         ]
-        
         return try await apiClient.performRequest(
-            endpoint: "/auth/profile/create",
+            endpoint: "/api/auth/profile/create",
             method: .POST,
             body: body,
             responseType: AuthResponse.self
@@ -108,7 +116,7 @@ class AuthAPI {
     
     func signOut() async throws {
         try await apiClient.performRequest(
-            endpoint: "/auth/signout",
+            endpoint: "/api/auth/signout",
             method: .POST
         )
     }
@@ -116,14 +124,40 @@ class AuthAPI {
 
 // MARK: - Response Models
 
-struct AuthResponse: Codable {
+struct AuthResponse: Decodable {
     let user: APIUser
-    let token: String?
+    let token: String
+    let success: Bool?
+    let message: String?
+}
+
+struct APIUser: Decodable {
+    let id: String
+    let email: String
+    let name: String
+    let avatar: String?
+    let provider: String?
     
-    struct APIUser: Codable {
-        let id: String
-        let name: String
-        let email: String
-        let profileImageURL: String?
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case email
+        case name
+        case avatar
+        case profileImageURL
+        case provider
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        email = try container.decode(String.self, forKey: .email)
+        name = try container.decode(String.self, forKey: .name)
+        // Support both 'avatar' and 'profileImageURL' from backend
+        if let avatarValue = try? container.decode(String.self, forKey: .avatar) {
+            avatar = avatarValue
+        } else {
+            avatar = try? container.decode(String.self, forKey: .profileImageURL)
+        }
+        provider = try? container.decode(String.self, forKey: .provider)
     }
 }

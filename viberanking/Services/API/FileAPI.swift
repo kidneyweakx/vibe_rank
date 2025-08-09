@@ -59,7 +59,7 @@ class FileAPI {
         
         do {
             let wrappedResponse = try await apiClient.performRequest(
-                endpoint: "/file/photos/upload",
+                endpoint: "/api/file/photos/upload",
                 method: .POST,
                 body: body,
                 responseType: APIResponse<PhotoUploadResponse>.self
@@ -80,7 +80,7 @@ class FileAPI {
     
     /// Verify file exists
     func verifyFile(key: String) async throws -> Bool {
-        let endpoint = "/file/verify/\(key)"
+        let endpoint = "/api/file/verify/\(key)"
         
         // This would need to be adjusted based on your APIClient implementation
         // for handling responses that don't match PhotoListResponse
@@ -91,11 +91,21 @@ class FileAPI {
         )
     }
     
+    /// Get user photos list
+    func getUserPhotos(userId: String, page: Int = 1, limit: Int = 20) async throws -> APIResponse<PhotoListResponse> {
+        return try await apiClient.performRequest(
+            endpoint: "/api/file/photos/user/\(userId)?page=\(page)&limit=\(limit)",
+            method: .GET,
+            responseType: APIResponse<PhotoListResponse>.self
+        )
+    }
+    
     /// Delete file
-    func deleteFile(key: String) async throws {
-        try await apiClient.performRequest(
-            endpoint: "/file/\(key)",
-            method: .DELETE
+    func deleteFile(photoId: String) async throws -> APIResponse<Bool> {
+        return try await apiClient.performRequest(
+            endpoint: "/api/file/photos/\(photoId)",
+            method: .DELETE,
+            responseType: APIResponse<Bool>.self
         )
     }
 }
