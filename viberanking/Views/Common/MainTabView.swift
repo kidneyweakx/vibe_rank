@@ -36,6 +36,7 @@ struct MainTabView: View {
                     .tag(TabItem.profile)
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+            .ignoresSafeArea(.all) // 讓內容填滿整個螢幕
             
             if !isVibeMode {
                 CustomTikTokTabBar(
@@ -53,6 +54,13 @@ struct MainTabView: View {
                                 uploadAlertMessage = "還需要完成 \(remaining) 個評分才能解鎖上傳功能"
                                 showingUploadAlert = true
                             }
+                        }
+                    },
+                    onVibeTap: {
+                        // 點擊 Vibe tab 直接進入 vibe 模式
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            selectedTab = .rating
+                            isVibeMode = true
                         }
                     }
                 )
@@ -149,16 +157,17 @@ enum TabItem: CaseIterable {
 struct CustomTikTokTabBar: View {
     @Binding var selectedTab: TabItem
     let onUploadTap: () -> Void
+    let onVibeTap: () -> Void
     
     var body: some View {
         HStack(spacing: 0) {
-            // Rating Tab
+            // Rating Tab (Vibe)
             TabBarButton(
                 icon: "heart.fill",
                 title: "Vibe",
                 isSelected: selectedTab == .rating
             ) {
-                selectedTab = .rating
+                onVibeTap() // 直接調用 vibe 模式
             }
             
             Spacer()
@@ -213,7 +222,7 @@ struct CustomTikTokTabBar: View {
         }
         .padding(.horizontal, 20)
         .padding(.top, 8)
-        .padding(.bottom, 34)
+        .padding(.bottom, 8) // 減少底部 padding，避免黑邊
         .background(
             Color.black
                 .ignoresSafeArea(edges: .bottom)

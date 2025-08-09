@@ -13,6 +13,9 @@ struct RatingTabView: View {
     @StateObject private var viewModel = PhotoRatingViewModel()
     @State private var currentCardOffset: CGSize = .zero
     @State private var showCelebration = false
+    @State private var likeButtonPressed = false
+    @State private var refreshButtonPressed = false
+    @State private var skipButtonPressed = false
     @Binding var isVibeMode: Bool
     
     var body: some View {
@@ -37,77 +40,41 @@ struct RatingTabView: View {
                             }
                         } label: {
                             Image(systemName: "xmark")
-                                .font(.system(size: 20, weight: .medium))
-                                .foregroundColor(.white)
-                                .frame(width: 44, height: 44)
-                                .background(.ultraThinMaterial)
-                                .clipShape(Circle())
-                                .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 2)
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(.white.opacity(0.8))
                         }
+                        .padding(.leading, 20)
                         
                         Spacer()
-                        
-                        // Vibe mode indicator
-                        Text("VIBE")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(15)
-                            .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 2)
                     }
-                    .padding(.horizontal, 90)
-                    .padding(.top, 50) // 增加頂部間距，避免超出安全區域
+                    .padding(.top, 60) // 增加頂部間距，避免超出安全區域
                     
                     Spacer()
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
             
-            // Action buttons overlay (only when not in vibe mode)
-            if !isVibeMode {
-                VStack {
-                    Spacer()
-                    
-                    // Enter Vibe Mode button
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            isVibeMode = true
-                        }
-                    } label: {
-                        Text("進入 Vibe 模式")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 30)
-                            .padding(.vertical, 15)
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(25)
-                            .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
-                    }
-                    .padding(.bottom, 20)
-                    
-                    actionButtonsView
-                        .padding(.bottom, 50)
-                }
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            // Action buttons overlay
+            VStack {
+                Spacer()
+                actionButtonsView
+                    .padding(.bottom, isVibeMode ? 50 : 120) // 在非 vibe 模式下留更多空間給 tab bar
             }
-            
-            // Action buttons overlay for Vibe mode (only when in vibe mode)
-            if isVibeMode {
-                VStack {
-                    Spacer()
-                    actionButtonsView
-                        .padding(.bottom, 50)
-                }
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
-            }
+            .transition(.opacity.combined(with: .move(edge: .bottom)))
             
 
         }
         .task {
             if let userId = authViewModel.user?.id {
                 await viewModel.loadPhotosForRating(userId: userId)
+            }
+        }
+        .onAppear {
+            // 當進入 rating tab 時，如果還沒在 vibe 模式，就自動進入
+            if !isVibeMode {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isVibeMode = true
+                }
             }
         }
         .overlay {
@@ -190,73 +157,119 @@ private extension RatingTabView {
         ZStack {
             // LIKE indicator (right)
             if currentCardOffset.width > 30 {
-                VStack(spacing: AppTheme.Spacing.xs) {
-                    Text("❤️")
-                        .font(.system(size: 80))
-                        .scaleEffect(1.0 + min(Double(currentCardOffset.width) / 200, 0.5))
+                VStack(spacing: 8) {
+                    Circle()
+                        .fill(.white.opacity(0.2))
+                        .frame(width: 100, height: 100)
+                        .overlay(
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 40, weight: .medium))
+                                .foregroundColor(.white)
+                        )
+                        .scaleEffect(1.0 + min(Double(currentCardOffset.width) / 300, 0.3))
                     
                     Text("LIKE")
-                        .font(.system(size: 32, weight: .black, design: .rounded))
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 2)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(.white.opacity(0.2))
+                        .cornerRadius(20)
                 }
                 .opacity(min(Double(currentCardOffset.width) / 120, 1.0))
-                .scaleEffect(0.8 + min(Double(currentCardOffset.width) / 300, 0.4))
+                .scaleEffect(0.8 + min(Double(currentCardOffset.width) / 400, 0.2))
             }
             
-            // NORMAL indicator (left)
+            // SKIP indicator (left)
             if currentCardOffset.width < -30 {
-                VStack(spacing: AppTheme.Spacing.xs) {
-                    Text("🔄")
-                        .font(.system(size: 80))
-                        .scaleEffect(1.0 + min(Double(-currentCardOffset.width) / 200, 0.5))
+                VStack(spacing: 8) {
+                    Circle()
+                        .fill(.white.opacity(0.2))
+                        .frame(width: 100, height: 100)
+                        .overlay(
+                            Image(systemName: "xmark")
+                                .font(.system(size: 35, weight: .medium))
+                                .foregroundColor(.white)
+                        )
+                        .scaleEffect(1.0 + min(Double(-currentCardOffset.width) / 300, 0.3))
                     
-                    Text("NORMAL")
-                        .font(.system(size: 28, weight: .black, design: .rounded))
+                    Text("SKIP")
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 2)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(.white.opacity(0.2))
+                        .cornerRadius(20)
                 }
                 .opacity(min(Double(-currentCardOffset.width) / 120, 1.0))
-                .scaleEffect(0.8 + min(Double(-currentCardOffset.width) / 300, 0.4))
+                .scaleEffect(0.8 + min(Double(-currentCardOffset.width) / 400, 0.2))
             }
         }
     }
     
     var actionButtonsView: some View {
-        HStack(spacing: 60) {
-            // NORMAL button
+        HStack(spacing: 40) {
+            // REFRESH button (更換)
             Button {
-                submitRating(type: .normal)
+                refreshPhoto()
             } label: {
                 Circle()
-                    .fill(.ultraThinMaterial)
-                    .frame(width: isVibeMode ? 80 : 70, height: isVibeMode ? 80 : 70)
+                    .fill(.white.opacity(0.15))
+                    .frame(width: 50, height: 50)
                     .overlay(
-                        Text("🔄")
-                            .font(.system(size: isVibeMode ? 36 : 32))
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(.white.opacity(0.9))
                     )
-                    .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
             }
             .disabled(viewModel.currentPhoto == nil)
-            .opacity(viewModel.currentPhoto == nil ? 0.5 : 1.0)
-            .scaleEffect(isVibeMode ? 1.1 : 1.0)
+            .opacity(viewModel.currentPhoto == nil ? 0.3 : 1.0)
+            .scaleEffect(refreshButtonPressed ? 0.9 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: refreshButtonPressed)
             
-            // LIKE button
+            // LIKE button (愛心 - 中間主要按鈕)
             Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    likeButtonPressed = true
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    likeButtonPressed = false
+                }
+                
                 submitRating(type: .like)
             } label: {
                 Circle()
-                    .fill(.ultraThinMaterial)
-                    .frame(width: isVibeMode ? 80 : 70, height: isVibeMode ? 80 : 70)
+                    .fill(.white.opacity(0.2))
+                    .frame(width: 70, height: 70)
                     .overlay(
-                        Text("❤️")
-                            .font(.system(size: isVibeMode ? 36 : 32))
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 28, weight: .medium))
+                            .foregroundColor(.white.opacity(0.8))
                     )
-                    .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
             }
             .disabled(viewModel.currentPhoto == nil)
-            .opacity(viewModel.currentPhoto == nil ? 0.5 : 1.0)
-            .scaleEffect(isVibeMode ? 1.1 : 1.0)
+            .opacity(viewModel.currentPhoto == nil ? 0.3 : 1.0)
+            .scaleEffect(likeButtonPressed ? 1.3 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: likeButtonPressed)
+            
+            // SKIP button (跳過)
+            Button {
+                skipPhoto()
+            } label: {
+                Circle()
+                    .fill(.white.opacity(0.15))
+                    .frame(width: 50, height: 50)
+                    .overlay(
+                        Image(systemName: "xmark")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(.white.opacity(0.9))
+                    )
+            }
+            .disabled(viewModel.currentPhoto == nil)
+            .opacity(viewModel.currentPhoto == nil ? 0.3 : 1.0)
+            .scaleEffect(skipButtonPressed ? 0.9 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: skipButtonPressed)
         }
         .animation(.easeInOut(duration: 0.3), value: isVibeMode)
     }
@@ -340,8 +353,8 @@ private extension RatingTabView {
             // Swiped right - LIKE
             submitRating(type: .like)
         } else if value.translation.width < -threshold {
-            // Swiped left - NORMAL
-            submitRating(type: .normal)
+            // Swiped left - SKIP
+            skipPhoto()
         } else {
             // Return to center
             currentCardOffset = .zero
@@ -362,6 +375,46 @@ private extension RatingTabView {
         // Submit rating and reset
         Task {
             await viewModel.submitRating(type: type)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                currentCardOffset = .zero
+            }
+        }
+    }
+    
+    func refreshPhoto() {
+        withAnimation(.easeInOut(duration: 0.1)) {
+            refreshButtonPressed = true
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            refreshButtonPressed = false
+        }
+        
+        // 重新載入照片
+        Task {
+            if let userId = authViewModel.user?.id {
+                await viewModel.loadPhotosForRating(userId: userId)
+            }
+        }
+    }
+    
+    func skipPhoto() {
+        withAnimation(.easeInOut(duration: 0.1)) {
+            skipButtonPressed = true
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            skipButtonPressed = false
+        }
+        
+        // 跳過當前照片，移到下一張
+        withAnimation(.easeInOut(duration: 0.3)) {
+            currentCardOffset = CGSize(width: -500, height: 0)
+        }
+        
+        Task {
+            await viewModel.skipCurrentPhoto()
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 currentCardOffset = .zero

@@ -190,6 +190,11 @@ class PhotoRatingViewModel: BaseViewModel {
         await loadPhotosForRating(userId: currentUserId)
     }
     
+    /// Skip current photo without rating
+    func skipCurrentPhoto() async {
+        await moveToNextPhoto()
+    }
+    
     /// Get user stats for journey/profile
     func getUserStats() async -> UserStats? {
         guard !currentUserId.isEmpty else { return nil }
