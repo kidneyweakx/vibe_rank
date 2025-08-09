@@ -31,6 +31,12 @@ class UserRepository: UserRepositoryProtocol {
                 body: userDict,
                 responseType: User.self
             )
+        } catch let apiError as APIError {
+            if case .serverError(let code) = apiError, code == 404 {
+                print("ℹ️ POST /users 端點不存在或已移動。請確認後端路徑是否為 /api/user/profile 或相關使用者建立端點。")
+                throw AppError.serverError(404)
+            }
+            throw AppError.apiError(apiError)
         } catch {
             throw AppError.apiError(error)
         }
@@ -90,12 +96,16 @@ class UserRepository: UserRepositoryProtocol {
                 method: .GET,
                 responseType: User.self
             )
+        } catch let apiError as APIError {
+            if case .serverError(let code) = apiError, code == 404 {
+                print("API error while getting user: Not Found (404) – 將視為無資料並嘗試建立新檔案")
+                return nil
+            }
+            print("API error while getting user: \(apiError)")
+            throw AppError.apiError(apiError)
         } catch {
-            // If API returns 404, we should return nil, not throw an error.
-            // This requires modification in APIClient or error handling here.
-            // For now, we'll assume any error means user not found.
-            print("API error while getting user: \(error)")
-            return nil
+            print("API error while getting user (unknown): \(error)")
+            throw AppError.apiError(error)
         }
     }
     

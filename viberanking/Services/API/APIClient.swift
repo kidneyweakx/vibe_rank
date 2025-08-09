@@ -42,18 +42,35 @@ class APIClient {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
         }
         
+        // Request log
+        print("➡️ API 請求: \(method.rawValue) \(endpoint)")
+        if let body = body, !body.isEmpty, let bodyData = try? JSONSerialization.data(withJSONObject: body, options: [.prettyPrinted]), let bodyString = String(data: bodyData, encoding: .utf8) {
+            print("📝 請求內容: \n\(bodyString)")
+        }
+
         let (data, response) = try await session.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
         }
         
-        print("📡 API 響應狀態碼: \(httpResponse.statusCode)")
+        print("📡 API 響應狀態碼: \(httpResponse.statusCode) ← \(method.rawValue) \(endpoint)")
         
         guard httpResponse.statusCode == 200 else {
-            print("❌ API 錯誤狀態碼: \(httpResponse.statusCode)")
-            if let responseString = String(data: data, encoding: .utf8) {
-                print("❌ 錯誤響應內容: \(responseString)")
+            let responseText = String(data: data, encoding: .utf8)
+            if let responseText = responseText {
+                // Try to extract common error fields for readability
+                if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    let message = (json["message"] as? String)
+                        ?? (json["error"] as? String)
+                        ?? (json["detail"] as? String)
+                        ?? responseText
+                    print("❌ API 錯誤 [\(httpResponse.statusCode)] — \(method.rawValue) \(endpoint)\n↪︎ 訊息: \(message)")
+                } else {
+                    print("❌ API 錯誤 [\(httpResponse.statusCode)] — \(method.rawValue) \(endpoint)\n↪︎ 內容: \(responseText)")
+                }
+            } else {
+                print("❌ API 錯誤 [\(httpResponse.statusCode)] — \(method.rawValue) \(endpoint) (無響應內容)")
             }
             throw APIError.serverError(httpResponse.statusCode)
         }
@@ -103,13 +120,34 @@ class APIClient {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
         }
         
-        let (_, response) = try await session.data(for: request)
+        // Request log (no-body response)
+        print("➡️ API 請求: \(method.rawValue) \(endpoint)")
+        if let body = body, !body.isEmpty, let bodyData = try? JSONSerialization.data(withJSONObject: body, options: [.prettyPrinted]), let bodyString = String(data: bodyData, encoding: .utf8) {
+            print("📝 請求內容: \n\(bodyString)")
+        }
+
+        let (data, response) = try await session.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
         }
         
+        print("📡 API 響應狀態碼: \(httpResponse.statusCode) ← \(method.rawValue) \(endpoint)")
         guard httpResponse.statusCode == 200 else {
+            let responseText = String(data: data, encoding: .utf8)
+            if let responseText = responseText {
+                if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    let message = (json["message"] as? String)
+                        ?? (json["error"] as? String)
+                        ?? (json["detail"] as? String)
+                        ?? responseText
+                    print("❌ API 錯誤 [\(httpResponse.statusCode)] — \(method.rawValue) \(endpoint)\n↪︎ 訊息: \(message)")
+                } else {
+                    print("❌ API 錯誤 [\(httpResponse.statusCode)] — \(method.rawValue) \(endpoint)\n↪︎ 內容: \(responseText)")
+                }
+            } else {
+                print("❌ API 錯誤 [\(httpResponse.statusCode)] — \(method.rawValue) \(endpoint) (無響應內容)")
+            }
             throw APIError.serverError(httpResponse.statusCode)
         }
     }
@@ -139,7 +177,17 @@ enum APIError: Error, LocalizedError {
         case .invalidResponse:
             return "Invalid response"
         case .serverError(let code):
-            return "Server error with code: \(code)"
+            switch code {
+            case 400: return "Bad Request (400) – 參數錯誤或缺失"
+            case 401: return "Unauthorized (401) – 未授權或登入已過期"
+            case 403: return "Forbidden (403) – 無權限存取此資源"
+            case 404: return "Not Found (404) – 找不到資源或用戶資料"
+            case 409: return "Conflict (409) – 資源衝突，請稍後重試"
+            case 422: return "Unprocessable Entity (422) – 驗證失敗，請檢查輸入"
+            case 429: return "Too Many Requests (429) – 請稍後再試"
+            case 500...599: return "Server Error (\(code)) – 伺服器發生內部錯誤"
+            default: return "Server error with code: \(code)"
+            }
         case .decodingError(let error):
             return "Decoding error: \(error.localizedDescription)"
         }

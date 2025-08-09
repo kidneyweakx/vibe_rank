@@ -62,11 +62,9 @@ class UserProfileService: ObservableObject {
                 try? await userRepository.updateLastActivity(userId: existingUser.id)
                 
             } else {
-                print("ℹ️ No existing profile found, creating new user profile")
-                // The user from AuthenticationService is already a full user object from our API
-                let savedUser = try await userRepository.createOrUpdateUserProfile(user)
-                currentUser = savedUser
-                print("✅ New user profile created: \(savedUser.name)")
+                print("ℹ️ No existing profile found, entering profile setup flow instead of creating on /users")
+                // Defer creation to profile setup screen instead of calling POST /users which may not exist
+                throw AppError.serverError(404)
             }
             
         } catch let appError as AppError {

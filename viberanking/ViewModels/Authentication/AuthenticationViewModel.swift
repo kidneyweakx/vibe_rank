@@ -131,9 +131,6 @@ class AuthenticationViewModel: ObservableObject {
                 if let appError = error as? AppError,
                    case .serverError(let statusCode) = appError,
                    statusCode == 404 {
-                    
-                    // Extract user data from the authentication attempt
-                    // This would need to be passed from the authentication service
                     self.handleNewUserProfileSetup(provider: "google")
                 } else {
                     self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
@@ -169,8 +166,6 @@ class AuthenticationViewModel: ObservableObject {
                 if let appError = error as? AppError,
                    case .serverError(let statusCode) = appError,
                    statusCode == 404 {
-                    
-                    // Extract user data from the authentication attempt
                     self.handleNewUserProfileSetup(provider: "apple")
                 } else {
                     self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription

@@ -27,6 +27,7 @@ class PhotoRatingViewModel: BaseViewModel {
     // MARK: - Private Properties
     private let rateAPI = RateAPI()
     private var cancellables = Set<AnyCancellable>()
+    private let r2UrlBuilder = R2PhotoURLBuilder()
     private var currentUserId: String = ""
     
     // Preloading configuration
@@ -72,14 +73,18 @@ class PhotoRatingViewModel: BaseViewModel {
                 // Fetch random photos for rating from API
                 let response = try await self.rateAPI.getRandomPhotos(userId: userId, limit: 20)
                 
-                // Convert RatingPhoto to Photo model
+                // Convert RatingPhoto to Photo model; prefer R2 key when available
                 self.photos = response.data.map { ratingPhoto in
-                    Photo(
+                    let photoUrls: PhotoURLs
+                    if let key = ratingPhoto.key, !key.isEmpty {
+                        photoUrls = self.r2UrlBuilder.buildURLs(forKey: key)
+                    } else {
+                        photoUrls = PhotoURLs(original: ratingPhoto.url)
+                    }
+                    return Photo(
                         id: ratingPhoto.id,
                         userId: ratingPhoto.userId,
-                        imageURL: PhotoURLs(
-                            original: ratingPhoto.url
-                        )
+                        imageURL: photoUrls
                     )
                 }
                 
@@ -229,12 +234,16 @@ private extension PhotoRatingViewModel {
             let response = try await self.rateAPI.getRandomPhotos(userId: self.currentUserId, limit: 10)
             
             let newPhotos = response.data.map { ratingPhoto in
-                Photo(
+                let photoUrls: PhotoURLs
+                if let key = ratingPhoto.key, !key.isEmpty {
+                    photoUrls = self.r2UrlBuilder.buildURLs(forKey: key)
+                } else {
+                    photoUrls = PhotoURLs(original: ratingPhoto.url)
+                }
+                return Photo(
                     id: ratingPhoto.id,
                     userId: ratingPhoto.userId,
-                    imageURL: PhotoURLs(
-                        original: ratingPhoto.url
-                    )
+                    imageURL: photoUrls
                 )
             }
             
