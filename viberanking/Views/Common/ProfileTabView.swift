@@ -14,6 +14,7 @@ struct ProfileTabView: View {
     @State private var showingImagePicker = false
     @State private var showingQRCode = false
     @State private var showingSettings = false
+    @State private var showingTerms = false
     
     var body: some View {
         NavigationStack {
@@ -46,6 +47,9 @@ struct ProfileTabView: View {
         }
         .fullScreenCover(isPresented: $showingSettings) {
             SettingsView()
+        }
+        .sheet(isPresented: $showingTerms) {
+            TermsOfServiceView()
         }
         .task {
             if let userId = authViewModel.user?.id {
@@ -154,32 +158,50 @@ private extension ProfileTabView {
             }
             
             // Action buttons
-            HStack(spacing: 12) {
-                Button("Share Profile") {
-                    showingQRCode = true
+            VStack(spacing: 12) {
+                HStack(spacing: 12) {
+                    Button("Share Profile") {
+                        showingQRCode = true
+                    }
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .background(
+                        RoundedRectangle(cornerRadius: 24)
+                            .fill(Color.blue)
+                    )
+                    
+                    Button("Edit Profile") {
+                        showingSettings = true
+                    }
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .background(
+                        RoundedRectangle(cornerRadius: 24)
+                            .fill(Color.white.opacity(0.1))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                            )
+                    )
                 }
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 48)
-                .background(
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(Color.blue)
-                )
                 
-                Button("Edit Profile") {
-                    showingSettings = true
+                Button("Terms of Service") {
+                    showingTerms = true
                 }
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.gray)
                 .frame(maxWidth: .infinity)
-                .frame(height: 48)
+                .frame(height: 40)
                 .background(
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(Color.white.opacity(0.1))
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.gray.opacity(0.1))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 24)
-                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
                         )
                 )
             }
