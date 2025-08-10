@@ -12,29 +12,59 @@ struct HomeView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @State private var recommendedUsers: [RecommendedUser] = []
     @State private var eventPhotos: [EventPhoto] = []
+    @State private var isLoaded = false
     
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 32) {
-                    // Recommended Users Section
-                    recommendedSection
-                    
-                    // Divider
-                    divider
-                    
-                    // Event Photos Section
-                    eventSection
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 100)
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                mainContent
             }
-            .background(Color.black)
-            .navigationBarHidden(true)
-            .preferredColorScheme(.dark)
+        } else {
+            NavigationView {
+                mainContent
+            }
+            .navigationViewStyle(StackNavigationViewStyle())
         }
+    }
+    
+    private var mainContent: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            
+            if isLoaded {
+                ScrollView {
+                    LazyVStack(spacing: 32) {
+                        // Recommended Users Section
+                        recommendedSection
+                        
+                        // Divider
+                        divider
+                        
+                        // Event Photos Section
+                        eventSection
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 100)
+                }
+            } else {
+                // Loading state
+                VStack {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(1.2)
+                    
+                    Text("載入中...")
+                        .foregroundColor(.white.opacity(0.7))
+                        .padding(.top, 16)
+                }
+            }
+        }
+        .navigationBarHidden(true)
+        .preferredColorScheme(.dark)
         .onAppear {
-            loadData()
+            if !isLoaded {
+                loadData()
+            }
         }
     }
 
@@ -96,24 +126,36 @@ struct HomeView: View {
     }
     
     private func loadData() {
-        // Load recommended users (mock data)
-        recommendedUsers = [
-            RecommendedUser(id: "1", name: "Alice", rank: 1, score: 9.8, avatarURL: nil),
-            RecommendedUser(id: "2", name: "Bob", rank: 2, score: 9.5, avatarURL: nil),
-            RecommendedUser(id: "3", name: "Charlie", rank: 3, score: 9.2, avatarURL: nil),
-            RecommendedUser(id: "4", name: "Diana", rank: 4, score: 8.9, avatarURL: nil),
-            RecommendedUser(id: "5", name: "Eve", rank: 5, score: 8.7, avatarURL: nil)
-        ]
+        print("🔄 HomeView: Starting to load data...")
         
-        // Load event photos (mock data)
-        eventPhotos = [
-            EventPhoto(id: "1", imageURL: nil, likes: 45, timestamp: Date()),
-            EventPhoto(id: "2", imageURL: nil, likes: 32, timestamp: Date()),
-            EventPhoto(id: "3", imageURL: nil, likes: 28, timestamp: Date()),
-            EventPhoto(id: "4", imageURL: nil, likes: 19, timestamp: Date()),
-            EventPhoto(id: "5", imageURL: nil, likes: 15, timestamp: Date()),
-            EventPhoto(id: "6", imageURL: nil, likes: 12, timestamp: Date())
-        ]
+        // Simulate loading delay for better UX
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            print("📊 HomeView: Loading mock data...")
+            
+            // Load recommended users (mock data)
+            recommendedUsers = [
+                RecommendedUser(id: "1", name: "Alice", rank: 1, score: 9.8, avatarURL: nil),
+                RecommendedUser(id: "2", name: "Bob", rank: 2, score: 9.5, avatarURL: nil),
+                RecommendedUser(id: "3", name: "Charlie", rank: 3, score: 9.2, avatarURL: nil),
+                RecommendedUser(id: "4", name: "Diana", rank: 4, score: 8.9, avatarURL: nil),
+                RecommendedUser(id: "5", name: "Eve", rank: 5, score: 8.7, avatarURL: nil)
+            ]
+            
+            // Load event photos (mock data)
+            eventPhotos = [
+                EventPhoto(id: "1", imageURL: nil, likes: 45, timestamp: Date()),
+                EventPhoto(id: "2", imageURL: nil, likes: 32, timestamp: Date()),
+                EventPhoto(id: "3", imageURL: nil, likes: 28, timestamp: Date()),
+                EventPhoto(id: "4", imageURL: nil, likes: 19, timestamp: Date()),
+                EventPhoto(id: "5", imageURL: nil, likes: 15, timestamp: Date()),
+                EventPhoto(id: "6", imageURL: nil, likes: 12, timestamp: Date())
+            ]
+            
+            print("✅ HomeView: Mock data loaded, showing UI...")
+            withAnimation(.easeInOut(duration: 0.3)) {
+                isLoaded = true
+            }
+        }
     }
 }
 
@@ -286,11 +328,16 @@ struct EventPhotoCard: View {
         }
         .buttonStyle(PlainButtonStyle())
         .scaleEffect(isPressed ? 0.95 : 1.0)
-        .animation(.easeInOut(duration: 0.1), value: isPressed)
-        .onLongPressGesture(minimumDuration: 0) { pressing in
-            isPressed = pressing
-        } perform: {
-            // Long press action
+        .onTapGesture {
+            withAnimation(.easeInOut(duration: 0.1)) {
+                isPressed = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    isPressed = false
+                }
+                onTap()
+            }
         }
     }
     

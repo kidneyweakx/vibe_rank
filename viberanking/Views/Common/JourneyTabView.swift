@@ -12,14 +12,28 @@ struct JourneyTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @StateObject private var viewModel = JourneyViewModel()
     @State private var showingPaywall = false
+    @State private var isLoaded = false
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                Color.black.ignoresSafeArea()
-                
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                mainContent
+            }
+        } else {
+            NavigationView {
+                mainContent
+            }
+            .navigationViewStyle(StackNavigationViewStyle())
+        }
+    }
+    
+    private var mainContent: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            
+            if isLoaded {
                 ScrollView {
-                    VStack(spacing: 24) {
+                    LazyVStack(spacing: 24) {
                         // 標題
                         HStack {
                             Text("風格歷程")
@@ -34,7 +48,7 @@ struct JourneyTabView: View {
                         achievementBadge
                         
                         // 圖表
-                        materialChartView
+                        simplifiedChartView
                         
                         // 統計卡片
                         statsGrid
@@ -45,19 +59,63 @@ struct JourneyTabView: View {
                     .padding(.top, 20)
                     .padding(.bottom, 100)
                 }
+            } else {
+                // Loading state
+                VStack {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(1.2)
+                    
+                    Text("載入風格數據...")
+                        .foregroundColor(.white.opacity(0.7))
+                        .padding(.top, 16)
+                }
             }
-            .navigationBarHidden(true)
         }
+        .navigationBarHidden(true)
         .sheet(isPresented: $showingPaywall) {
             PaywallView(isPresented: $showingPaywall)
         }
-        .task {
-            if let userId = authViewModel.user?.id {
-                await viewModel.loadUserJourney(userId: userId)
-            }
+        .onAppear {
+            loadDataIfNeeded()
         }
-        .refreshable {
-            await viewModel.refreshData()
+    }
+    
+    private func loadDataIfNeeded() {
+        guard !isLoaded else { return }
+        
+        print("🔄 JourneyTabView: Starting to load data...")
+        
+        if let userId = authViewModel.user?.id {
+            print("👤 JourneyTabView: Loading data for user: \(userId)")
+            Task {
+                do {
+                    await viewModel.loadUserJourney(userId: userId)
+                    await MainActor.run {
+                        print("✅ JourneyTabView: Data loaded successfully")
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isLoaded = true
+                        }
+                    }
+                } catch {
+                    print("❌ JourneyTabView: Error loading data: \(error)")
+                    await MainActor.run {
+                        // Still show the view with mock data
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isLoaded = true
+                        }
+                    }
+                }
+            }
+        } else {
+            print("🔄 JourneyTabView: No user found, loading with mock data")
+            // Load with mock data if no user
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                print("✅ JourneyTabView: Mock data loaded")
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isLoaded = true
+                }
+            }
         }
     }
     
@@ -131,7 +189,7 @@ struct JourneyTabView: View {
         }
     }
     
-    private var materialChartView: some View {
+    private var simplifiedChartView: some View {
         VStack(spacing: 16) {
             // 圖表標題
             HStack {
@@ -139,120 +197,67 @@ struct JourneyTabView: View {
                     .font(.headline)
                     .foregroundColor(.white)
                 Spacer()
-                Text("過去30天")
+                Text("過去7天")
                     .font(.caption)
                     .foregroundColor(.gray)
             }
             .padding(.horizontal, 20)
             
-            // Material Design 圖表
-            VStack(spacing: 0) {
-                // Y軸刻度
-                HStack {
-                    VStack(alignment: .trailing, spacing: 0) {
-                        ForEach([100, 75, 50, 25, 0], id: \.self) { value in
-                            HStack {
-                                Text("\(value)")
-                                    .font(.caption2)
-                                    .foregroundColor(.gray)
-                                    .frame(width: 20, alignment: .trailing)
-                                
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.2))
-                                    .frame(height: 0.5)
-                            }
-                            .frame(height: value == 0 ? 0 : 36)
-                        }
-                    }
-                }
-                .frame(height: 180)
-                
-                // X軸刻度
-                HStack {
-                    Spacer().frame(width: 24)
-                    HStack {
-                        ForEach(0..<7) { index in
-                            Text("W\(index + 1)")
-                                .font(.caption2)
-                                .foregroundColor(.gray)
-                                .frame(maxWidth: .infinity)
-                        }
-                    }
-                }
-                .padding(.top, 8)
-            }
-            .overlay(
-                // 圖表內容
-                GeometryReader { geometry in
-                    let width = geometry.size.width - 24
-                    let height: CGFloat = 180
-                    let chartData = viewModel.chartData.isEmpty ? 
-                        [0.3, 0.5, 0.4, 0.7, 0.6, 0.8, 0.75] : 
-                        viewModel.chartData.map { CGFloat($0.score / 100.0) }
-                    
-                    if !chartData.isEmpty {
-                        let stepX = width / CGFloat(chartData.count - 1)
+            // 簡化的圖表
+            VStack(spacing: 12) {
+                // 圖表區域
+                HStack(alignment: .bottom, spacing: 8) {
+                    ForEach(0..<7, id: \.self) { index in
+                        let height = getBarHeight(for: index)
+                        let color = getBarColor(for: index)
                         
-                        // 區塊背景
-                        ForEach(Array(chartData.enumerated()), id: \.offset) { index, value in
-                            let x = CGFloat(index) * stepX + 24
-                            let barHeight = value * height
+                        VStack(spacing: 4) {
+                            // 數值標籤
+                            Text("\(Int(height * 100))")
+                                .font(.caption2)
+                                .foregroundColor(.white.opacity(0.8))
+                                .opacity(height > 0.1 ? 1 : 0)
                             
+                            // 柱狀圖
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(
                                     LinearGradient(
-                                        colors: [
-                                            Color.cyan.opacity(0.6),
-                                            Color.blue.opacity(0.3)
-                                        ],
+                                        colors: [color.opacity(0.8), color.opacity(0.4)],
                                         startPoint: .top,
                                         endPoint: .bottom
                                     )
                                 )
-                                .frame(width: 20, height: barHeight)
-                                .position(x: x, y: height - barHeight/2)
-                        }
-                        
-                        // 連接線
-                        Path { path in
-                            for (index, value) in chartData.enumerated() {
-                                let x = CGFloat(index) * stepX + 24
-                                let y = height - (value * height)
-                                
-                                if index == 0 {
-                                    path.move(to: CGPoint(x: x, y: y))
-                                } else {
-                                    path.addLine(to: CGPoint(x: x, y: y))
-                                }
-                            }
-                        }
-                        .stroke(
-                            LinearGradient(
-                                colors: [.cyan, .blue],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            ),
-                            style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
-                        )
-                        
-                        // 數據點
-                        ForEach(Array(chartData.enumerated()), id: \.offset) { index, value in
-                            let x = CGFloat(index) * stepX + 24
-                            let y = height - (value * height)
+                                .frame(width: 32, height: max(8, height * 120))
+                                .animation(.easeInOut(duration: 0.6).delay(Double(index) * 0.1), value: height)
                             
-                            Circle()
-                                .fill(Color.white)
-                                .frame(width: 8, height: 8)
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color.cyan, lineWidth: 2)
-                                )
-                                .position(x: x, y: y)
+                            // 日期標籤
+                            Text("W\(index + 1)")
+                                .font(.caption2)
+                                .foregroundColor(.gray)
                         }
                     }
                 }
-            )
-            .padding(.horizontal, 20)
+                .frame(height: 160)
+                .padding(.horizontal, 16)
+                
+                // 趨勢指示器
+                HStack {
+                    Image(systemName: "arrow.up.right")
+                        .foregroundColor(.green)
+                        .font(.caption)
+                    
+                    Text("整體趨勢向上")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                    
+                    Spacer()
+                    
+                    Text("平均分數: \(String(format: "%.1f", viewModel.overallPerformance))")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
+                }
+                .padding(.horizontal, 16)
+            }
             .padding(.vertical, 16)
             .background(
                 RoundedRectangle(cornerRadius: 16)
@@ -266,12 +271,31 @@ struct JourneyTabView: View {
         }
     }
     
+    private func getBarHeight(for index: Int) -> CGFloat {
+        let mockData: [CGFloat] = [0.3, 0.5, 0.4, 0.7, 0.6, 0.8, 0.75]
+        return mockData[index]
+    }
+    
+    private func getBarColor(for index: Int) -> Color {
+        let height = getBarHeight(for: index)
+        switch height {
+        case 0.0..<0.3:
+            return .red
+        case 0.3..<0.5:
+            return .orange
+        case 0.5..<0.7:
+            return .yellow
+        default:
+            return .green
+        }
+    }
+    
     private var statsGrid: some View {
         VStack(spacing: 16) {
             // 整體表現
             StatCards(
                 title: "整體表現", 
-                value: String(format: "%.0f%%", viewModel.overallPerformance), 
+                value: String(format: "%.0f%%", max(0, min(100, viewModel.overallPerformance))), 
                 color: .cyan, 
                 icon: "chart.line.uptrend.xyaxis"
             )
@@ -280,13 +304,13 @@ struct JourneyTabView: View {
             HStack(spacing: 16) {
                 StatCards(
                     title: "女性吸引力", 
-                    value: String(format: "%.1f", viewModel.femaleAttraction / 10), 
+                    value: String(format: "%.1f", max(0, min(10, viewModel.femaleAttraction / 10))), 
                     color: .pink, 
                     icon: "heart.fill"
                 )
                 StatCards(
                     title: "男性吸引力", 
-                    value: String(format: "%.1f", viewModel.maleAttraction / 10), 
+                    value: String(format: "%.1f", max(0, min(10, viewModel.maleAttraction / 10))), 
                     color: .blue, 
                     icon: "star.fill"
                 )
@@ -303,20 +327,18 @@ struct JourneyTabView: View {
                     Spacer()
                 }
                 
-                if let stats = viewModel.userStats {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("❤️ 獲得: \(stats.likeCount)")
-                                .foregroundColor(.white)
-                            Spacer()
-                            Text("🔄 獲得: \(stats.normalCount)")
-                                .foregroundColor(.white)
-                        }
-                        
-                        Text("總評分: \(stats.totalRatings)")
-                            .font(.caption)
-                            .foregroundColor(.gray)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("❤️ 獲得: \(viewModel.userStats?.likeCount ?? 0)")
+                            .foregroundColor(.white)
+                        Spacer()
+                        Text("🔄 獲得: \(viewModel.userStats?.normalCount ?? 0)")
+                            .foregroundColor(.white)
                     }
+                    
+                    Text("總評分: \(viewModel.userStats?.totalRatings ?? 0)")
+                        .font(.caption)
+                        .foregroundColor(.gray)
                 }
             }
             .padding(16)
