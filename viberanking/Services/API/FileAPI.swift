@@ -78,6 +78,20 @@ class FileAPI {
         }
     }
     
+    /// Get signed download URL for a storage key (for private buckets)
+    func getSignedDownloadURL(key: String, expiresInSeconds: Int = 600) async throws -> URL {
+        struct SignedURLResponse: Codable { let url: String }
+        let response: APIResponse<SignedURLResponse> = try await apiClient.performRequest(
+            endpoint: "/api/file/signed-url?key=\(key.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? key)&expires=\(expiresInSeconds)",
+            method: .GET,
+            responseType: APIResponse<SignedURLResponse>.self
+        )
+        guard response.success, let url = URL(string: response.data.url) else {
+            throw APIError.serverError(400)
+        }
+        return url
+    }
+
     /// Verify file exists
     func verifyFile(key: String) async throws -> Bool {
         let endpoint = "/api/file/verify/\(key)"

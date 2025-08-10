@@ -27,6 +27,8 @@ class PhotoRatingViewModel: BaseViewModel {
     // MARK: - Private Properties
     private let rateAPI = RateAPI()
     private var cancellables = Set<AnyCancellable>()
+    private let r2UrlBuilder = R2PhotoURLBuilder()
+    private let r2ImageService = R2ImageService.shared
     private var currentUserId: String = ""
     
     // Preloading configuration
@@ -72,15 +74,9 @@ class PhotoRatingViewModel: BaseViewModel {
                 // Fetch random photos for rating from API
                 let response = try await self.rateAPI.getRandomPhotos(userId: userId, limit: 20)
                 
-                // Convert RatingPhoto to Photo model; use API-provided URL for loading
-                self.photos = response.data.map { ratingPhoto in
-                    let photoUrls = PhotoURLs(original: ratingPhoto.url)
-                    return Photo(
-                        id: ratingPhoto.id,
-                        userId: ratingPhoto.userId,
-                        imageURL: photoUrls
-                    )
-                }
+                // Build photos resolving signed URLs when needed
+                let built = try await self.buildPhotosResolvingURLs(from: response.data)
+                self.photos = built
                 
                 self.currentPhotoIndex = 0
                 
@@ -227,14 +223,7 @@ private extension PhotoRatingViewModel {
         await performAsyncTask {
             let response = try await self.rateAPI.getRandomPhotos(userId: self.currentUserId, limit: 10)
             
-            let newPhotos = response.data.map { ratingPhoto in
-                let photoUrls = PhotoURLs(original: ratingPhoto.url)
-                return Photo(
-                    id: ratingPhoto.id,
-                    userId: ratingPhoto.userId,
-                    imageURL: photoUrls
-                )
-            }
+            let newPhotos = try await self.buildPhotosResolvingURLs(from: response.data)
             
             self.photos.append(contentsOf: newPhotos)
         }
@@ -252,6 +241,40 @@ private extension PhotoRatingViewModel {
         
         await MainActor.run {
             ImageCache.shared.preloadImages(urls: urlsToPreload)
+        }
+    }
+
+    /// Build `Photo` array resolving signed URLs for private S3 endpoints
+    func buildPhotosResolvingURLs(from items: [RatingPhoto]) async throws -> [Photo] {
+        // Resolve signed URL in parallel for entries with key
+        return try await withThrowingTaskGroup(of: Photo.self) { group in
+            for ratingPhoto in items {
+                group.addTask { [r2UrlBuilder, r2ImageService] in
+                    let urls: PhotoURLs
+                    if let key = ratingPhoto.key, !key.isEmpty {
+                        if AppConfiguration.R2.publicDomain.contains("r2.cloudflarestorage.com") {
+                            // Resolve a signed URL for original
+                            let signedURL = await r2ImageService.resolveLoadableURL(for: key)
+                            urls = PhotoURLs(original: signedURL.absoluteString)
+                        } else {
+                            urls = r2UrlBuilder.buildURLs(forKey: key)
+                        }
+                    } else {
+                        urls = PhotoURLs(original: ratingPhoto.url)
+                    }
+                    return Photo(
+                        id: ratingPhoto.id,
+                        userId: ratingPhoto.userId,
+                        imageURL: urls
+                    )
+                }
+            }
+            var results: [Photo] = []
+            results.reserveCapacity(items.count)
+            for try await photo in group {
+                results.append(photo)
+            }
+            return results
         }
     }
 }

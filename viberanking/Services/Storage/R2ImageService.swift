@@ -28,6 +28,9 @@ protocol R2ImageServiceProtocol {
     
     /// Preload multiple image keys into URLSession cache.
     func preload(keys: [String], variant: R2ImageVariant?) async
+
+    /// Resolve a loadable URL for a key, using signed URL for private endpoints if needed.
+    func resolveLoadableURL(for key: String) async -> URL
 }
 
 // MARK: - R2 Image Service Implementation
@@ -40,17 +43,28 @@ final class R2ImageService: R2ImageServiceProtocol {
     
     // MARK: - URL Builder
     func makePublicURL(for key: String, variant: R2ImageVariant?) -> URL {
-        // Public domain is expected to be mapped to the bucket via CDN/Worker.
-        // Example: https://cdn.viberanking.com/<key>?variant=preview
-        let base = AppConfiguration.R2.publicDomain
-        var urlString = base.hasPrefix("http") ? base : "https://\(base)"
+        // Build from configured public domain. Support both CDN/custom domain and
+        // S3-compatible public endpoint (r2.cloudflarestorage.com).
+        var base = AppConfiguration.R2.publicDomain
+        base = base.hasPrefix("http") ? base : "https://\(base)"
+
+        // If using S3 endpoint, ensure bucket segment is present: /<bucket>/<key>
+        if base.contains("r2.cloudflarestorage.com") {
+            let bucket = AppConfiguration.R2.bucketName
+            if !base.hasSuffix("/\(bucket)") && !base.contains("/\(bucket)/") {
+                base = base.hasSuffix("/") ? base + bucket : base + "/\(bucket)"
+            }
+        }
+
+        var urlString = base
         if !urlString.hasSuffix("/") { urlString += "/" }
         urlString += key
-        
-        if let variant = variant, variant != .original {
+
+        // Only append variant for CDN/worker domains that implement it
+        if let variant = variant, variant != .original, !base.contains("r2.cloudflarestorage.com") {
             urlString += "?variant=\(variant.rawValue)"
         }
-        
+
         logger.debug("R2 makePublicURL -> \(urlString)")
         guard let url = URL(string: urlString) else {
             fatalError("Failed to construct R2 public URL for key: \(key)")
@@ -91,6 +105,46 @@ final class R2ImageService: R2ImageServiceProtocol {
                     }
                 }
             }
+        }
+    }
+
+    // MARK: - Resolve Loadable URL
+    func resolveLoadableURL(for key: String) async -> URL {
+        // If using the S3 endpoint, prefer signed URL; otherwise public URL should work
+        if AppConfiguration.R2.publicDomain.contains("r2.cloudflarestorage.com") {
+            do {
+                // 1) Try backend-signed URL
+                let signed = try await FileAPI().getSignedDownloadURL(key: key)
+                logger.debug("🔐 Using signed URL for key: \(key)")
+                return signed
+            } catch {
+                logger.error("❌ Backend signing failed: \(error.localizedDescription). Trying client presign.")
+                // 2) As a fallback (dev-only), try client-side presign using Storage-Info
+                let accessKey = AppConfiguration.R2.accessKey
+                let secretKey = AppConfiguration.R2.secretKey
+                let bucket = AppConfiguration.R2.bucketName
+                // Host should be pure host without protocol
+                let host = AppConfiguration.R2.publicDomain
+                    .replacingOccurrences(of: "https://", with: "")
+                    .replacingOccurrences(of: "http://", with: "")
+                    .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+                let presigner = S3Presigner(config: .init(
+                    accessKeyId: accessKey,
+                    secretAccessKey: secretKey,
+                    region: "auto",
+                    service: "s3",
+                    endpointHost: host,
+                    bucket: bucket
+                ))
+                if let url = presigner.presignGET(objectKey: key, expires: 600) {
+                    logger.debug("🧪 Using client presigned URL for key: \(key)")
+                    return url
+                }
+                logger.error("❌ Client presign also failed. Falling back to public URL.")
+                return makePublicURL(for: key, variant: nil)
+            }
+        } else {
+            return makePublicURL(for: key, variant: nil)
         }
     }
 }
