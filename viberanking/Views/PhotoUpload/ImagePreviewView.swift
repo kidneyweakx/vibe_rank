@@ -18,6 +18,10 @@ struct ImagePreviewView: View {
     @State private var showingCropView = false
     @State private var uploadError: String?
     @State private var uploadSuccess = false
+    @State private var showingTagSelector = false
+    @State private var selectedTagIds: Set<String> = []
+    @State private var selectedTags: [Tag] = []
+    private let tagsAPI = TagsAPI()
     
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @Environment(\.dismiss) private var dismiss
@@ -31,9 +35,9 @@ struct ImagePreviewView: View {
         NavigationView {
             ZStack {
                 Color.black.ignoresSafeArea()
-                
+
                 VStack(spacing: 20) {
-                    // 圖片預覽區域
+                    // 預覽區
                     ZStack {
                         let displayImage = croppedImage ?? image
                         Image(uiImage: displayImage)
@@ -41,66 +45,106 @@ struct ImagePreviewView: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(maxHeight: UIScreen.main.bounds.height * 0.6)
                             .cornerRadius(12)
-                        
+
                         if isUploading {
                             Color.black.opacity(0.5)
                                 .cornerRadius(12)
-                            
+
                             VStack(spacing: 16) {
                                 ProgressView(value: uploadProgress)
-                                    .progressViewStyle(LinearProgressViewStyle(tint: .white))
+                                    .progressViewStyle(LinearProgressViewStyle())
+                                    .tint(.white)
                                     .frame(width: 200)
-                                
+
                                 Text("上傳中... \(Int(uploadProgress * 100))%")
                                     .foregroundColor(.white)
                                     .font(.subheadline)
                             }
                         }
                     }
-                    
+
                     Spacer()
-                    
-                    // 操作按鈕
+
+                    // 標籤與操作
                     if !isUploading {
-                        HStack(spacing: 20) {
-                            // 裁切按鈕
-                            Button {
-                                print("🔧 裁切按鈕被點擊")
-                                print("🔧 當前 showingCropView: \(showingCropView)")
-                                showingCropView = true
-                                print("🔧 設置後 showingCropView: \(showingCropView)")
-                            } label: {
-                                VStack(spacing: 8) {
-                                    Image(systemName: "crop")
-                                        .font(.title2)
-                                    Text("裁切")
-                                        .font(.caption)
+                        VStack(spacing: 16) {
+                            // 標籤選擇
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Tags")
+                                    .foregroundColor(.white.opacity(0.8))
+                                    .font(.caption)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 8) {
+                                        if selectedTags.isEmpty {
+                                            Text("Select up to 10 tags")
+                                                .foregroundColor(.white.opacity(0.5))
+                                                .font(.caption)
+                                        } else {
+                                            ForEach(selectedTags, id: \.id) { tag in
+                                                TagChipView(tag: tag, isSelected: true, onTap: {})
+                                            }
+                                        }
+                                    }
+                                    .padding(.horizontal, 2)
                                 }
-                                .foregroundColor(.white)
-                                .frame(width: 60, height: 60)
-                                .background(Color.gray.opacity(0.3))
-                                .cornerRadius(30)
-                            }
-                            
-                            Spacer()
-                            
-                            // 上傳按鈕
-                            Button {
-                                uploadImage()
-                            } label: {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "arrow.up.circle.fill")
-                                        .font(.title2)
-                                    Text(croppedImage == nil ? "請先裁切" : "上傳")
-                                        .font(.headline)
+
+                                Button {
+                                    showingTagSelector = true
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "tag")
+                                        Text("Choose Tags")
+                                            .font(.subheadline)
+                                    }
+                                    .foregroundColor(.white)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
+                                    .background(Color.white.opacity(0.15))
+                                    .cornerRadius(12)
                                 }
-                                .foregroundColor(.white)
-                                .frame(height: 50)
-                                .frame(maxWidth: .infinity)
-                                .background(croppedImage == nil ? Color.gray : Color.blue)
-                                .cornerRadius(25)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            .disabled(croppedImage == nil)
+
+                            // 操作按鈕列
+                            HStack(spacing: 20) {
+                                // 裁切
+                                Button {
+                                    showingCropView = true
+                                } label: {
+                                    VStack(spacing: 8) {
+                                        Image(systemName: "crop")
+                                            .font(.title2)
+                                        Text("裁切")
+                                            .font(.caption)
+                                    }
+                                    .foregroundColor(.white)
+                                    .frame(width: 60, height: 60)
+                                    .background(Color.gray.opacity(0.3))
+                                    .cornerRadius(30)
+                                }
+
+                                Spacer()
+
+                                // 上傳
+                                Button {
+                                    uploadImage()
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "arrow.up.circle.fill")
+                                            .font(.title2)
+                                        Text(croppedImage == nil ? "請先裁切" : "上傳")
+                                            .font(.headline)
+                                    }
+                                    .foregroundColor(.white)
+                                    .frame(height: 50)
+                                    .frame(maxWidth: .infinity)
+                                    .background(croppedImage == nil ? Color.gray : Color.blue)
+                                    .cornerRadius(25)
+                                }
+                                .disabled(croppedImage == nil)
+                            }
                         }
                         .padding(.horizontal, 20)
                         .padding(.bottom, 40)
@@ -118,12 +162,17 @@ struct ImagePreviewView: View {
                 }
             }
         }
+        .sheet(isPresented: $showingTagSelector) {
+            TagSelectorSheet { ids in
+                selectedTagIds = ids
+                Task { await fetchSelectedTags() }
+            }
+        }
         .onAppear {
             print("🎯 ImagePreviewView 顯示 - 圖片尺寸: \(image.size)")
         }
         .sheet(isPresented: $showingCropView) {
             ImageCropView(image: croppedImage ?? image) { croppedResult in
-                print("✅ 裁切完成，獲得新圖片")
                 croppedImage = croppedResult
             }
         }
@@ -135,9 +184,7 @@ struct ImagePreviewView: View {
                 uploadError = nil
             }
         } message: {
-            if let error = uploadError {
-                Text(error)
-            }
+            if let error = uploadError { Text(error) }
         }
         .alert("上傳成功", isPresented: $uploadSuccess) {
             Button("確定") {
@@ -149,7 +196,7 @@ struct ImagePreviewView: View {
         }
     }
     
-    private func uploadImage() {
+    func uploadImage() {
         // 檢查是否已裁切為直板
         if croppedImage == nil {
             uploadError = "請先裁切圖片為直板後再上傳"
@@ -183,7 +230,10 @@ struct ImagePreviewView: View {
                 }
                 
                 print("📤 調用 PhotoUploadService.uploadPhoto")
-                let _ = try await photoUploadService.uploadPhoto(imageToUpload, for: userId)
+                let uploaded = try await photoUploadService.uploadPhoto(imageToUpload, for: userId)
+                if !selectedTagIds.isEmpty {
+                    _ = try? await tagsAPI.attachTags(to: uploaded.id, tagIds: Array(selectedTagIds))
+                }
                 print("✅ 上傳完成")
                 
                 await MainActor.run {
@@ -197,6 +247,19 @@ struct ImagePreviewView: View {
                     uploadError = error.localizedDescription
                 }
             }
+        }
+    }
+
+    func fetchSelectedTags() async {
+        guard !selectedTagIds.isEmpty else {
+            await MainActor.run { selectedTags = [] }
+            return
+        }
+        do {
+            let response = try await tagsAPI.searchTags(by: Array(selectedTagIds))
+            await MainActor.run { selectedTags = response.data }
+        } catch {
+            await MainActor.run { selectedTags = [] }
         }
     }
 }

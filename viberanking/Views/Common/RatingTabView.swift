@@ -60,6 +60,19 @@ struct RatingTabView: View {
             // Action buttons overlay
             VStack {
                 Spacer()
+                // Tags overlay above buttons (bottom-left)
+                if !viewModel.currentTags.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(viewModel.currentTags, id: \.id) { tag in
+                                TagChipView(tag: tag, isSelected: false, onTap: {})
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, 8)
+                }
                 actionButtonsView
                     .padding(.bottom, isVibeMode ? 50 : 120) // 在非 vibe 模式下留更多空間給 tab bar
             }

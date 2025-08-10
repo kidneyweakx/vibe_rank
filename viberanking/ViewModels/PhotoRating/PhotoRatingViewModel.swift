@@ -23,9 +23,11 @@ class PhotoRatingViewModel: BaseViewModel {
     @Published var showRatingFeedback: Bool = false
     @Published var lastRatingType: RatingType = .normal
     @Published var showUnlockCelebration: Bool = false
+    @Published var currentTags: [Tag] = []
     
     // MARK: - Private Properties
     private let rateAPI = RateAPI()
+    private let tagsAPI = TagsAPI()
     private var cancellables = Set<AnyCancellable>()
     private let r2UrlBuilder = R2PhotoURLBuilder()
     private let r2ImageService = R2ImageService.shared
@@ -79,6 +81,7 @@ class PhotoRatingViewModel: BaseViewModel {
                 self.photos = built
                 
                 self.currentPhotoIndex = 0
+                await self.fetchTagsForCurrentPhoto()
                 
                 // Start preloading images
                 await self.preloadImages()
@@ -211,10 +214,12 @@ private extension PhotoRatingViewModel {
     func moveToNextPhoto() async {
         if hasMorePhotos {
             currentPhotoIndex += 1
+            await fetchTagsForCurrentPhoto()
             await preloadImages()
         } else {
             // Load more photos if needed
             await loadMorePhotos()
+            await fetchTagsForCurrentPhoto()
         }
     }
     
@@ -241,6 +246,20 @@ private extension PhotoRatingViewModel {
         
         await MainActor.run {
             ImageCache.shared.preloadImages(urls: urlsToPreload)
+        }
+    }
+
+    /// Fetch tags for the current photo
+    func fetchTagsForCurrentPhoto() async {
+        guard let photo = currentPhoto else {
+            await MainActor.run { self.currentTags = [] }
+            return
+        }
+        do {
+            let response = try await tagsAPI.getTagsForPhoto(photoId: photo.id)
+            await MainActor.run { self.currentTags = response.data }
+        } catch {
+            await MainActor.run { self.currentTags = [] }
         }
     }
 

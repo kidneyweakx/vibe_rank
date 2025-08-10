@@ -146,7 +146,7 @@ enum AppEnvironment {
     var baseURL: String {
         switch self {
         case .development:
-            return "http://localhost:8181"
+            return "https://vibe-backend.kidneyweakx.workers.dev"
         case .staging:
             return "https://vibe-backend.kidneyweakx.workers.dev"
         case .production:
