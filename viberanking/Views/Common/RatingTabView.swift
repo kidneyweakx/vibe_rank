@@ -34,10 +34,10 @@ struct RatingTabView: View {
                 emptyStateView
             }
             
-            // Top overlay with exit button (only in vibe mode)
-            if isVibeMode {
-                VStack {
-                    HStack {
+            // Top overlay with optional back button and user name
+            VStack {
+                HStack {
+                    if isVibeMode {
                         Button {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 isVibeMode = false
@@ -48,15 +48,23 @@ struct RatingTabView: View {
                                 .foregroundColor(.white.opacity(0.8))
                         }
                         .padding(.leading, 20)
-                        
-                        Spacer()
                     }
-                    .padding(.top, 60) // 增加頂部間距，避免超出安全區域
-                    
                     Spacer()
+                    Text(viewModel.currentPhotoUserName)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                    Spacer()
+                    // Right spacer to balance back button
+                    if isVibeMode {
+                        Color.clear.frame(width: 38, height: 1)
+                    }
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                .padding(.top, 60) // 避免超出安全區域
+                Spacer()
             }
+            .zIndex(1000)
+            .transition(.opacity.combined(with: .move(edge: .top)))
             
             // Action buttons overlay
             VStack {
@@ -77,6 +85,7 @@ struct RatingTabView: View {
                 actionButtonsView
                     .padding(.bottom, 120) // 保留足夠空間給 tab bar
             }
+            .zIndex(1000)
             .transition(.opacity.combined(with: .move(edge: .bottom)))
             
 
@@ -100,9 +109,12 @@ struct RatingTabView: View {
 private extension RatingTabView {
     
     var cardStackView: some View {
-        ZStack {
-            ForEach(viewModel.photos.indices, id: \.self) { index in
-                photoCard(photo: viewModel.photos[index], index: index)
+        GeometryReader { proxy in
+            ZStack {
+                if let photo = viewModel.currentPhoto {
+                    photoCard(photo: photo, index: viewModel.currentPhotoIndex)
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                }
             }
         }
         .ignoresSafeArea()
@@ -113,81 +125,86 @@ private extension RatingTabView {
         let urlString = photo.imageURL.bestAvailableURL
         
         return ZStack {
-            // Full screen photo
-            AsyncImage(url: URL(string: urlString)) { phase in
-                switch phase {
-                case .empty:
-                    ZStack {
-                        Color.gray.opacity(0.3)
-                        VStack(spacing: AppTheme.Spacing.sm) {
-                            Text("📷").font(.system(size: 60))
-                            Text("載入中...")
-                                .font(AppTheme.Typography.body)
-                                .foregroundColor(.white)
-                            ProgressView().tint(.white)
+            // 16:9 Card container
+            ZStack {
+                AsyncImage(url: URL(string: urlString)) { phase in
+                    switch phase {
+                    case .empty:
+                        ZStack {
+                            Color.gray.opacity(0.3)
+                            VStack(spacing: AppTheme.Spacing.sm) {
+                                Text("📷").font(.system(size: 60))
+                                Text("載入中...")
+                                    .font(AppTheme.Typography.body)
+                                    .foregroundColor(.white)
+                                ProgressView().tint(.white)
+                            }
                         }
-                    }
-                    .onAppear {
-                        imageLoadStartTimes[urlString] = Date()
-                        ratingLogger.debug("Image load start [index=\(index)] [photoId=\(photo.id)] url=\(urlString)")
-                    }
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .clipped()
+                        .onAppear {
+                            imageLoadStartTimes[urlString] = Date()
+                            ratingLogger.debug("Image load start [index=\(index)] [photoId=\(photo.id)] url=\(urlString)")
+                        }
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .clipped()
+                            .onAppear {
+                                let elapsedMs = finishImageLoad(for: urlString)
+                                if let elapsedMs {
+                                    ratingLogger.debug("Image load success [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=\(elapsedMs)ms")
+                                } else {
+                                    ratingLogger.debug("Image load success [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=unknown")
+                                }
+                            }
+                    case .failure(let error):
+                        ZStack {
+                            Color.gray.opacity(0.3)
+                            VStack(spacing: AppTheme.Spacing.sm) {
+                                Text("⚠️").font(.system(size: 60))
+                                Text("無法載入圖片")
+                                    .font(AppTheme.Typography.body)
+                                    .foregroundColor(.white)
+                            }
+                        }
                         .onAppear {
                             let elapsedMs = finishImageLoad(for: urlString)
                             if let elapsedMs {
-                                ratingLogger.debug("Image load success [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=\(elapsedMs)ms")
+                                ratingLogger.error("Image load failure [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=\(elapsedMs)ms error=\(error.localizedDescription)")
                             } else {
-                                ratingLogger.debug("Image load success [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=unknown")
+                                ratingLogger.error("Image load failure [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=unknown error=\(error.localizedDescription)")
                             }
                         }
-                case .failure(let error):
-                    ZStack {
+                    @unknown default:
                         Color.gray.opacity(0.3)
-                        VStack(spacing: AppTheme.Spacing.sm) {
-                            Text("⚠️").font(.system(size: 60))
-                            Text("無法載入圖片")
-                                .font(AppTheme.Typography.body)
-                                .foregroundColor(.white)
-                        }
-                    }
-                    .onAppear {
-                        let elapsedMs = finishImageLoad(for: urlString)
-                        if let elapsedMs {
-                            ratingLogger.error("Image load failure [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=\(elapsedMs)ms error=\(error.localizedDescription)")
-                        } else {
-                            ratingLogger.error("Image load failure [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=unknown error=\(error.localizedDescription)")
-                        }
-                    }
-                @unknown default:
-                    Color.gray.opacity(0.3)
-                        .onAppear {
-                            let elapsedMs = finishImageLoad(for: urlString)
-                            if let elapsedMs {
-                                ratingLogger.error("Image load unknown phase [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=\(elapsedMs)ms")
-                            } else {
-                                ratingLogger.error("Image load unknown phase [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=unknown")
+                            .onAppear {
+                                let elapsedMs = finishImageLoad(for: urlString)
+                                if let elapsedMs {
+                                    ratingLogger.error("Image load unknown phase [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=\(elapsedMs)ms")
+                                } else {
+                                    ratingLogger.error("Image load unknown phase [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=unknown")
+                                }
                             }
-                        }
+                    }
                 }
             }
+            .frame(maxWidth: .infinity)
+            .aspectRatio(16/9, contentMode: .fit)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 6)
             
             // Swipe indicators
             if isTopCard {
                 swipeIndicators
             }
         }
-        .offset(x: isTopCard ? currentCardOffset.width : 0, y: 0)
-        .scaleEffect(isTopCard ? 1.0 : 0.95)
-        .rotationEffect(.degrees(isTopCard ? Double(currentCardOffset.width) / 25.0 : 0))
-        .offset(y: CGFloat(index - viewModel.currentPhotoIndex) * 5)
-        .zIndex(Double(viewModel.photos.count - index))
+        .offset(x: currentCardOffset.width, y: 0)
+        .scaleEffect(1.0)
+        .rotationEffect(.degrees(Double(currentCardOffset.width) / 25.0))
+        .zIndex(10)
         .gesture(
-            isTopCard ? DragGesture()
+            DragGesture()
                 .onChanged { value in
                     withAnimation(.interactiveSpring(response: 0.3, dampingFraction: 0.8)) {
                         currentCardOffset = value.translation
@@ -195,9 +212,9 @@ private extension RatingTabView {
                 }
                 .onEnded { value in
                     handleSwipeEnd(value)
-                } : nil
+                }
         )
-        .allowsHitTesting(isTopCard)
+        .allowsHitTesting(true)
         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: currentCardOffset)
     }
     
@@ -228,20 +245,20 @@ private extension RatingTabView {
                 .scaleEffect(0.8 + min(Double(currentCardOffset.width) / 400, 0.2))
             }
             
-            // SKIP indicator (left)
+            // FIX indicator (left)
             if currentCardOffset.width < -30 {
                 VStack(spacing: 8) {
                     Circle()
                         .fill(.white.opacity(0.2))
                         .frame(width: 100, height: 100)
                         .overlay(
-                            Image(systemName: "xmark")
+                            Image(systemName: "wrench")
                                 .font(.system(size: 35, weight: .medium))
                                 .foregroundColor(.white)
                         )
                         .scaleEffect(1.0 + min(Double(-currentCardOffset.width) / 300, 0.3))
                     
-                    Text("SKIP")
+                    Text("FIX 🥲")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                         .padding(.horizontal, 16)
@@ -275,7 +292,7 @@ private extension RatingTabView {
             .scaleEffect(refreshButtonPressed ? 0.9 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: refreshButtonPressed)
             
-            // LIKE button (愛心 - 中間主要按鈕)
+            // VIBE button (火焰 - 中間主要按鈕)
             Button {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                     likeButtonPressed = true
@@ -291,9 +308,9 @@ private extension RatingTabView {
                     .fill(.white.opacity(0.2))
                     .frame(width: 70, height: 70)
                     .overlay(
-                        Image(systemName: "heart.fill")
+                        Image(systemName: "flame.fill")
                             .font(.system(size: 28, weight: .medium))
-                            .foregroundColor(.white.opacity(0.8))
+                            .foregroundColor(likeButtonPressed ? .orange : .white.opacity(0.8))
                     )
             }
             .disabled(viewModel.currentPhoto == nil)
@@ -301,7 +318,7 @@ private extension RatingTabView {
             .scaleEffect(likeButtonPressed ? 1.3 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.6), value: likeButtonPressed)
             
-            // SKIP button (跳過)
+            // FIX button (修正)
             Button {
                 skipPhoto()
             } label: {
@@ -309,7 +326,7 @@ private extension RatingTabView {
                     .fill(.white.opacity(0.15))
                     .frame(width: 50, height: 50)
                     .overlay(
-                        Image(systemName: "xmark")
+                        Image(systemName: "wrench")
                             .font(.system(size: 18, weight: .medium))
                             .foregroundColor(.white.opacity(0.9))
                     )

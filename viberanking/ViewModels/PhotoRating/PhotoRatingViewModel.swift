@@ -24,6 +24,7 @@ class PhotoRatingViewModel: BaseViewModel {
     @Published var lastRatingType: RatingType = .normal
     @Published var showUnlockCelebration: Bool = false
     @Published var currentTags: [Tag] = []
+    @Published var photoUserNames: [String: String] = [:] // photoId -> userName
     
     // MARK: - Private Properties
     private let rateAPI = RateAPI()
@@ -61,6 +62,11 @@ class PhotoRatingViewModel: BaseViewModel {
     var progressPercentage: Double {
         return ratingProgress.progressPercentage
     }
+
+    var currentPhotoUserName: String {
+        guard let id = currentPhoto?.id else { return "" }
+        return photoUserNames[id] ?? ""
+    }
     
     // MARK: - Initialization
     override init() {
@@ -80,6 +86,10 @@ class PhotoRatingViewModel: BaseViewModel {
                 // Build photos resolving signed URLs when needed
                 let built = try await self.buildPhotosResolvingURLs(from: response.data)
                 self.photos = built
+                // Map photoId to user name for display
+                var nameMap: [String: String] = [:]
+                for item in response.data { nameMap[item.id] = item.user.name }
+                self.photoUserNames = nameMap
                 
                 self.currentPhotoIndex = 0
                 await self.fetchTagsForCurrentPhoto()
@@ -253,6 +263,8 @@ private extension PhotoRatingViewModel {
                 let response = try await self.rateAPI.getRandomPhotos(userId: self.currentUserId, limit: 10)
                 let newPhotos = try await self.buildPhotosResolvingURLs(from: response.data)
                 self.photos.append(contentsOf: newPhotos)
+                // Extend name mapping for newly loaded items
+                for item in response.data { self.photoUserNames[item.id] = item.user.name }
             } catch {
                 // Append a few sample photos as a soft fallback
                 do {

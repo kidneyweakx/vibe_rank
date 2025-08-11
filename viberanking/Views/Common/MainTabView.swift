@@ -38,7 +38,10 @@ struct MainTabView: View {
                 ProfileTabView()
                     .tag(TabItem.profile)
             }
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+            // Use default tab view style to DISABLE horizontal swipe between pages
+            .tabViewStyle(DefaultTabViewStyle())
+            // Hide the native tab bar; we render a custom one
+            .toolbar(.hidden, for: .tabBar)
             .ignoresSafeArea(.all) // 讓內容填滿整個螢幕
             
             CustomTikTokTabBar(
