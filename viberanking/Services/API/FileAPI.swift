@@ -39,47 +39,34 @@ struct PhotoInfo: Codable {
 class FileAPI {
     
     private let apiClient = APIClient.shared
-    // Removed presigned flow in favor of `/api/file/photos/upload`
+    private let presignedAPI = PresignedUploadAPI()
+    private let presignedUploader = PresignedUploadService.shared
     
     // MARK: - Photo Operations
     
-    /// Upload photo by calling backend `/api/file/photos/upload` with base64 payload.
+    /// Upload photo via Presigned URL (PUT to R2), then finalize with backend metadata.
+    /// If presign flow is unavailable (e.g., 422), gracefully fallback to base64 JSON upload.
     func uploadPhoto(_ imageData: Data, userId: String) async throws -> PhotoUploadResponse {
-        struct UploadData: Codable {
-            let id: String?
-            let photoId: String?
-            let url: String?
-            let urls: PhotoURLs?
-            let uploadedAt: Date?
+        do {
+            // 1) Request a presigned URL for WebP upload
+            let presigned = try await presignedAPI.requestPresignedURL(
+                userId: userId,
+                fileExtension: "webp",
+                contentType: "image/webp"
+            )
+            // 2) PUT the bytes to the storage endpoint
+            try await presignedUploader.upload(data: imageData, to: presigned.url, headers: presigned.headers)
+            // 3) Ask backend to create/return the photo record for this key
+            do {
+                return try await finalizeUploadedPhoto(userId: userId, key: presigned.key, sizeBytes: imageData.count)
+            } catch {
+                let urls = R2PhotoURLBuilder().buildURLs(forKey: presigned.key)
+                return PhotoUploadResponse(photoId: UUID().uuidString, urls: urls, uploadedAt: Date())
+            }
+        } catch {
+            // Fallback path while backend presign endpoint is not ready
+            return try await uploadPhotoViaBase64(imageData, userId: userId)
         }
-        struct UploadResponse: Codable {
-            let success: Bool
-            let data: UploadData
-        }
-        let base64 = imageData.base64EncodedString()
-        let body: [String: Any] = [
-            "userId": userId,
-            "imageData": base64,
-            "format": "webp"
-        ]
-        let response = try await apiClient.performRequest(
-            endpoint: "/api/file/photos/upload",
-            method: .POST,
-            body: body,
-            responseType: UploadResponse.self
-        )
-        guard response.success else { throw APIError.serverError(400) }
-        let returnedId = response.data.photoId ?? response.data.id ?? UUID().uuidString
-        let urls: PhotoURLs
-        if let u = response.data.urls {
-            urls = u
-        } else if let urlString = response.data.url {
-            urls = PhotoURLs(original: urlString)
-        } else {
-            // Fallback: cannot build URLs without backend data
-            throw APIError.decodingError(NSError(domain: "FileAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Missing URL data in upload response"]))
-        }
-        return PhotoUploadResponse(photoId: returnedId, urls: urls, uploadedAt: response.data.uploadedAt ?? Date())
     }
     
     /// Get signed download URL for a storage key (for private buckets)
@@ -124,5 +111,87 @@ class FileAPI {
             method: .DELETE,
             responseType: APIResponse<Bool>.self
         )
+    }
+}
+
+// MARK: - Private helpers
+private extension FileAPI {
+    /// Legacy: Upload using base64 JSON payload to Workers endpoint
+    func uploadPhotoViaBase64(_ imageData: Data, userId: String) async throws -> PhotoUploadResponse {
+        struct UploadData: Codable {
+            let id: String?
+            let photoId: String?
+            let url: String?
+            let urls: PhotoURLs?
+            let uploadedAt: Date?
+        }
+        struct UploadResponse: Codable {
+            let success: Bool
+            let data: UploadData
+        }
+        let base64 = imageData.base64EncodedString()
+        let body: [String: Any] = [
+            "userId": userId,
+            "imageData": base64,
+            "format": "webp"
+        ]
+        let response = try await apiClient.performRequest(
+            endpoint: "/api/file/photos/upload",
+            method: .POST,
+            body: body,
+            responseType: UploadResponse.self
+        )
+        guard response.success else { throw APIError.serverError(400) }
+        let returnedId = response.data.photoId ?? response.data.id ?? UUID().uuidString
+        let urls: PhotoURLs
+        if let u = response.data.urls {
+            urls = u
+        } else if let urlString = response.data.url {
+            urls = PhotoURLs(original: urlString)
+        } else {
+            throw APIError.decodingError(NSError(domain: "FileAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Missing URL data in upload response"]))
+        }
+        return PhotoUploadResponse(photoId: returnedId, urls: urls, uploadedAt: response.data.uploadedAt ?? Date())
+    }
+    /// Tell backend that the object at `key` has been uploaded; expect photo id and URLs in response.
+    func finalizeUploadedPhoto(userId: String, key: String, sizeBytes: Int?) async throws -> PhotoUploadResponse {
+        struct UploadData: Codable {
+            let id: String?
+            let photoId: String?
+            let url: String?
+            let urls: PhotoURLs?
+            let uploadedAt: Date?
+        }
+        struct UploadResponse: Codable {
+            let success: Bool
+            let data: UploadData
+        }
+        let body: [String: Any] = {
+            var dict: [String: Any] = [
+                "userId": userId,
+                "key": key,
+                "contentType": "image/webp"
+            ]
+            if let sizeBytes { dict["sizeBytes"] = sizeBytes }
+            return dict
+        }()
+        let response = try await apiClient.performRequest(
+            endpoint: "/api/file/photos/complete",
+            method: .POST,
+            body: body,
+            responseType: UploadResponse.self
+        )
+        guard response.success else { throw APIError.serverError(400) }
+        let returnedId = response.data.photoId ?? response.data.id ?? UUID().uuidString
+        let urls: PhotoURLs
+        if let u = response.data.urls {
+            urls = u
+        } else if let urlString = response.data.url {
+            urls = PhotoURLs(original: urlString)
+        } else {
+            // As a last resort, construct from key
+            urls = R2PhotoURLBuilder().buildURLs(forKey: key)
+        }
+        return PhotoUploadResponse(photoId: returnedId, urls: urls, uploadedAt: response.data.uploadedAt ?? Date())
     }
 }

@@ -94,12 +94,13 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader("Events", subtitle: "Latest event submissions")
             
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 12),
-                GridItem(.flexible(), spacing: 12)
-            ], spacing: 16) {
-                ForEach(events) { item in
-                    EventItemCard(item: item) { }
+            // Two fixed-width columns to keep portrait cards from overlapping
+                LazyVGrid(columns: [
+                GridItem(.flexible(minimum: 150), spacing: 14, alignment: .top),
+                GridItem(.flexible(minimum: 150), spacing: 14, alignment: .top)
+            ], spacing: 18) {
+                    ForEach(events) { item in
+                        EventItemCard(item: item) { }
                 }
             }
         }
@@ -134,9 +135,12 @@ struct HomeView: View {
             async let rankingsGalleries: [TopUserGallery] = fetchTopUserGalleries()
             async let fetchedEvents: [EventItem] = fetchEvents()
 
+            let galleries = await rankingsGalleries
+            let eventsData = await fetchedEvents
+
             await MainActor.run {
                 self.topUserGalleries = galleries
-                self.events = fetchedEvents
+                self.events = eventsData
                 self.eventPhotos = []
                 withAnimation(.easeInOut(duration: 0.25)) {
                     self.isLoaded = true
@@ -149,41 +153,62 @@ struct HomeView: View {
             do {
                 let rankings = try await RateAPI().getRankings(limit: 5)
                 let top = rankings.data.overall.prefix(5)
-            // Fetch each user's photos concurrently
                 var galleries: [TopUserGallery] = []
-            try await withThrowingTaskGroup(of: TopUserGallery?.self) { group in
+            await withTaskGroup(of: TopUserGallery?.self) { group in
                 for user in top {
                     group.addTask {
+                        do {
                     let photosResponse = try await FileAPI().getUserPhotos(userId: user.userId, page: 1, limit: 5)
                     let infos = photosResponse.data.photos
-                    let previewUrls = infos.map { $0.urls.previewURL }.filter { !$0.isEmpty }
-                    let avatarURL = user.avatar
-                        return TopUserGallery(
-                            userId: user.userId,
-                            name: user.name,
-                            rank: user.rank,
-                            avatarURL: avatarURL,
-                            photoURLs: Array(previewUrls.prefix(5))
-                        )
+                            let urls = infos.map { $0.urls.bestAvailableURL }.filter { !$0.isEmpty }
+                            let chosen = Array(urls.prefix(5))
+                            return TopUserGallery(
+                                userId: user.userId,
+                                name: user.name,
+                                rank: user.rank,
+                                avatarURL: user.avatar,
+                                photoURLs: !chosen.isEmpty ? chosen : (user.avatar != nil ? [user.avatar!] : [])
+                            )
+                        } catch {
+                            // Fallback to avatar only for this user
+                            if let avatar = user.avatar, !avatar.isEmpty {
+                                return TopUserGallery(
+                                    userId: user.userId,
+                                    name: user.name,
+                                    rank: user.rank,
+                                    avatarURL: avatar,
+                                    photoURLs: [avatar]
+                                )
+                            }
+                            return TopUserGallery(
+                                userId: user.userId,
+                                name: user.name,
+                                rank: user.rank,
+                                avatarURL: nil,
+                                photoURLs: []
+                            )
+                        }
                     }
                 }
-                for try await gallery in group {
+                for await gallery in group {
                     if let gallery = gallery { galleries.append(gallery) }
                 }
             }
-            // Ensure order by rank
-            return galleries.sorted { $0.rank < $1.rank }
+            return galleries
+                .filter { !$0.photoURLs.isEmpty || $0.avatarURL != nil }
+                .sorted { $0.rank < $1.rank }
         } catch {
-            return generateRandomUsers()
+            // If rankings fail entirely, do not use random placeholders
+            return []
         }
     }
 
     private func fetchEvents() async -> [EventItem] {
-        do {
-            let response = try await EventAPI().getEventList()
+            do {
+                let response = try await EventAPI().getEventList()
             return response.data
-        } catch {
-            print("❌ HomeView: Failed to load events: \(error)")
+            } catch {
+                print("❌ HomeView: Failed to load events: \(error)")
             return []
         }
     }
@@ -666,6 +691,13 @@ struct EventItemCard: View {
                     .padding(12)
                 }
             }
+            
+            // Intro line under image
+            Text(introLine)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white.opacity(0.85))
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
         .buttonStyle(PlainButtonStyle())
         .scaleEffect(isPressed ? 0.96 : 1.0)
@@ -678,14 +710,24 @@ struct EventItemCard: View {
             }
         }
     }
+
+    private var introLine: String {
+        if let desc = item.description, !desc.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return desc
+        }
+        if let startsAt = item.startsAt, !startsAt.isEmpty {
+            return "於 \(String(startsAt.prefix(10))) 開跑 — \(item.title)"
+        }
+        return "立即參加「\(item.title)」，展現你的風格！"
+    }
 }
 
-// MARK: - Ranked User Card (16:9)
+// MARK: - Ranked User Card (9:16 portrait)
 struct RankedUserCard: View {
     let gallery: TopUserGallery
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             // Rank badge with gradient
             HStack {
                 ZStack {
@@ -693,15 +735,11 @@ struct RankedUserCard: View {
                         .fill(rankGradient)
                         .frame(width: 28, height: 28)
                         .shadow(color: rankColor.opacity(0.3), radius: 4, x: 0, y: 2)
-                    
                     Text("\(gallery.rank)")
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(.white)
                 }
-                
                 Spacer()
-                
-                // Crown for top 3
                 if gallery.rank <= 3 {
                     Image(systemName: "crown.fill")
                         .font(.system(size: 16))
@@ -709,7 +747,7 @@ struct RankedUserCard: View {
                 }
             }
 
-            // Main photo with 16:9 aspect ratio
+            // Main photo with 9:16 portrait ratio
             ZStack {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(
@@ -719,36 +757,20 @@ struct RankedUserCard: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 280, height: 157) // 16:9 ratio
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [Color.white.opacity(0.2), Color.white.opacity(0.05)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1
-                            )
-                    )
                 
                 if let first = gallery.photoURLs.first, let url = URL(string: first) {
                     AsyncImage(url: url) { phase in
                         switch phase {
                         case .empty:
-                            VStack(spacing: 8) {
-                                ProgressView()
-                                    .progressViewStyle(.circular)
-                                    .tint(.white.opacity(0.7))
-                                    .scaleEffect(0.8)
-                            }
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(.white.opacity(0.7))
+                                .scaleEffect(0.8)
                         case .success(let image):
                             image
                                 .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 280, height: 157)
-                                .clipped()
-                                .cornerRadius(16)
+                                .scaledToFill()
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
                         case .failure:
                             VStack(spacing: 8) {
                                 Image(systemName: "photo.artframe")
@@ -772,43 +794,28 @@ struct RankedUserCard: View {
                             .foregroundColor(.white.opacity(0.4))
                     }
                 }
-                
-                // Gradient overlay for better text readability
-                LinearGradient(
-                    colors: [Color.clear, Color.black.opacity(0.6)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .cornerRadius(16)
-                
-                // User info overlay
-                VStack {
-                    Spacer()
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(gallery.name)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.white)
-                                .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
-                            
-                            HStack(spacing: 4) {
-                                Image(systemName: "photo.stack")
-                                    .font(.system(size: 10))
-                                    .foregroundColor(.white.opacity(0.8))
-                                
-                                Text("\(gallery.photoURLs.count) photos")
-                                    .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.8))
-                            }
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 12)
-                }
             }
+            .frame(width: 160)
+            .aspectRatio(9/16, contentMode: .fit)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.2), Color.white.opacity(0.05)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            )
+
+            // Name under the image
+            Text(gallery.name)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.white)
+                .lineLimit(1)
         }
-        .frame(width: 280)
+        .frame(width: 160)
         .padding(.vertical, 8)
     }
     

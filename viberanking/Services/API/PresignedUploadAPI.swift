@@ -54,11 +54,12 @@ final class PresignedUploadAPI {
         // Suggest a key to the backend; backend may override/return its own
         let generatedKey = "photos/\(userId)/\(UUID().uuidString).\(fileExtension)"
         let body: [String: Any] = [
+            "userId": userId,
             "key": generatedKey,
             "contentType": contentType
         ]
         let response = try await apiClient.performRequest(
-            endpoint: "/api/file/upload",
+            endpoint: "/api/file/presign",
             method: .POST,
             body: body,
             responseType: PresignedUploadResponse<PresignedUploadInfo>.self

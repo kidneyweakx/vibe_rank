@@ -18,6 +18,7 @@ final class PresignedUploadService {
         }
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
+        request.timeoutInterval = AppConfiguration.Performance.networkTimeoutSeconds
         request.httpBody = data
         headers?.forEach { key, value in
             request.setValue(value, forHTTPHeaderField: key)
