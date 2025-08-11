@@ -81,7 +81,7 @@ struct HomeView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
                     ForEach(topUserGalleries, id: \.userId) { gallery in
-                        TopUserGalleryCard(gallery: gallery)
+                        RankedUserCard(gallery: gallery)
                     }
                 }
                 .padding(.horizontal, 4)
@@ -92,7 +92,7 @@ struct HomeView: View {
     // MARK: - Event Section
     private var eventSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader("Events", subtitle: "Latest photo submissions")
+            sectionHeader("Events", subtitle: "Latest event submissions")
             
             if events.isEmpty {
                 // Fallback to mock placeholders
@@ -161,9 +161,9 @@ struct HomeView: View {
                     self.topUserGalleries = galleries
                 }
             } catch {
-                // fallback: keep empty galleries
+                // fallback: generate random users
                 await MainActor.run {
-                    self.topUserGalleries = []
+                    self.topUserGalleries = generateRandomUsers()
                 }
             }
         }
@@ -195,6 +195,27 @@ struct HomeView: View {
                     }
                 }
             }
+        }
+    }
+    
+    private func generateRandomUsers() -> [TopUserGallery] {
+        let names = ["Alex Chen", "Sarah Kim", "Mike Johnson", "Emma Liu", "David Park"]
+        let sampleImages = [
+            "https://picsum.photos/400/600?random=1",
+            "https://picsum.photos/400/600?random=2",
+            "https://picsum.photos/400/600?random=3",
+            "https://picsum.photos/400/600?random=4",
+            "https://picsum.photos/400/600?random=5"
+        ]
+        
+        return names.enumerated().map { index, name in
+            TopUserGallery(
+                userId: "random_\(index)",
+                name: name,
+                rank: index + 1,
+                avatarURL: "https://picsum.photos/100/100?random=\(index + 10)",
+                photoURLs: Array(sampleImages.shuffled().prefix(3))
+            )
         }
     }
 }
@@ -382,64 +403,119 @@ struct EventPhotoCard: View {
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: 0) {
-                // Photo area
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.white.opacity(0.05))
-                    .aspectRatio(0.8, contentMode: .fit)
-                    .overlay(
-                        VStack(spacing: 8) {
-                            Image(systemName: "photo.fill")
-                                .font(.system(size: 40))
-                                .foregroundColor(.white.opacity(0.6))
-                            
+                // Photo area with 9:16 aspect ratio (vertical)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .aspectRatio(9/16, contentMode: .fit)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [Color.white.opacity(0.2), Color.white.opacity(0.05)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        )
+                    
+                    if let imageURL = photo.imageURL, let url = URL(string: imageURL) {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                VStack(spacing: 12) {
+                                    ProgressView()
+                                        .progressViewStyle(.circular)
+                                        .tint(.white.opacity(0.7))
+                                        .scaleEffect(0.8)
+                                }
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .clipped()
+                                    .cornerRadius(16)
+                            case .failure:
+                                VStack(spacing: 12) {
+                                    Image(systemName: "photo.artframe")
+                                        .font(.system(size: 32))
+                                        .foregroundColor(.white.opacity(0.4))
+                                    Text("Event Photo")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.4))
+                                }
+                            @unknown default:
+                                Color.clear
+                            }
+                        }
+                    } else {
+                        VStack(spacing: 12) {
+                            Image(systemName: "photo.artframe")
+                                .font(.system(size: 32))
+                                .foregroundColor(.white.opacity(0.4))
                             Text("Event Photo")
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.white.opacity(0.6))
+                                .foregroundColor(.white.opacity(0.4))
                         }
+                    }
+                    
+                    // Gradient overlay for better badge visibility
+                    LinearGradient(
+                        colors: [Color.black.opacity(0.3), Color.clear, Color.clear, Color.black.opacity(0.4)],
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
-                    .overlay(
-                        // Like badge
-                        VStack {
-                            HStack {
-                                Spacer()
-                                HStack(spacing: 4) {
-                                    Image(systemName: "heart.fill")
-                                        .font(.system(size: 10))
-                                        .foregroundColor(.pink)
-                                    
-                                    Text("\(photo.likes)")
-                                        .font(.system(size: 11, weight: .semibold))
-                                        .foregroundColor(.white)
-                                }
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.black.opacity(0.7))
-                                )
+                    .cornerRadius(16)
+                    
+                    // Like badge
+                    VStack {
+                        HStack {
+                            Spacer()
+                            HStack(spacing: 4) {
+                                Image(systemName: "heart.fill")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.pink)
+                                
+                                Text("\(photo.likes)")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(.white)
                             }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(Color.black.opacity(0.7))
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
+                                    )
+                            )
+                        }
+                        Spacer()
+                        
+                        // Time info at bottom
+                        HStack {
+                            Text(timeAgo)
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.white.opacity(0.9))
+                                .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
                             Spacer()
                         }
-                        .padding(8)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                    )
-                
-                // Time info
-                HStack {
-                    Text(timeAgo)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.white.opacity(0.6))
-                    
-                    Spacer()
+                    }
+                    .padding(12)
                 }
-                .padding(.top, 8)
             }
         }
         .buttonStyle(PlainButtonStyle())
-        .scaleEffect(isPressed ? 0.95 : 1.0)
+        .scaleEffect(isPressed ? 0.96 : 1.0)
+        .animation(.easeInOut(duration: 0.15), value: isPressed)
         .onTapGesture {
             withAnimation(.easeInOut(duration: 0.1)) {
                 isPressed = true
@@ -476,75 +552,134 @@ struct EventItemCard: View {
             }
         }) {
             VStack(spacing: 0) {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.white.opacity(0.05))
-                    .aspectRatio(0.8, contentMode: .fit)
-                    .overlay(
-                        ZStack {
-                            if let urlString = item.imageUrl, let url = URL(string: urlString) {
-                                AsyncImage(url: url) { phase in
-                                    switch phase {
-                                    case .empty:
-                                        ProgressView()
-                                            .progressViewStyle(.circular)
-                                            .tint(.white)
-                                    case .success(let image):
-                                        image
-                                            .resizable()
-                                            .scaledToFill()
-                                    case .failure:
-                                        Image(systemName: "photo")
-                                            .font(.system(size: 40))
-                                            .foregroundColor(.white.opacity(0.6))
-                                    @unknown default:
-                                        Color.clear
-                                    }
+                // Event image with 9:16 aspect ratio (vertical)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .aspectRatio(9/16, contentMode: .fit)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [Color.white.opacity(0.2), Color.white.opacity(0.05)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        )
+                    
+                    if let urlString = item.imageUrl, let url = URL(string: urlString) {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                VStack(spacing: 12) {
+                                    ProgressView()
+                                        .progressViewStyle(.circular)
+                                        .tint(.white.opacity(0.7))
+                                        .scaleEffect(0.8)
                                 }
-                            } else {
-                                Image(systemName: "photo.fill")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(.white.opacity(0.6))
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .clipped()
+                                    .cornerRadius(16)
+                            case .failure:
+                                VStack(spacing: 12) {
+                                    Image(systemName: "calendar.badge.exclamationmark")
+                                        .font(.system(size: 32))
+                                        .foregroundColor(.white.opacity(0.4))
+                                    Text("Event")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.4))
+                                }
+                            @unknown default:
+                                Color.clear
                             }
                         }
-                        .clipped()
+                    } else {
+                        VStack(spacing: 12) {
+                            Image(systemName: "calendar.badge.plus")
+                                .font(.system(size: 32))
+                                .foregroundColor(.white.opacity(0.4))
+                            Text("Event")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.white.opacity(0.4))
+                        }
+                    }
+                    
+                    // Gradient overlay for better text readability
+                    LinearGradient(
+                        colors: [Color.clear, Color.clear, Color.black.opacity(0.7)],
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                    )
-                    .overlay(alignment: .bottom) {
-                        ZStack {
-                            LinearGradient(
-                                colors: [Color.black.opacity(0.7), Color.black.opacity(0.0)],
-                                startPoint: .bottom,
-                                endPoint: .top
-                            )
-                            .frame(height: 42)
-
-                            HStack {
-                                Text(item.title)
-                                    .font(.system(size: 12, weight: .semibold))
+                    .cornerRadius(16)
+                    
+                    // Event info overlay
+                    VStack {
+                        Spacer()
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(item.title)
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.white)
+                                .lineLimit(2)
+                                .multilineTextAlignment(.leading)
+                                .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
+                            
+                            if let startsAt = item.startsAt, !startsAt.isEmpty {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "clock")
+                                        .font(.system(size: 10))
+                                        .foregroundColor(.white.opacity(0.8))
+                                    
+                                    Text(String(startsAt.prefix(10)))
+                                        .font(.system(size: 11, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.8))
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 12)
+                    }
+                    
+                    // "LIVE" badge for active events
+                    VStack {
+                        HStack {
+                            Spacer()
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(Color.red)
+                                    .frame(width: 6, height: 6)
+                                
+                                Text("LIVE")
+                                    .font(.system(size: 10, weight: .bold))
                                     .foregroundColor(.white)
-                                    .lineLimit(1)
-                                Spacer()
                             }
                             .padding(.horizontal, 8)
-                            .padding(.bottom, 6)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Color.black.opacity(0.7))
+                            )
                         }
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        Spacer()
                     }
-
-                HStack {
-                    Text(shortDate)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.white.opacity(0.6))
-                    Spacer()
+                    .padding(12)
                 }
-                .padding(.top, 8)
             }
         }
         .buttonStyle(PlainButtonStyle())
-        .scaleEffect(isPressed ? 0.95 : 1.0)
+        .scaleEffect(isPressed ? 0.96 : 1.0)
+        .animation(.easeInOut(duration: 0.15), value: isPressed)
         .onTapGesture {
             withAnimation(.easeInOut(duration: 0.1)) { isPressed = true }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -553,9 +688,159 @@ struct EventItemCard: View {
             }
         }
     }
+}
 
-    private var shortDate: String {
-        guard let startsAt = item.startsAt, !startsAt.isEmpty else { return "" }
-        return String(startsAt.prefix(10))
+// MARK: - Ranked User Card (16:9)
+struct RankedUserCard: View {
+    let gallery: TopUserGallery
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Rank badge with gradient
+            HStack {
+                ZStack {
+                    Circle()
+                        .fill(rankGradient)
+                        .frame(width: 28, height: 28)
+                        .shadow(color: rankColor.opacity(0.3), radius: 4, x: 0, y: 2)
+                    
+                    Text("\(gallery.rank)")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white)
+                }
+                
+                Spacer()
+                
+                // Crown for top 3
+                if gallery.rank <= 3 {
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(rankColor)
+                }
+            }
+
+            // Main photo with 16:9 aspect ratio
+            ZStack {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 280, height: 157) // 16:9 ratio
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.2), Color.white.opacity(0.05)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
+                    )
+                
+                if let first = gallery.photoURLs.first, let url = URL(string: first) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            VStack(spacing: 8) {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                    .tint(.white.opacity(0.7))
+                                    .scaleEffect(0.8)
+                            }
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 280, height: 157)
+                                .clipped()
+                                .cornerRadius(16)
+                        case .failure:
+                            VStack(spacing: 8) {
+                                Image(systemName: "photo.artframe")
+                                    .font(.system(size: 32))
+                                    .foregroundColor(.white.opacity(0.4))
+                                Text("Photo")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.4))
+                            }
+                        @unknown default:
+                            Color.clear
+                        }
+                    }
+                } else {
+                    VStack(spacing: 8) {
+                        Image(systemName: "photo.artframe")
+                            .font(.system(size: 32))
+                            .foregroundColor(.white.opacity(0.4))
+                        Text("No Photos")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.4))
+                    }
+                }
+                
+                // Gradient overlay for better text readability
+                LinearGradient(
+                    colors: [Color.clear, Color.black.opacity(0.6)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .cornerRadius(16)
+                
+                // User info overlay
+                VStack {
+                    Spacer()
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(gallery.name)
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                                .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
+                            
+                            HStack(spacing: 4) {
+                                Image(systemName: "photo.stack")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.white.opacity(0.8))
+                                
+                                Text("\(gallery.photoURLs.count) photos")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.8))
+                            }
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 12)
+                }
+            }
+        }
+        .frame(width: 280)
+        .padding(.vertical, 8)
+    }
+    
+    private var rankColor: Color {
+        switch gallery.rank {
+        case 1: return .yellow
+        case 2: return Color(red: 0.75, green: 0.75, blue: 0.75) // Silver
+        case 3: return Color(red: 0.8, green: 0.5, blue: 0.2) // Bronze
+        default: return .blue
+        }
+    }
+    
+    private var rankGradient: LinearGradient {
+        switch gallery.rank {
+        case 1:
+            return LinearGradient(colors: [.yellow, Color.orange], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case 2:
+            return LinearGradient(colors: [Color(red: 0.9, green: 0.9, blue: 0.9), Color(red: 0.6, green: 0.6, blue: 0.6)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case 3:
+            return LinearGradient(colors: [Color(red: 1.0, green: 0.6, blue: 0.2), Color(red: 0.6, green: 0.3, blue: 0.1)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        default:
+            return LinearGradient(colors: [.blue, Color.blue.opacity(0.7)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        }
     }
 }
