@@ -12,6 +12,7 @@ struct HomeView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @State private var recommendedUsers: [RecommendedUser] = []
     @State private var eventPhotos: [EventPhoto] = []
+    @State private var events: [EventItem] = []
     @State private var isLoaded = false
     
     var body: some View {
@@ -40,11 +41,14 @@ struct HomeView: View {
                         // Divider
                         divider
                         
-                        // Event Photos Section
+                        // Event Photos Section (API-backed)
                         eventSection
                     }
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 100)
+                    .safeAreaInset(edge: .bottom) {
+                        // Leave space for custom tab bar on small screens
+                        Color.clear.frame(height: 90)
+                    }
                 }
             } else {
                 // Loading state
@@ -91,13 +95,25 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader("Events", subtitle: "Latest photo submissions")
             
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 12),
-                GridItem(.flexible(), spacing: 12)
-            ], spacing: 16) {
-                ForEach(eventPhotos, id: \.id) { photo in
-                    EventPhotoCard(photo: photo) {
-                        print("點擊照片 \(photo.id)")
+            if events.isEmpty {
+                // Fallback to mock placeholders
+                LazyVGrid(columns: [
+                    GridItem(.flexible(), spacing: 12),
+                    GridItem(.flexible(), spacing: 12)
+                ], spacing: 16) {
+                    ForEach(eventPhotos, id: \.id) { photo in
+                        EventPhotoCard(photo: photo) {
+                            print("點擊照片 \(photo.id)")
+                        }
+                    }
+                }
+            } else {
+                LazyVGrid(columns: [
+                    GridItem(.flexible(), spacing: 12),
+                    GridItem(.flexible(), spacing: 12)
+                ], spacing: 16) {
+                    ForEach(events) { item in
+                        EventItemCard(item: item) { }
                     }
                 }
             }
@@ -128,11 +144,8 @@ struct HomeView: View {
     private func loadData() {
         print("🔄 HomeView: Starting to load data...")
         
-        // Simulate loading delay for better UX
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            print("📊 HomeView: Loading mock data...")
-            
-            // Load recommended users (mock data)
+        // Load mocked content quickly for skeleton feel
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             recommendedUsers = [
                 RecommendedUser(id: "1", name: "Alice", rank: 1, score: 9.8, avatarURL: nil),
                 RecommendedUser(id: "2", name: "Bob", rank: 2, score: 9.5, avatarURL: nil),
@@ -140,20 +153,34 @@ struct HomeView: View {
                 RecommendedUser(id: "4", name: "Diana", rank: 4, score: 8.9, avatarURL: nil),
                 RecommendedUser(id: "5", name: "Eve", rank: 5, score: 8.7, avatarURL: nil)
             ]
-            
-            // Load event photos (mock data)
-            eventPhotos = [
-                EventPhoto(id: "1", imageURL: nil, likes: 45, timestamp: Date()),
-                EventPhoto(id: "2", imageURL: nil, likes: 32, timestamp: Date()),
-                EventPhoto(id: "3", imageURL: nil, likes: 28, timestamp: Date()),
-                EventPhoto(id: "4", imageURL: nil, likes: 19, timestamp: Date()),
-                EventPhoto(id: "5", imageURL: nil, likes: 15, timestamp: Date()),
-                EventPhoto(id: "6", imageURL: nil, likes: 12, timestamp: Date())
-            ]
-            
-            print("✅ HomeView: Mock data loaded, showing UI...")
-            withAnimation(.easeInOut(duration: 0.3)) {
-                isLoaded = true
+        }
+
+        // Fetch events from API
+        Task {
+            do {
+                let response = try await EventAPI().getEventList()
+                await MainActor.run {
+                    self.events = response.data
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        self.isLoaded = true
+                    }
+                }
+            } catch {
+                print("❌ HomeView: Failed to load events: \(error)")
+                await MainActor.run {
+                    // Fallback to mock tiles
+                    self.eventPhotos = [
+                        EventPhoto(id: "1", imageURL: nil, likes: 45, timestamp: Date()),
+                        EventPhoto(id: "2", imageURL: nil, likes: 32, timestamp: Date()),
+                        EventPhoto(id: "3", imageURL: nil, likes: 28, timestamp: Date()),
+                        EventPhoto(id: "4", imageURL: nil, likes: 19, timestamp: Date()),
+                        EventPhoto(id: "5", imageURL: nil, likes: 15, timestamp: Date()),
+                        EventPhoto(id: "6", imageURL: nil, likes: 12, timestamp: Date())
+                    ]
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        self.isLoaded = true
+                    }
+                }
             }
         }
     }
@@ -345,5 +372,105 @@ struct EventPhotoCard: View {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
         return formatter.localizedString(for: photo.timestamp, relativeTo: Date())
+    }
+}
+
+// MARK: - Event Item Card (API-backed)
+struct EventItemCard: View {
+    let item: EventItem
+    let onTap: () -> Void
+    @State private var isPressed = false
+    @Environment(\.openURL) private var openURL
+
+    var body: some View {
+        Button(action: {
+            if let link = item.linkUrl, let url = URL(string: link) {
+                openURL(url)
+            } else {
+                onTap()
+            }
+        }) {
+            VStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.white.opacity(0.05))
+                    .aspectRatio(0.8, contentMode: .fit)
+                    .overlay(
+                        ZStack {
+                            if let urlString = item.imageUrl, let url = URL(string: urlString) {
+                                AsyncImage(url: url) { phase in
+                                    switch phase {
+                                    case .empty:
+                                        ProgressView()
+                                            .progressViewStyle(.circular)
+                                            .tint(.white)
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+                                    case .failure:
+                                        Image(systemName: "photo")
+                                            .font(.system(size: 40))
+                                            .foregroundColor(.white.opacity(0.6))
+                                    @unknown default:
+                                        Color.clear
+                                    }
+                                }
+                            } else {
+                                Image(systemName: "photo.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.white.opacity(0.6))
+                            }
+                        }
+                        .clipped()
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    )
+                    .overlay(alignment: .bottom) {
+                        ZStack {
+                            LinearGradient(
+                                colors: [Color.black.opacity(0.7), Color.black.opacity(0.0)],
+                                startPoint: .bottom,
+                                endPoint: .top
+                            )
+                            .frame(height: 42)
+
+                            HStack {
+                                Text(item.title)
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.bottom, 6)
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+
+                HStack {
+                    Text(shortDate)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white.opacity(0.6))
+                    Spacer()
+                }
+                .padding(.top, 8)
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
+        .scaleEffect(isPressed ? 0.95 : 1.0)
+        .onTapGesture {
+            withAnimation(.easeInOut(duration: 0.1)) { isPressed = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.easeInOut(duration: 0.1)) { isPressed = false }
+                onTap()
+            }
+        }
+    }
+
+    private var shortDate: String {
+        guard let startsAt = item.startsAt, !startsAt.isEmpty else { return "" }
+        return String(startsAt.prefix(10))
     }
 }

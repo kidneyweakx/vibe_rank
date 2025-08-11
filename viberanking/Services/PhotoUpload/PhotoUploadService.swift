@@ -42,10 +42,12 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
             logger.info("🔄 Step 1: Converting to WebP - PhotoID: \(photoId)")
             await updateUploadStatus(photoId: photoId, status: .processing)
             
-            // 在背景線程轉換圖片數據
+            // 在背景線程處理：先限制最大邊長，再轉成 PNG 資料
             let imageData = await withCheckedContinuation { continuation in
                 Task.detached {
-                    let data = image.pngData()
+                    let maxSide = CGFloat(AppConfiguration.Photo.highResSize)
+                    let boundedImage = image.scaledDownIfNeeded(maxDimension: maxSide)
+                    let data = boundedImage.pngData()
                     continuation.resume(returning: data)
                 }
             }
@@ -57,8 +59,19 @@ class PhotoUploadService: PhotoUploadServiceProtocol {
             
             logger.debug("📦 PNG data size: \(imageData.count) bytes - PhotoID: \(photoId)")
             
-            let webpData = try await convertToWebP(imageData, quality: 0.8)
-            logger.info("✅ WebP conversion completed - PhotoID: \(photoId), Size: \(webpData.count) bytes")
+            // 先以預設品質轉 WebP，若仍超過大小上限則逐步降低品質
+            var targetQuality: Float = 0.8
+            var webpData = try await convertToWebP(imageData, quality: targetQuality)
+            // 若走 base64 JSON 上傳，實際線上限制應預留 25% 空間 (base64 膨脹約 33%)
+            let maxBytesBinary = AppConfiguration.Photo.maxFileSizeMB * 1024 * 1024
+            let safetyRatioForBase64: Double = 0.72
+            let maxBytesForPayload = Int(Double(maxBytesBinary) * safetyRatioForBase64)
+            while webpData.count > maxBytesForPayload && targetQuality > 0.4 {
+                targetQuality -= 0.1
+                logger.warning("⚠️ WebP size \(webpData.count) > \(maxBytesForPayload). Retrying with quality=\(String(format: "%.1f", targetQuality)) - PhotoID: \(photoId)")
+                webpData = try await convertToWebP(imageData, quality: targetQuality)
+            }
+            logger.info("✅ WebP conversion completed - PhotoID: \(photoId), Size: \(webpData.count) bytes (limit: \(maxBytesForPayload)), Quality: \(String(format: "%.1f", targetQuality))")
             
             // Step 2: Upload via API
             logger.info("📤 Step 2: Uploading to API - PhotoID: \(photoId)")

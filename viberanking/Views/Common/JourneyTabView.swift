@@ -57,7 +57,10 @@ struct JourneyTabView: View {
                         aiImprovementSection
                     }
                     .padding(.top, 20)
-                    .padding(.bottom, 100)
+                    .safeAreaInset(edge: .bottom) {
+                        // Avoid being overlapped by custom tab bar on compact-height devices (e.g., iPhone 13 non-fullscreen)
+                        Color.clear.frame(height: 90)
+                    }
                 }
             } else {
                 // Loading state

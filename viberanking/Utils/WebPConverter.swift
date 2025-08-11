@@ -118,6 +118,17 @@ private extension WebPConverter {
 }
 
 extension UIImage {
+    /// Downscale image if either side exceeds maxDimension, preserving aspect ratio
+    func scaledDownIfNeeded(maxDimension: CGFloat) -> UIImage {
+        let maxCurrent = max(size.width, size.height)
+        guard maxCurrent > maxDimension, maxDimension > 0 else { return self }
+        let scale = maxDimension / maxCurrent
+        let newSize = CGSize(width: size.width * scale, height: size.height * scale)
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        return renderer.image { _ in
+            self.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+    }
     func resize(targetSize: CGSize) -> UIImage {
         let size = self.size
         

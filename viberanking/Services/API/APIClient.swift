@@ -44,8 +44,13 @@ class APIClient {
         
         // Request log
         print("➡️ API 請求: \(method.rawValue) \(endpoint)")
-        if let body = body, !body.isEmpty, let bodyData = try? JSONSerialization.data(withJSONObject: body, options: [.prettyPrinted]), let bodyString = String(data: bodyData, encoding: .utf8) {
-            print("📝 請求內容: \n\(bodyString)")
+        if let body = body, !body.isEmpty,
+           let bodyData = try? JSONSerialization.data(withJSONObject: body, options: []),
+           bodyData.count <= 64 * 1024, // 避免打印過大的請求
+           let bodyString = String(data: bodyData, encoding: .utf8) {
+            print("📝 請求內容(<=64KB): \n\(bodyString)")
+        } else if let body = body, !body.isEmpty {
+            print("📝 請求內容過大(>64KB)，略過打印")
         }
 
         let (data, response) = try await session.data(for: request)
@@ -122,8 +127,13 @@ class APIClient {
         
         // Request log (no-body response)
         print("➡️ API 請求: \(method.rawValue) \(endpoint)")
-        if let body = body, !body.isEmpty, let bodyData = try? JSONSerialization.data(withJSONObject: body, options: [.prettyPrinted]), let bodyString = String(data: bodyData, encoding: .utf8) {
-            print("📝 請求內容: \n\(bodyString)")
+        if let body = body, !body.isEmpty,
+           let bodyData = try? JSONSerialization.data(withJSONObject: body, options: []),
+           bodyData.count <= 64 * 1024,
+           let bodyString = String(data: bodyData, encoding: .utf8) {
+            print("📝 請求內容(<=64KB): \n\(bodyString)")
+        } else if let body = body, !body.isEmpty {
+            print("📝 請求內容過大(>64KB)，略過打印")
         }
 
         let (data, response) = try await session.data(for: request)
