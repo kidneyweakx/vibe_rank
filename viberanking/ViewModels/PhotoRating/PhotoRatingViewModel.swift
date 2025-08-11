@@ -245,15 +245,36 @@ private extension PhotoRatingViewModel {
     
     /// Move to next photo
     func moveToNextPhoto() async {
-        if hasMorePhotos {
-            currentPhotoIndex += 1
+        // Ensure we switch to a different user than the current one
+        let currentUser = currentPhoto?.userId
+        // Find next index with a different userId
+        func nextDifferentUserIndex(startingFrom index: Int) -> Int? {
+            guard !photos.isEmpty else { return nil }
+            var i = index + 1
+            while i < photos.count {
+                if photos[i].userId != currentUser { return i }
+                i += 1
+            }
+            return nil
+        }
+
+        if let nextIndex = nextDifferentUserIndex(startingFrom: currentPhotoIndex) {
+            currentPhotoIndex = nextIndex
             await fetchTagsForCurrentPhoto()
             await preloadImages()
-        } else {
-            // Load more photos if needed
-            await loadMorePhotos()
-            await fetchTagsForCurrentPhoto()
+            return
         }
+
+        // No different user ahead; try loading more
+        await loadMorePhotos()
+        if let nextIndex = nextDifferentUserIndex(startingFrom: currentPhotoIndex) {
+            currentPhotoIndex = nextIndex
+        } else if hasMorePhotos {
+            // Fallback: move forward even if same user (avoid dead-end)
+            currentPhotoIndex += 1
+        }
+        await fetchTagsForCurrentPhoto()
+        await preloadImages()
     }
     
     /// Load more photos when running low

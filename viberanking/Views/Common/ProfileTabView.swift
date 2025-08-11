@@ -196,33 +196,43 @@ private extension ProfileTabView {
     func getRecentWeeks() -> [WeekData] {
         let calendar = Calendar.current
         let today = Date()
-        var weeks: [WeekData] = []
+        // Start from current week's start
+        let startOfThisWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) ?? today
+        // Map user's photos by day (startOfDay)
+        var photosByDay: [Date: [PhotoInfo]] = [:]
+        for info in viewModel.userPhotoInfos {
+            let dayStart = calendar.startOfDay(for: info.uploadedAt)
+            photosByDay[dayStart, default: []].append(info)
+        }
+        var resultWeeks: [WeekData] = []
         
         for i in 0..<5 {
-            let weekStart = calendar.date(byAdding: .weekOfYear, value: -i, to: today) ?? today
+            guard let weekStart = calendar.date(byAdding: .weekOfYear, value: -i, to: startOfThisWeek) else { continue }
             let weekNumber = calendar.component(.weekOfYear, from: weekStart)
-            
             var days: [DayData] = []
             for j in 0..<7 {
-                if let dayDate = calendar.date(byAdding: .day, value: j, to: weekStart) {
-                    let dayNumber = calendar.component(.day, from: dayDate)
-                    let monthName = DateFormatter().shortMonthSymbols[calendar.component(.month, from: dayDate) - 1]
-                    let weekdayName = DateFormatter().shortWeekdaySymbols[calendar.component(.weekday, from: dayDate) - 1]
-                    
-                    days.append(DayData(
-                        date: dayDate,
-                        dayNumber: dayNumber,
-                        monthName: monthName,
-                        weekdayName: weekdayName,
-                        hasPhoto: Bool.random() // Random for demo
-                    ))
-                }
+                guard let dayDate = calendar.date(byAdding: .day, value: j, to: weekStart) else { continue }
+                let dayStart = calendar.startOfDay(for: dayDate)
+                let list = photosByDay[dayStart] ?? []
+                let dayNumber = calendar.component(.day, from: dayDate)
+                let monthName = DateFormatter().shortMonthSymbols[calendar.component(.month, from: dayDate) - 1]
+                let weekdayName = DateFormatter().shortWeekdaySymbols[calendar.component(.weekday, from: dayDate) - 1]
+                let firstURL = list.first?.urls.thumbnailURL
+                let urlString: String? = {
+                    if let firstURL, !firstURL.isEmpty { return firstURL }
+                    return nil
+                }()
+                days.append(DayData(
+                    date: dayDate,
+                    dayNumber: dayNumber,
+                    monthName: monthName,
+                    weekdayName: weekdayName,
+                    photoURL: urlString
+                ))
             }
-            
-            weeks.append(WeekData(weekNumber: weekNumber, days: days))
+            resultWeeks.append(WeekData(weekNumber: weekNumber, days: days))
         }
-        
-        return weeks
+        return resultWeeks
     }
     
 
@@ -239,7 +249,8 @@ struct DayData {
     let dayNumber: Int
     let monthName: String
     let weekdayName: String
-    let hasPhoto: Bool
+    let photoURL: String?
+    var hasPhoto: Bool { photoURL != nil }
 }
 
 // MARK: - Supporting Views
@@ -286,26 +297,29 @@ struct DayPhotoCard: View {
         }) {
             VStack(spacing: 8) {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(day.hasPhoto ? Color.gray.opacity(0.3) : Color.gray.opacity(0.1))
+                    .fill(Color.gray.opacity(0.1))
                     .frame(width: 120, height: 160)
                     .overlay(
                         Group {
-                            if day.hasPhoto {
-                                VStack(spacing: 8) {
-                                    Image(systemName: "photo.fill")
-                                        .font(.system(size: 32))
-                                        .foregroundColor(.gray)
-                                    
-                                    Text("Photo")
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(.gray)
+                            if let urlString = day.photoURL, let url = URL(string: urlString) {
+                                AsyncImage(url: url) { phase in
+                                    switch phase {
+                                    case .empty:
+                                        ProgressView().tint(.white)
+                                    case .success(let image):
+                                        image.resizable().scaledToFill()
+                                    case .failure:
+                                        Image(systemName: "photo").foregroundColor(.gray)
+                                    @unknown default:
+                                        Color.clear
+                                    }
                                 }
+                                .clipped()
                             } else {
                                 VStack(spacing: 8) {
                                     Image(systemName: "plus.circle.dashed")
                                         .font(.system(size: 32))
                                         .foregroundColor(.gray.opacity(0.5))
-                                    
                                     Text("Add Photo")
                                         .font(.system(size: 12, weight: .medium))
                                         .foregroundColor(.gray.opacity(0.7))
@@ -322,11 +336,9 @@ struct DayPhotoCard: View {
                     Text(day.monthName)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.gray)
-                    
                     Text("\(day.dayNumber)")
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white)
-                    
                     Text(day.weekdayName)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.gray)

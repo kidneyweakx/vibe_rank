@@ -16,6 +16,7 @@ class ProfileViewModel: BaseViewModel {
     @Published var userStats: UserStats?
     @Published var userPhotos: [Photo] = []
     @Published var recentRatings: [RecentRating] = []
+    @Published var userPhotoInfos: [PhotoInfo] = []
     
     // MARK: - Private Properties
     private let rateAPI = RateAPI()
@@ -34,9 +35,19 @@ class ProfileViewModel: BaseViewModel {
                 self.recentRatings = statsResponse.data.recentRatings
             }
             
-            // Load user's uploaded photos (this would need a new API endpoint)
-            // For now, we'll use empty array
-            self.userPhotos = []
+            // Load user's uploaded photos
+            do {
+                let photosResponse = try await self.fileAPI.getUserPhotos(userId: userId, page: nil, limit: 60)
+                let infos = photosResponse.data.photos
+                self.userPhotoInfos = infos
+                // Build lightweight Photo models for any other consumers
+                self.userPhotos = infos.map { info in
+                    Photo(id: info.id, userId: info.userId, imageURL: info.urls)
+                }
+            } catch {
+                self.userPhotoInfos = []
+                self.userPhotos = []
+            }
         }
     }
     

@@ -11,6 +11,7 @@ struct HomeView: View {
     @EnvironmentObject private var themeManager: ThemeManager
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @State private var recommendedUsers: [RecommendedUser] = []
+    @State private var topUserGalleries: [TopUserGallery] = []
     @State private var eventPhotos: [EventPhoto] = []
     @State private var events: [EventItem] = []
     @State private var isLoaded = false
@@ -79,10 +80,8 @@ struct HomeView: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
-                    ForEach(recommendedUsers, id: \.id) { user in
-                        RecommendedUserCard(user: user) {
-                            print("點擊用戶 \(user.name)")
-                        }
+                    ForEach(topUserGalleries, id: \.userId) { gallery in
+                        TopUserGalleryCard(gallery: gallery)
                     }
                 }
                 .padding(.horizontal, 4)
@@ -144,15 +143,29 @@ struct HomeView: View {
     private func loadData() {
         print("🔄 HomeView: Starting to load data...")
         
-        // Load mocked content quickly for skeleton feel
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            recommendedUsers = [
-                RecommendedUser(id: "1", name: "Alice", rank: 1, score: 9.8, avatarURL: nil),
-                RecommendedUser(id: "2", name: "Bob", rank: 2, score: 9.5, avatarURL: nil),
-                RecommendedUser(id: "3", name: "Charlie", rank: 3, score: 9.2, avatarURL: nil),
-                RecommendedUser(id: "4", name: "Diana", rank: 4, score: 8.9, avatarURL: nil),
-                RecommendedUser(id: "5", name: "Eve", rank: 5, score: 8.7, avatarURL: nil)
-            ]
+        // Fetch top 1-5 ranked users and build galleries
+        Task {
+            do {
+                let rankings = try await RateAPI().getRankings(limit: 5)
+                let top = rankings.data.overall.prefix(5)
+                var galleries: [TopUserGallery] = []
+                for user in top {
+                    // load recent photos for each user (limit 5 if backend supports; otherwise take first 5)
+                    let photosResponse = try await FileAPI().getUserPhotos(userId: user.userId, page: 1, limit: 5)
+                    let infos = photosResponse.data.photos
+                    let previewUrls = infos.map { $0.urls.previewURL }.filter { !$0.isEmpty }
+                    let avatarURL = user.avatar
+                    galleries.append(TopUserGallery(userId: user.userId, name: user.name, rank: user.rank, avatarURL: avatarURL, photoURLs: Array(previewUrls.prefix(5))))
+                }
+                await MainActor.run {
+                    self.topUserGalleries = galleries
+                }
+            } catch {
+                // fallback: keep empty galleries
+                await MainActor.run {
+                    self.topUserGalleries = []
+                }
+            }
         }
 
         // Fetch events from API
@@ -201,6 +214,14 @@ struct RecommendedUser {
     let rank: Int
     let score: Double
     let avatarURL: String?
+}
+
+struct TopUserGallery {
+    let userId: String
+    let name: String
+    let rank: Int
+    let avatarURL: String?
+    let photoURLs: [String]
 }
 
 struct EventPhoto {
@@ -285,6 +306,70 @@ struct RecommendedUserCard: View {
         case 3: return Color.orange
         default: return .blue
         }
+    }
+}
+
+// MARK: - Top User Gallery Card
+struct TopUserGalleryCard: View {
+    let gallery: TopUserGallery
+    @Environment(\.openURL) private var openURL
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                ZStack {
+                    Circle().fill(Color.white.opacity(0.08)).frame(width: 28, height: 28)
+                    Text("\(gallery.rank)")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white)
+                }
+                Text(gallery.name)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                Spacer()
+            }
+            .padding(.horizontal, 8)
+            
+            // 2x3 grid of up to 6 images (we show up to 5 per spec)
+            LazyVGrid(columns: [GridItem(.fixed(80)), GridItem(.fixed(80))], spacing: 8) {
+                ForEach(Array(gallery.photoURLs.prefix(5).enumerated()), id: \.offset) { _, urlString in
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.white.opacity(0.05))
+                        .frame(width: 80, height: 80)
+                        .overlay(
+                            Group {
+                                if let url = URL(string: urlString) {
+                                    AsyncImage(url: url) { phase in
+                                        switch phase {
+                                        case .empty:
+                                            ProgressView().tint(.white)
+                                        case .success(let image):
+                                            image.resizable().scaledToFill()
+                                        case .failure:
+                                            Image(systemName: "photo").foregroundColor(.white.opacity(0.6))
+                                        @unknown default:
+                                            Color.clear
+                                        }
+                                    }
+                                    .clipped()
+                                } else {
+                                    Image(systemName: "photo").foregroundColor(.white.opacity(0.6))
+                                }
+                            }
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        )
+                }
+            }
+        }
+        .frame(width: 180)
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.05))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.1), lineWidth: 1))
+        )
     }
 }
 

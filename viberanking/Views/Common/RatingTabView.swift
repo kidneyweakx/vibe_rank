@@ -34,14 +34,12 @@ struct RatingTabView: View {
                 emptyStateView
             }
             
-            // Top overlay with optional back button and user name
+            // Top overlay: optional back button only
             VStack {
                 HStack {
                     if isVibeMode {
                         Button {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                isVibeMode = false
-                            }
+                            withAnimation(.easeInOut(duration: 0.3)) { isVibeMode = false }
                         } label: {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 18, weight: .medium))
@@ -50,40 +48,56 @@ struct RatingTabView: View {
                         .padding(.leading, 20)
                     }
                     Spacer()
-                    Text(viewModel.currentPhotoUserName)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-                    Spacer()
-                    // Right spacer to balance back button
-                    if isVibeMode {
-                        Color.clear.frame(width: 38, height: 1)
-                    }
                 }
-                .padding(.top, 60) // 避免超出安全區域
+                .padding(.top, 60)
                 Spacer()
             }
             .zIndex(1000)
             .transition(.opacity.combined(with: .move(edge: .top)))
             
             // Action buttons overlay
-            VStack {
+            VStack(spacing: 10) {
                 Spacer()
-                // Tags overlay above buttons (bottom-left)
-                if !viewModel.currentTags.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
+                // User name
+                HStack {
+                    Text(viewModel.currentPhotoUserName)
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .padding(.horizontal, 20)
+                    Spacer()
+                }
+                // Tags row (show "No tag" if empty)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        if viewModel.currentTags.isEmpty {
+                            Text("No tag")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.white.opacity(0.8))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.25), lineWidth: 1))
+                        } else {
                             ForEach(viewModel.currentTags, id: \.id) { tag in
                                 TagChipView(tag: tag, isSelected: false, onTap: {})
                             }
                         }
-                        .padding(.horizontal, 20)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.bottom, 8)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.black.opacity(0.35))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                    )
+                    .padding(.horizontal, 20)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 actionButtonsView
-                    .padding(.bottom, 120) // 保留足夠空間給 tab bar
+                    .padding(.bottom, 90) // 更靠近底部但保留 tab bar 空間
             }
             .zIndex(1000)
             .transition(.opacity.combined(with: .move(edge: .bottom)))
@@ -279,12 +293,12 @@ private extension RatingTabView {
                 refreshPhoto()
             } label: {
                 Circle()
-                    .fill(.white.opacity(0.15))
+                    .fill(.white.opacity(0.12))
                     .frame(width: 50, height: 50)
                     .overlay(
                         Image(systemName: "arrow.clockwise")
                             .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(.white.opacity(0.9))
+                            .foregroundColor(.white.opacity(0.7))
                     )
             }
             .disabled(viewModel.currentPhoto == nil)
@@ -305,12 +319,12 @@ private extension RatingTabView {
                 submitRating(type: .like)
             } label: {
                 Circle()
-                    .fill(.white.opacity(0.2))
+                    .fill(Color.white.opacity(0.35)) // 奶白色感
                     .frame(width: 70, height: 70)
                     .overlay(
                         Image(systemName: "flame.fill")
                             .font(.system(size: 28, weight: .medium))
-                            .foregroundColor(likeButtonPressed ? .orange : .white.opacity(0.8))
+                            .foregroundColor(likeButtonPressed ? .orange : .black.opacity(0.8))
                     )
             }
             .disabled(viewModel.currentPhoto == nil)
@@ -323,12 +337,12 @@ private extension RatingTabView {
                 skipPhoto()
             } label: {
                 Circle()
-                    .fill(.white.opacity(0.15))
+                    .fill(.white.opacity(0.12))
                     .frame(width: 50, height: 50)
                     .overlay(
                         Image(systemName: "wrench")
                             .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(.white.opacity(0.9))
+                            .foregroundColor(.white.opacity(0.7))
                     )
             }
             .disabled(viewModel.currentPhoto == nil)
