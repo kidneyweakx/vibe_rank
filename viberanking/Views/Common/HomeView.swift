@@ -94,26 +94,12 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader("Events", subtitle: "Latest event submissions")
             
-            if events.isEmpty {
-                // Fallback to mock placeholders
-                LazyVGrid(columns: [
-                    GridItem(.flexible(), spacing: 12),
-                    GridItem(.flexible(), spacing: 12)
-                ], spacing: 16) {
-                    ForEach(eventPhotos, id: \.id) { photo in
-                        EventPhotoCard(photo: photo) {
-                            print("點擊照片 \(photo.id)")
-                        }
-                    }
-                }
-            } else {
-                LazyVGrid(columns: [
-                    GridItem(.flexible(), spacing: 12),
-                    GridItem(.flexible(), spacing: 12)
-                ], spacing: 16) {
-                    ForEach(events) { item in
-                        EventItemCard(item: item) { }
-                    }
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12)
+            ], spacing: 16) {
+                ForEach(events) { item in
+                    EventItemCard(item: item) { }
                 }
             }
         }
@@ -143,58 +129,62 @@ struct HomeView: View {
     private func loadData() {
         print("🔄 HomeView: Starting to load data...")
         
-        // Fetch top 1-5 ranked users and build galleries
         Task {
+            // Run both APIs concurrently
+            async let rankingsGalleries: [TopUserGallery] = fetchTopUserGalleries()
+            async let fetchedEvents: [EventItem] = fetchEvents()
+
+            await MainActor.run {
+                self.topUserGalleries = galleries
+                self.events = fetchedEvents
+                self.eventPhotos = []
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    self.isLoaded = true
+                }
+            }
+        }
+    }
+
+    private func fetchTopUserGalleries() async -> [TopUserGallery] {
             do {
                 let rankings = try await RateAPI().getRankings(limit: 5)
                 let top = rankings.data.overall.prefix(5)
+            // Fetch each user's photos concurrently
                 var galleries: [TopUserGallery] = []
+            try await withThrowingTaskGroup(of: TopUserGallery?.self) { group in
                 for user in top {
-                    // load recent photos for each user (limit 5 if backend supports; otherwise take first 5)
+                    group.addTask {
                     let photosResponse = try await FileAPI().getUserPhotos(userId: user.userId, page: 1, limit: 5)
                     let infos = photosResponse.data.photos
                     let previewUrls = infos.map { $0.urls.previewURL }.filter { !$0.isEmpty }
                     let avatarURL = user.avatar
-                    galleries.append(TopUserGallery(userId: user.userId, name: user.name, rank: user.rank, avatarURL: avatarURL, photoURLs: Array(previewUrls.prefix(5))))
+                        return TopUserGallery(
+                            userId: user.userId,
+                            name: user.name,
+                            rank: user.rank,
+                            avatarURL: avatarURL,
+                            photoURLs: Array(previewUrls.prefix(5))
+                        )
+                    }
                 }
-                await MainActor.run {
-                    self.topUserGalleries = galleries
-                }
-            } catch {
-                // fallback: generate random users
-                await MainActor.run {
-                    self.topUserGalleries = generateRandomUsers()
+                for try await gallery in group {
+                    if let gallery = gallery { galleries.append(gallery) }
                 }
             }
+            // Ensure order by rank
+            return galleries.sorted { $0.rank < $1.rank }
+        } catch {
+            return generateRandomUsers()
         }
+    }
 
-        // Fetch events from API
-        Task {
-            do {
-                let response = try await EventAPI().getEventList()
-                await MainActor.run {
-                    self.events = response.data
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        self.isLoaded = true
-                    }
-                }
-            } catch {
-                print("❌ HomeView: Failed to load events: \(error)")
-                await MainActor.run {
-                    // Fallback to mock tiles
-                    self.eventPhotos = [
-                        EventPhoto(id: "1", imageURL: nil, likes: 45, timestamp: Date()),
-                        EventPhoto(id: "2", imageURL: nil, likes: 32, timestamp: Date()),
-                        EventPhoto(id: "3", imageURL: nil, likes: 28, timestamp: Date()),
-                        EventPhoto(id: "4", imageURL: nil, likes: 19, timestamp: Date()),
-                        EventPhoto(id: "5", imageURL: nil, likes: 15, timestamp: Date()),
-                        EventPhoto(id: "6", imageURL: nil, likes: 12, timestamp: Date())
-                    ]
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        self.isLoaded = true
-                    }
-                }
-            }
+    private func fetchEvents() async -> [EventItem] {
+        do {
+            let response = try await EventAPI().getEventList()
+            return response.data
+        } catch {
+            print("❌ HomeView: Failed to load events: \(error)")
+            return []
         }
     }
     
@@ -414,7 +404,7 @@ struct EventPhotoCard: View {
                             )
                         )
                         .aspectRatio(9/16, contentMode: .fit)
-                        .overlay(
+                    .overlay(
                             RoundedRectangle(cornerRadius: 16)
                                 .stroke(
                                     LinearGradient(
@@ -474,24 +464,24 @@ struct EventPhotoCard: View {
                     )
                     .cornerRadius(16)
                     
-                    // Like badge
-                    VStack {
-                        HStack {
-                            Spacer()
-                            HStack(spacing: 4) {
-                                Image(systemName: "heart.fill")
-                                    .font(.system(size: 10))
-                                    .foregroundColor(.pink)
-                                
-                                Text("\(photo.likes)")
+                        // Like badge
+                        VStack {
+                            HStack {
+                                Spacer()
+                                HStack(spacing: 4) {
+                                    Image(systemName: "heart.fill")
+                                        .font(.system(size: 10))
+                                        .foregroundColor(.pink)
+                                    
+                                    Text("\(photo.likes)")
                                     .font(.system(size: 11, weight: .bold))
-                                    .foregroundColor(.white)
-                            }
+                                        .foregroundColor(.white)
+                                }
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(
-                                Capsule()
-                                    .fill(Color.black.opacity(0.7))
+                                .background(
+                                    Capsule()
+                                        .fill(Color.black.opacity(0.7))
                                     .overlay(
                                         Capsule()
                                             .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
@@ -563,7 +553,7 @@ struct EventItemCard: View {
                             )
                         )
                         .aspectRatio(9/16, contentMode: .fit)
-                        .overlay(
+                    .overlay(
                             RoundedRectangle(cornerRadius: 16)
                                 .stroke(
                                     LinearGradient(
@@ -575,23 +565,23 @@ struct EventItemCard: View {
                                 )
                         )
                     
-                    if let urlString = item.imageUrl, let url = URL(string: urlString) {
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .empty:
+                            if let urlString = item.imageUrl, let url = URL(string: urlString) {
+                                AsyncImage(url: url) { phase in
+                                    switch phase {
+                                    case .empty:
                                 VStack(spacing: 12) {
-                                    ProgressView()
-                                        .progressViewStyle(.circular)
+                                        ProgressView()
+                                            .progressViewStyle(.circular)
                                         .tint(.white.opacity(0.7))
                                         .scaleEffect(0.8)
                                 }
-                            case .success(let image):
-                                image
-                                    .resizable()
+                                    case .success(let image):
+                                        image
+                                            .resizable()
                                     .aspectRatio(contentMode: .fill)
                                     .clipped()
                                     .cornerRadius(16)
-                            case .failure:
+                                    case .failure:
                                 VStack(spacing: 12) {
                                     Image(systemName: "calendar.badge.exclamationmark")
                                         .font(.system(size: 32))
@@ -600,11 +590,11 @@ struct EventItemCard: View {
                                         .font(.system(size: 12, weight: .medium))
                                         .foregroundColor(.white.opacity(0.4))
                                 }
-                            @unknown default:
-                                Color.clear
-                            }
-                        }
-                    } else {
+                                    @unknown default:
+                                        Color.clear
+                                    }
+                                }
+                            } else {
                         VStack(spacing: 12) {
                             Image(systemName: "calendar.badge.plus")
                                 .font(.system(size: 32))
@@ -653,7 +643,7 @@ struct EventItemCard: View {
                     
                     // "LIVE" badge for active events
                     VStack {
-                        HStack {
+                            HStack {
                             Spacer()
                             HStack(spacing: 4) {
                                 Circle()
