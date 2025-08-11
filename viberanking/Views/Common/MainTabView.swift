@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 struct MainTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
@@ -19,6 +20,8 @@ struct MainTabView: View {
     @State private var selectedImage: UIImage?
     @State private var showingUploadAlert = false
     @State private var uploadAlertMessage = ""
+    @State private var showingCameraAlert = false
+    @State private var cameraAlertMessage = ""
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -38,39 +41,62 @@ struct MainTabView: View {
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .ignoresSafeArea(.all) // 讓內容填滿整個螢幕
             
-            if !isVibeMode {
-                CustomTikTokTabBar(
-                    selectedTab: $selectedTab,
-                    onUploadTap: {
-                        if canUpload {
-                            showingUploadMenu = true
+            CustomTikTokTabBar(
+                selectedTab: $selectedTab,
+                onUploadTap: {
+                    if canUpload {
+                        showingUploadMenu = true
+                    } else {
+                        // 顯示為什麼不能上傳的提示
+                        if authViewModel.isGuest {
+                            uploadAlertMessage = "請先登入才能上傳照片"
+                            showingUploadAlert = true
                         } else {
-                            // 顯示為什麼不能上傳的提示
-                            if authViewModel.isGuest {
-                                uploadAlertMessage = "請先登入才能上傳照片"
-                                showingUploadAlert = true
-                            } else {
-                                let remaining = authViewModel.user?.ratingProgress.remainingRatings ?? 20
-                                uploadAlertMessage = "還需要完成 \(remaining) 個評分才能解鎖上傳功能"
-                                showingUploadAlert = true
-                            }
-                        }
-                    },
-                    onVibeTap: {
-                        // 點擊 Vibe tab 直接進入 vibe 模式
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            selectedTab = .rating
-                            isVibeMode = true
+                            let remaining = authViewModel.user?.ratingProgress.remainingRatings ?? 20
+                            uploadAlertMessage = "還需要完成 \(remaining) 個評分才能解鎖上傳功能"
+                            showingUploadAlert = true
                         }
                     }
-                )
-            }
+                },
+                onVibeTap: {
+                    // 點擊 Vibe tab 直接進入 vibe 模式
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        selectedTab = .rating
+                        isVibeMode = true
+                    }
+                }
+            )
         }
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showingUploadMenu) {
             UploadMenuView(
                 onCameraSelected: {
-                    showingImagePicker = true
+                    Task {
+                        if !CameraPermissionHelper.isCameraAvailable {
+                            cameraAlertMessage = "此裝置沒有相機可用"
+                            showingCameraAlert = true
+                            return
+                        }
+
+                        switch CameraPermissionHelper.cameraAuthorizationStatus {
+                        case .authorized:
+                            showingImagePicker = true
+                        case .notDetermined:
+                            let granted = await CameraPermissionHelper.requestCameraPermission()
+                            if granted {
+                                showingImagePicker = true
+                            } else {
+                                cameraAlertMessage = "請到「設定 > 隱私權 > 相機」允許本 App 使用相機"
+                                showingCameraAlert = true
+                            }
+                        case .denied, .restricted:
+                            cameraAlertMessage = "請到「設定 > 隱私權 > 相機」允許本 App 使用相機"
+                            showingCameraAlert = true
+                        @unknown default:
+                            cameraAlertMessage = "相機權限狀態未知，請稍後再試"
+                            showingCameraAlert = true
+                        }
+                    }
                 },
                 onPhotoLibrarySelected: {
                     showingPhotoPicker = true
@@ -123,6 +149,11 @@ struct MainTabView: View {
             Button("確定", role: .cancel) { }
         } message: {
             Text(uploadAlertMessage)
+        }
+        .alert("無法使用相機", isPresented: $showingCameraAlert) {
+            Button("確定", role: .cancel) { }
+        } message: {
+            Text(cameraAlertMessage)
         }
         .onChange(of: selectedImage) { newImage in
             if let image = newImage {

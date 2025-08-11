@@ -31,6 +31,7 @@ class PhotoRatingViewModel: BaseViewModel {
     private var cancellables = Set<AnyCancellable>()
     private let r2UrlBuilder = R2PhotoURLBuilder()
     private let r2ImageService = R2ImageService.shared
+    private let samplePhotoService = SamplePhotoService()
     private var currentUserId: String = ""
     
     // Preloading configuration
@@ -89,9 +90,19 @@ class PhotoRatingViewModel: BaseViewModel {
                 print("✅ Successfully loaded \(self.photos.count) photos for rating")
             } catch {
                 print("❌ Failed to load photos for rating: \(error)")
-                // Set empty photos array on error
-                self.photos = []
-                self.currentPhotoIndex = 0
+                // Fallback to sample photos for offline/demo resilience
+                do {
+                    let samples = try await self.samplePhotoService.getSamplePhotos()
+                    self.photos = samples
+                    self.currentPhotoIndex = 0
+                    self.currentTags = []
+                    await self.preloadImages()
+                    print("🧪 Using sample photos fallback: count=\(samples.count)")
+                } catch {
+                    // Final fallback: empty state
+                    self.photos = []
+                    self.currentPhotoIndex = 0
+                }
             }
         }
     }
@@ -209,6 +220,18 @@ class PhotoRatingViewModel: BaseViewModel {
 
 // MARK: - Private Methods
 private extension PhotoRatingViewModel {
+    nonisolated static func isR2DirectURL(_ url: String) -> Bool {
+        return url.contains(".r2.cloudflarestorage.com/")
+    }
+    nonisolated static func parseR2Key(from urlString: String) -> String? {
+        guard let url = URL(string: urlString) else { return nil }
+        // URL path looks like /<bucket>/<key>
+        var path = url.path
+        if path.hasPrefix("/") { path.removeFirst() }
+        let components = path.split(separator: "/", maxSplits: 1, omittingEmptySubsequences: true)
+        guard components.count == 2 else { return nil }
+        return String(components[1])
+    }
     
     /// Move to next photo
     func moveToNextPhoto() async {
@@ -226,11 +249,22 @@ private extension PhotoRatingViewModel {
     /// Load more photos when running low
     func loadMorePhotos() async {
         await performAsyncTask {
-            let response = try await self.rateAPI.getRandomPhotos(userId: self.currentUserId, limit: 10)
-            
-            let newPhotos = try await self.buildPhotosResolvingURLs(from: response.data)
-            
-            self.photos.append(contentsOf: newPhotos)
+            do {
+                let response = try await self.rateAPI.getRandomPhotos(userId: self.currentUserId, limit: 10)
+                let newPhotos = try await self.buildPhotosResolvingURLs(from: response.data)
+                self.photos.append(contentsOf: newPhotos)
+            } catch {
+                // Append a few sample photos as a soft fallback
+                do {
+                    let samples = try await self.samplePhotoService.getSamplePhotos()
+                    // take first 5 to avoid large append
+                    let slice = Array(samples.prefix(5))
+                    self.photos.append(contentsOf: slice)
+                    print("🧪 loadMorePhotos fallback appended sample count=\(slice.count)")
+                } catch {
+                    // ignore
+                }
+            }
         }
     }
     
@@ -263,23 +297,26 @@ private extension PhotoRatingViewModel {
         }
     }
 
-    /// Build `Photo` array resolving signed URLs for private S3 endpoints
+    /// Build `Photo` array using API-provided origin URLs when available
     func buildPhotosResolvingURLs(from items: [RatingPhoto]) async throws -> [Photo] {
         // Resolve signed URL in parallel for entries with key
         return try await withThrowingTaskGroup(of: Photo.self) { group in
             for ratingPhoto in items {
                 group.addTask { [r2UrlBuilder, r2ImageService] in
                     let urls: PhotoURLs
-                    if let key = ratingPhoto.key, !key.isEmpty {
+                    // Use origin URL provided by API directly
+                    if !ratingPhoto.url.isEmpty {
+                        urls = PhotoURLs(original: ratingPhoto.url)
+                    } else if let key = ratingPhoto.key, !key.isEmpty {
+                        // URL missing but key present
                         if AppConfiguration.R2.publicDomain.contains("r2.cloudflarestorage.com") {
-                            // Resolve a signed URL for original
                             let signedURL = await r2ImageService.resolveLoadableURL(for: key)
                             urls = PhotoURLs(original: signedURL.absoluteString)
                         } else {
                             urls = r2UrlBuilder.buildURLs(forKey: key)
                         }
                     } else {
-                        urls = PhotoURLs(original: ratingPhoto.url)
+                        urls = PhotoURLs(original: "")
                     }
                     return Photo(
                         id: ratingPhoto.id,

@@ -12,6 +12,9 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showingLogoutAlert = false
     @State private var showingImagePicker = false
+    @State private var showTerms = false
+    @State private var showPrivacy = false
+    @State private var showContact = false
     @State private var name = ""
     @State private var bio = ""
     @State private var location = ""
@@ -101,7 +104,7 @@ struct SettingsView: View {
                                     icon: "lock.fill",
                                     title: "Privacy",
                                     action: {
-                                        // Handle privacy
+                                        showPrivacy = true
                                     }
                                 )
                                 
@@ -118,6 +121,22 @@ struct SettingsView: View {
                                     title: "About",
                                     action: {
                                         // Handle about
+                                    }
+                                )
+                                
+                                SettingsRow(
+                                    icon: "doc.text.fill",
+                                    title: "Terms of Service",
+                                    action: {
+                                        showTerms = true
+                                    }
+                                )
+                                
+                                SettingsRow(
+                                    icon: "envelope.fill",
+                                    title: "Contact Us",
+                                    action: {
+                                        showContact = true
                                     }
                                 )
                             }
@@ -187,6 +206,15 @@ struct SettingsView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $showTerms) {
+            TermsOfServiceView()
+        }
+        .sheet(isPresented: $showPrivacy) {
+            PrivacyPolicyView()
+        }
+        .sheet(isPresented: $showContact) {
+            ContactUsView()
+        }
         .sheet(isPresented: $showingImagePicker) {
             ImagePicker(sourceType: .photoLibrary) { image in
                 // Handle profile image upload

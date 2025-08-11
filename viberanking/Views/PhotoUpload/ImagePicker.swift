@@ -29,7 +29,13 @@ struct ImagePicker: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
         switch sourceType {
         case .camera:
-            return makeCameraController(context: context)
+            // Guard camera availability to prevent crash
+            if CameraPermissionHelper.isCameraAvailable {
+                return makeCameraController(context: context)
+            } else {
+                // Fallback to a simple host controller if camera not available
+                return UIViewController()
+            }
         case .photoLibrary:
             return makePhotoLibraryController(context: context)
         }

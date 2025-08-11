@@ -14,7 +14,6 @@ struct ProfileTabView: View {
     @State private var showingImagePicker = false
     @State private var showingQRCode = false
     @State private var showingSettings = false
-    @State private var showingTerms = false
     
     var body: some View {
         NavigationStack {
@@ -47,9 +46,6 @@ struct ProfileTabView: View {
         }
         .fullScreenCover(isPresented: $showingSettings) {
             SettingsView()
-        }
-        .sheet(isPresented: $showingTerms) {
-            TermsOfServiceView()
         }
         .task {
             if let userId = authViewModel.user?.id {
@@ -147,14 +143,6 @@ private extension ProfileTabView {
                 }
                 
                 Spacer()
-                
-                Button(action: {
-                    showingSettings = true
-                }) {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 20))
-                        .foregroundColor(.white.opacity(0.8))
-                }
             }
             
             // Action buttons
@@ -189,21 +177,6 @@ private extension ProfileTabView {
                     )
                 }
                 
-                Button("Terms of Service") {
-                    showingTerms = true
-                }
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.gray)
-                .frame(maxWidth: .infinity)
-                .frame(height: 40)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.gray.opacity(0.1))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                        )
-                )
             }
         }
     }

@@ -19,6 +19,7 @@ struct RatingTabView: View {
     @State private var likeButtonPressed = false
     @State private var refreshButtonPressed = false
     @State private var skipButtonPressed = false
+    @State private var imageLoadStartTimes: [String: Date] = [:]
     @Binding var isVibeMode: Bool
     
     var body: some View {
@@ -42,7 +43,7 @@ struct RatingTabView: View {
                                 isVibeMode = false
                             }
                         } label: {
-                            Image(systemName: "xmark")
+                            Image(systemName: "chevron.left")
                                 .font(.system(size: 18, weight: .medium))
                                 .foregroundColor(.white.opacity(0.8))
                         }
@@ -74,7 +75,7 @@ struct RatingTabView: View {
                     .padding(.bottom, 8)
                 }
                 actionButtonsView
-                    .padding(.bottom, isVibeMode ? 50 : 120) // 在非 vibe 模式下留更多空間給 tab bar
+                    .padding(.bottom, 120) // 保留足夠空間給 tab bar
             }
             .transition(.opacity.combined(with: .move(edge: .bottom)))
             
@@ -85,20 +86,12 @@ struct RatingTabView: View {
                 await viewModel.loadPhotosForRating(userId: userId)
             }
         }
-        .onAppear {
-            // 當進入 rating tab 時，如果還沒在 vibe 模式，就自動進入
-            if !isVibeMode {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    isVibeMode = true
-                }
-            }
-        }
+        
         .overlay {
             if showCelebration {
                 celebrationOverlay
             }
         }
-        .statusBarHidden(isVibeMode)
         .animation(.easeInOut(duration: 0.3), value: isVibeMode)
     }
 }
@@ -134,15 +127,25 @@ private extension RatingTabView {
                             ProgressView().tint(.white)
                         }
                     }
-                    .onAppear { ratingLogger.debug("AsyncImage empty/loading: \(urlString)") }
+                    .onAppear {
+                        imageLoadStartTimes[urlString] = Date()
+                        ratingLogger.debug("Image load start [index=\(index)] [photoId=\(photo.id)] url=\(urlString)")
+                    }
                 case .success(let image):
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .clipped()
-                        .onAppear { ratingLogger.debug("AsyncImage success: \(urlString)") }
-                case .failure:
+                        .onAppear {
+                            let elapsedMs = finishImageLoad(for: urlString)
+                            if let elapsedMs {
+                                ratingLogger.debug("Image load success [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=\(elapsedMs)ms")
+                            } else {
+                                ratingLogger.debug("Image load success [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=unknown")
+                            }
+                        }
+                case .failure(let error):
                     ZStack {
                         Color.gray.opacity(0.3)
                         VStack(spacing: AppTheme.Spacing.sm) {
@@ -152,10 +155,24 @@ private extension RatingTabView {
                                 .foregroundColor(.white)
                         }
                     }
-                    .onAppear { ratingLogger.error("AsyncImage failure: \(urlString)") }
+                    .onAppear {
+                        let elapsedMs = finishImageLoad(for: urlString)
+                        if let elapsedMs {
+                            ratingLogger.error("Image load failure [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=\(elapsedMs)ms error=\(error.localizedDescription)")
+                        } else {
+                            ratingLogger.error("Image load failure [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=unknown error=\(error.localizedDescription)")
+                        }
+                    }
                 @unknown default:
                     Color.gray.opacity(0.3)
-                        .onAppear { ratingLogger.error("AsyncImage unknown phase for: \(urlString)") }
+                        .onAppear {
+                            let elapsedMs = finishImageLoad(for: urlString)
+                            if let elapsedMs {
+                                ratingLogger.error("Image load unknown phase [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=\(elapsedMs)ms")
+                            } else {
+                                ratingLogger.error("Image load unknown phase [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=unknown")
+                            }
+                        }
                 }
             }
             
@@ -377,6 +394,14 @@ private extension RatingTabView {
 
 // MARK: - Actions
 private extension RatingTabView {
+    func finishImageLoad(for urlString: String) -> Int? {
+        let now = Date()
+        guard let start = imageLoadStartTimes.removeValue(forKey: urlString) else {
+            return nil
+        }
+        let elapsedMs = Int(now.timeIntervalSince(start) * 1000)
+        return elapsedMs
+    }
     func handleSwipeEnd(_ value: DragGesture.Value) {
         let threshold: CGFloat = 100
         

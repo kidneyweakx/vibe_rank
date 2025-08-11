@@ -22,5 +22,7 @@
 		<string>en</string>
 		<string>zh-Hant</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>需要使用相機拍攝照片</string>
 </dict>
 </plist>
