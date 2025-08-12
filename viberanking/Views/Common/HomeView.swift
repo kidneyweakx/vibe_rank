@@ -94,10 +94,10 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader("Events", subtitle: "Latest event submissions")
             
-            // Two fixed-width columns to keep portrait cards from overlapping
+            // Two fixed-width columns, slightly larger cards without overlap
                 LazyVGrid(columns: [
-                GridItem(.flexible(minimum: 150), spacing: 14, alignment: .top),
-                GridItem(.flexible(minimum: 150), spacing: 14, alignment: .top)
+                GridItem(.flexible(minimum: 160), spacing: 14, alignment: .top),
+                GridItem(.flexible(minimum: 160), spacing: 14, alignment: .top)
             ], spacing: 18) {
                     ForEach(events) { item in
                         EventItemCard(item: item) { }
@@ -194,12 +194,13 @@ struct HomeView: View {
                     if let gallery = gallery { galleries.append(gallery) }
                 }
             }
-            return galleries
+            let final = galleries
                 .filter { !$0.photoURLs.isEmpty || $0.avatarURL != nil }
                 .sorted { $0.rank < $1.rank }
+            return final.isEmpty ? generateRandomUsers() : final
         } catch {
-            // If rankings fail entirely, do not use random placeholders
-            return []
+            // If rankings fail entirely, recommend some random users
+            return generateRandomUsers()
         }
     }
 
@@ -590,7 +591,7 @@ struct EventItemCard: View {
                                 )
                         )
                     
-                            if let urlString = item.imageUrl, let url = URL(string: urlString) {
+                            if let urlString = item.imageURL, let url = URL(string: urlString) {
                                 AsyncImage(url: url) { phase in
                                     switch phase {
                                     case .empty:
@@ -638,33 +639,8 @@ struct EventItemCard: View {
                     )
                     .cornerRadius(16)
                     
-                    // Event info overlay
-                    VStack {
-                        Spacer()
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(item.title)
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundColor(.white)
-                                .lineLimit(2)
-                                .multilineTextAlignment(.leading)
-                                .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
-                            
-                            if let startsAt = item.startsAt, !startsAt.isEmpty {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "clock")
-                                        .font(.system(size: 10))
-                                        .foregroundColor(.white.opacity(0.8))
-                                    
-                                    Text(String(startsAt.prefix(10)))
-                                        .font(.system(size: 11, weight: .medium))
-                                        .foregroundColor(.white.opacity(0.8))
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 12)
-                    }
+                    // Event info overlay removed (no title/date text)
+                    VStack { Spacer() }
                     
                     // "LIVE" badge for active events
                     VStack {
@@ -692,12 +668,7 @@ struct EventItemCard: View {
                 }
             }
             
-            // Intro line under image
-            Text(introLine)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(.white.opacity(0.85))
-                .lineLimit(1)
-                .truncationMode(.tail)
+            // No intro line
         }
         .buttonStyle(PlainButtonStyle())
         .scaleEffect(isPressed ? 0.96 : 1.0)

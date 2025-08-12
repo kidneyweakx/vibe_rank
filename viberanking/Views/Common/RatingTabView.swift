@@ -15,7 +15,6 @@ struct RatingTabView: View {
     @EnvironmentObject private var themeManager: ThemeManager
     @StateObject private var viewModel = PhotoRatingViewModel()
     @State private var currentCardOffset: CGSize = .zero
-    @State private var showCelebration = false
     @State private var likeButtonPressed = false
     @State private var refreshButtonPressed = false
     @State private var skipButtonPressed = false
@@ -110,11 +109,6 @@ struct RatingTabView: View {
             }
         }
         
-        .overlay {
-            if showCelebration {
-                celebrationOverlay
-            }
-        }
         .animation(.easeInOut(duration: 0.3), value: isVibeMode)
     }
 }
@@ -208,10 +202,7 @@ private extension RatingTabView {
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 6)
             
-            // Swipe indicators
-            if isTopCard {
-                swipeIndicators
-            }
+            // Swipe indicators removed
         }
         .offset(x: currentCardOffset.width, y: 0)
         .scaleEffect(1.0)
@@ -232,59 +223,7 @@ private extension RatingTabView {
         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: currentCardOffset)
     }
     
-    var swipeIndicators: some View {
-        ZStack {
-            // LIKE indicator (right)
-            if currentCardOffset.width > 30 {
-                VStack(spacing: 8) {
-                    Circle()
-                        .fill(.white.opacity(0.2))
-                        .frame(width: 100, height: 100)
-                        .overlay(
-                            Image(systemName: "heart.fill")
-                                .font(.system(size: 40, weight: .medium))
-                                .foregroundColor(.white)
-                        )
-                        .scaleEffect(1.0 + min(Double(currentCardOffset.width) / 300, 0.3))
-                    
-                    Text("LIKE")
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(.white.opacity(0.2))
-                        .cornerRadius(20)
-                }
-                .opacity(min(Double(currentCardOffset.width) / 120, 1.0))
-                .scaleEffect(0.8 + min(Double(currentCardOffset.width) / 400, 0.2))
-            }
-            
-            // FIX indicator (left)
-            if currentCardOffset.width < -30 {
-                VStack(spacing: 8) {
-                    Circle()
-                        .fill(.white.opacity(0.2))
-                        .frame(width: 100, height: 100)
-                        .overlay(
-                            Image(systemName: "wrench")
-                                .font(.system(size: 35, weight: .medium))
-                                .foregroundColor(.white)
-                        )
-                        .scaleEffect(1.0 + min(Double(-currentCardOffset.width) / 300, 0.3))
-                    
-                    Text("FIX 🥲")
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(.white.opacity(0.2))
-                        .cornerRadius(20)
-                }
-                .opacity(min(Double(-currentCardOffset.width) / 120, 1.0))
-                .scaleEffect(0.8 + min(Double(-currentCardOffset.width) / 400, 0.2))
-            }
-        }
-    }
+    // Removed swipeIndicators view
     
     var actionButtonsView: some View {
         HStack(spacing: 40) {
@@ -390,37 +329,7 @@ private extension RatingTabView {
         }
     }
     
-    var celebrationOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.5)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    showCelebration = false
-                }
-            
-            VStack(spacing: AppTheme.Spacing.lg) {
-                Text("🎉")
-                    .font(.system(size: 120))
-                    .scaleEffect(showCelebration ? 1.0 : 0.3)
-                    .animation(.spring(response: 0.8, dampingFraction: 0.6), value: showCelebration)
-                
-                Text("❤️ LIKE ❤️")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, AppTheme.Spacing.lg)
-                    .padding(.vertical, AppTheme.Spacing.sm)
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(20)
-            }
-        }
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                withAnimation(.easeOut(duration: 0.3)) {
-                    showCelebration = false
-                }
-            }
-        }
-    }
+    // celebration overlay removed
 }
 
 // MARK: - Actions
@@ -452,11 +361,6 @@ private extension RatingTabView {
         // Animate card away
         withAnimation(.easeInOut(duration: 0.3)) {
             currentCardOffset = CGSize(width: type == .like ? 500 : -500, height: 0)
-        }
-        
-        // Show celebration
-        if type == .like {
-            showCelebration = true
         }
         
         // Submit rating and reset

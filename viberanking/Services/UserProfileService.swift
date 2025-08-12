@@ -19,6 +19,7 @@ class UserProfileService: ObservableObject {
     @Published var error: AppError?
     
     private let userRepository = UserRepository()
+    private let userAPI = UserAPI()
     private let authenticationService: AuthenticationService
     private var cancellables = Set<AnyCancellable>()
     
@@ -104,6 +105,95 @@ class UserProfileService: ObservableObject {
         }
         
         isLoading = false
+    }
+
+    /// Update name and gender via dedicated API, keeping other fields intact
+    func updateNameAndGender(name: String?, gender: Gender?) async throws {
+        guard let currentUser = currentUser else { throw AppError.userNotFound }
+        isLoading = true
+        error = nil
+        do {
+            let response = try await userAPI.updateUserProfile(
+                userId: currentUser.id,
+                name: name,
+                gender: gender?.rawValue,
+                avatar: nil
+            )
+            // Try to refresh from repository to keep full data shape
+            if let refreshed = try? await userRepository.getUser(by: response.data.id) {
+                self.currentUser = refreshed
+            } else {
+                // Fallback: update current user locally based on response
+                var updated = currentUser
+                updated = User(
+                    id: response.data.id,
+                    name: response.data.name,
+                    email: currentUser.email,
+                    profileImageURL: response.data.avatar,
+                    gender: response.data.gender.flatMap { Gender(rawValue: $0) }
+                )
+                // Preserve existing progress and photos if any
+                self.currentUser?.ratingProgress = currentUser.ratingProgress
+                self.currentUser?.uploadedPhotos = currentUser.uploadedPhotos
+                self.currentUser = updated
+            }
+        } catch {
+            self.error = error as? AppError ?? .apiError(error)
+            isLoading = false
+            throw error
+        }
+        isLoading = false
+    }
+
+    /// Attempt to change the user's ID (username). Backend may return 409 on conflict.
+    func changeUserID(to newId: String) async throws {
+        guard let currentUser = currentUser else { throw AppError.userNotFound }
+        isLoading = true
+        error = nil
+        do {
+            try await userAPI.updateUserID(currentUserId: currentUser.id, newUserId: newId)
+            // Try to refresh via repository
+            if let refreshed = try? await userRepository.getUser(by: newId) {
+                self.currentUser = refreshed
+            } else if let apiProfile = try? await userAPI.getUserProfile(userId: newId) {
+                // Map minimal profile back to our User model, preserving existing fields
+                let mapped = User(
+                    id: apiProfile.data.id,
+                    name: apiProfile.data.name,
+                    email: currentUser.email,
+                    profileImageURL: apiProfile.data.avatar,
+                    gender: apiProfile.data.gender.flatMap { Gender(rawValue: $0) }
+                )
+                self.currentUser = mapped
+            } else {
+                // Last-resort: update ID locally so UI reflects change
+                var local = currentUser
+                // Construct a new User with updated id keeping known fields
+                let updated = User(
+                    id: newId,
+                    name: local.name,
+                    email: local.email,
+                    profileImageURL: local.profileImageURL,
+                    gender: local.gender
+                )
+                self.currentUser = updated
+            }
+        } catch {
+            self.error = error as? AppError ?? .apiError(error)
+            isLoading = false
+            throw error
+        }
+        isLoading = false
+    }
+
+    /// Check availability for a desired ID
+    func isUserIDAvailable(_ desiredId: String) async -> Bool {
+        do {
+            let res = try await userAPI.checkUserIDAvailable(desiredId)
+            return res.available
+        } catch {
+            return false
+        }
     }
     
     /// Delete user account and all data

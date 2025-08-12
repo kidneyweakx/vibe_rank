@@ -78,6 +78,14 @@ struct UserShareData: Codable {
     let createdAt: Date
 }
 
+// MARK: - Username / ID Management Models
+
+struct UserIDAvailabilityResponse: Codable {
+    let success: Bool
+    let available: Bool
+    let message: String?
+}
+
 struct QRCodeResponse: Codable {
     let success: Bool
     let data: QRCodeData
@@ -152,6 +160,25 @@ class UserAPI {
             method: .PUT,
             body: body,
             responseType: UserProfileResponse.self
+        )
+    }
+
+    /// Check if a desired custom user ID is available
+    func checkUserIDAvailable(_ desiredId: String) async throws -> UserIDAvailabilityResponse {
+        return try await apiClient.performRequest(
+            endpoint: "/api/user/id/check?desiredId=\(desiredId)",
+            method: .GET,
+            responseType: UserIDAvailabilityResponse.self
+        )
+    }
+
+    /// Update the user's custom ID (username). Backend should handle conflict errors (e.g., 409)
+    func updateUserID(currentUserId: String, newUserId: String) async throws {
+        let body: [String: Any] = ["newId": newUserId]
+        try await apiClient.performRequest(
+            endpoint: "/api/user/id/\(currentUserId)",
+            method: .PUT,
+            body: body
         )
     }
 }

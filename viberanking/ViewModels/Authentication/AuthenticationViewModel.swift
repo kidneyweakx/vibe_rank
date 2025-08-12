@@ -265,6 +265,31 @@ class AuthenticationViewModel: ObservableObject {
             }
         }
     }
+
+    /// Update name and gender
+    func saveProfileEdits(name: String?, gender: Gender?) async throws {
+        do {
+            try await userProfileService.updateNameAndGender(name: name, gender: gender)
+        } catch {
+            self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
+            throw error
+        }
+    }
+
+    /// Check if desired user ID is available
+    func checkUserIDAvailability(_ desiredId: String) async -> Bool {
+        return await userProfileService.isUserIDAvailable(desiredId)
+    }
+
+    /// Change user ID (username)
+    func changeUserID(to newId: String) async throws {
+        do {
+            try await userProfileService.changeUserID(to: newId)
+        } catch {
+            self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
+            throw error
+        }
+    }
     
     /// Update user rating progress
     func updateRatingProgress(_ progress: RatingProgress) {
