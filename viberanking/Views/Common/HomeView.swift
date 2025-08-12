@@ -96,11 +96,12 @@ struct HomeView: View {
             
             // Two columns tuned to avoid overlap on small screens
                 LazyVGrid(columns: [
-                GridItem(.flexible(minimum: 100), spacing: 12, alignment: .top),
-                GridItem(.flexible(minimum: 100), spacing: 12, alignment: .top)
-            ], spacing: 14) {
+                GridItem(.adaptive(minimum: 120), spacing: 12, alignment: .top)
+            ], spacing: 16) {
                     ForEach(events) { item in
                         EventItemCard(item: item) { }
+                            .frame(maxWidth: .infinity)
+                            .aspectRatio(3/4, contentMode: .fit)
                 }
             }
         }
@@ -381,13 +382,18 @@ struct TopUserGalleryCard: View {
                                         case .empty:
                                             ProgressView().tint(.white)
                                         case .success(let image):
-                                            image.resizable().scaledToFill()
+                                            image
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 80, height: 80)
+                                                .clipped()
                                         case .failure:
                                             Image(systemName: "photo").foregroundColor(.white.opacity(0.6))
                                         @unknown default:
                                             Color.clear
                                         }
                                     }
+                                    .frame(width: 80, height: 80)
                                     .clipped()
                                 } else {
                                     Image(systemName: "photo").foregroundColor(.white.opacity(0.6))
@@ -430,6 +436,7 @@ struct EventPhotoCard: View {
                             )
                         )
                         .aspectRatio(9/16, contentMode: .fit)
+                        .clipped()
                     .overlay(
                             RoundedRectangle(cornerRadius: 16)
                                 .stroke(
@@ -455,9 +462,9 @@ struct EventPhotoCard: View {
                             case .success(let image):
                                 image
                                     .resizable()
-                                    .aspectRatio(contentMode: .fill)
+                                    .scaledToFill()
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                                     .clipped()
-                                    .cornerRadius(16)
                             case .failure:
                                 VStack(spacing: 12) {
                                     Image(systemName: "photo.artframe")
@@ -471,6 +478,7 @@ struct EventPhotoCard: View {
                                 Color.clear
                             }
                         }
+                        .clipped()
                     } else {
                         VStack(spacing: 12) {
                             Image(systemName: "photo.artframe")
@@ -592,6 +600,7 @@ struct EventItemCard: View {
                                     .resizable()
                                     .scaledToFill()
                                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .clipped()
                             case .failure:
                                 VStack(spacing: 12) {
                                     Image(systemName: "calendar.badge.exclamationmark")
@@ -605,6 +614,7 @@ struct EventItemCard: View {
                                 Color.clear
                             }
                         }
+                        .clipped()
                     } else {
                         VStack(spacing: 12) {
                             Image(systemName: "calendar.badge.plus")
@@ -647,6 +657,7 @@ struct EventItemCard: View {
                     .padding(12)
                 }
                 .aspectRatio(9/16, contentMode: .fit)
+                .clipped()
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
@@ -734,7 +745,9 @@ struct RankedUserCard: View {
                             image
                                 .resizable()
                                 .scaledToFill()
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .frame(width: 160)
+                                .aspectRatio(9/16, contentMode: .fill)
+                                .clipped()
                         case .failure:
                             VStack(spacing: 8) {
                                 Image(systemName: "photo.artframe")
@@ -748,6 +761,9 @@ struct RankedUserCard: View {
                             Color.clear
                         }
                     }
+                    .frame(width: 160)
+                    .aspectRatio(9/16, contentMode: .fit)
+                    .clipped()
                 } else {
                     VStack(spacing: 8) {
                         Image(systemName: "photo.artframe")

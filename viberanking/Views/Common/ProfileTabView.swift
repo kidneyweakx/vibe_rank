@@ -44,7 +44,9 @@ struct ProfileTabView: View {
                 isPresented: $showingQRCode
             )
         }
-        .fullScreenCover(isPresented: $showingSettings) {
+        .fullScreenCover(isPresented: $showingSettings, onDismiss: {
+            Task { await viewModel.refreshData() }
+        }) {
             SettingsView()
         }
         .task {

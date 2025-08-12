@@ -75,13 +75,9 @@ struct ImagePreviewView: View {
                                     .font(.caption)
                                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                                // Inline selectable tags (max 5)
-                                ScrollView {
-                                    LazyVGrid(columns: [
-                                        GridItem(.flexible(minimum: 80)),
-                                        GridItem(.flexible(minimum: 80)),
-                                        GridItem(.flexible(minimum: 80))
-                                    ], spacing: 8) {
+                                // Horizontal scrollable chips (max 5 selected)
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    LazyHStack(spacing: 8) {
                                         ForEach(allTags, id: \.id) { tag in
                                             let isSelected = selectedTagIds.contains(tag.id)
                                             TagChipView(tag: tag, isSelected: isSelected) {
@@ -90,8 +86,8 @@ struct ImagePreviewView: View {
                                             .opacity(!isSelected && selectedTagIds.count >= 5 ? 0.5 : 1.0)
                                         }
                                     }
+                                    .padding(.horizontal, 2)
                                 }
-                                .frame(maxHeight: 160)
                             }
 
                             // 操作按鈕列

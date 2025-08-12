@@ -14,22 +14,20 @@ struct TagChipView: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 6) {
-                if let emoji = tag.emoji, !emoji.isEmpty {
-                    Text(emoji)
-                }
+            HStack(spacing: 8) {
+                if let emoji = tag.emoji, !emoji.isEmpty { Text(emoji) }
                 Text(tag.displayName)
                     .font(.system(size: 14, weight: .medium))
             }
             .foregroundColor(isSelected ? .black : .white)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
             .background(isSelected ? Color.white : Color.white.opacity(0.15))
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                Capsule()
                     .stroke(Color.white.opacity(0.25), lineWidth: 1)
             )
-            .cornerRadius(16)
+            .clipShape(Capsule())
         }
         .buttonStyle(.plain)
     }
