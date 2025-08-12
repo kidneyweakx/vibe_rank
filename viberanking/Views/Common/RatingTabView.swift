@@ -202,7 +202,33 @@ private extension RatingTabView {
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 6)
             
-            // Swipe indicators removed
+            // Minimal swipe indicators (right: flame, left: x)
+            if isTopCard {
+                if currentCardOffset.width > 30 {
+                    Circle()
+                        .fill(.white.opacity(0.2))
+                        .frame(width: 80, height: 80)
+                        .overlay(
+                            Image(systemName: "flame.fill")
+                                .font(.system(size: 34, weight: .medium))
+                                .foregroundColor(.white)
+                        )
+                        .opacity(min(Double(currentCardOffset.width) / 120.0, 1.0))
+                        .scaleEffect(0.9 + min(Double(currentCardOffset.width) / 400.0, 0.2))
+                }
+                if currentCardOffset.width < -30 {
+                    Circle()
+                        .fill(.white.opacity(0.2))
+                        .frame(width: 80, height: 80)
+                        .overlay(
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 30, weight: .medium))
+                                .foregroundColor(.white)
+                        )
+                        .opacity(min(Double(-currentCardOffset.width) / 120.0, 1.0))
+                        .scaleEffect(0.9 + min(Double(-currentCardOffset.width) / 400.0, 0.2))
+                }
+            }
         }
         .offset(x: currentCardOffset.width, y: 0)
         .scaleEffect(1.0)

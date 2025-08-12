@@ -10,7 +10,7 @@ import SwiftUI
 /// View for setting up user profile after first-time authentication
 struct UserProfileSetupView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
-    @Environment(\.colorScheme) private var colorScheme
+    // Force dark appearance for this screen
     @Environment(\.dismiss) private var dismiss
     
     @State private var displayName: String = ""
@@ -78,21 +78,18 @@ struct UserProfileSetupView: View {
             .clipShape(Circle())
             .overlay(
                 Circle()
-                    .stroke(
-                        colorScheme == .dark ? Color.white.opacity(0.2) : Color.black.opacity(0.1),
-                        lineWidth: 3
-                    )
+                    .stroke(Color.white.opacity(0.2), lineWidth: 3)
             )
             
             VStack(spacing: 8) {
                 Text("歡迎加入 VibeRanking!")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                    .foregroundColor(.white)
                 
                 Text("請完成您的個人資料設定")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.6))
                     .multilineTextAlignment(.center)
             }
         }
@@ -106,7 +103,7 @@ struct UserProfileSetupView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("顯示名稱")
                     .font(.headline)
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                    .foregroundColor(.white)
                 
                 TextField("輸入您的顯示名稱", text: $displayName)
                     .textFieldStyle(CustomTextFieldStyle())
@@ -118,7 +115,7 @@ struct UserProfileSetupView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("用戶 ID")
                     .font(.headline)
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                    .foregroundColor(.white)
                 
                 TextField("輸入您的用戶 ID", text: $customUserID)
                     .textFieldStyle(CustomTextFieldStyle())
@@ -127,14 +124,14 @@ struct UserProfileSetupView: View {
                 
                 Text("用戶 ID 將用於識別您的帳戶，設定後無法更改")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.6))
             }
             
             // Gender Selection
             VStack(alignment: .leading, spacing: 12) {
                 Text("性別")
                     .font(.headline)
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                    .foregroundColor(.white)
                 
                 HStack(spacing: 12) {
                     ForEach(Gender.allCases, id: \.self) { gender in
@@ -150,13 +147,8 @@ struct UserProfileSetupView: View {
         .padding(24)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(colorScheme == .dark ? Color(hex: "2D2D2D") : .white)
-                .shadow(
-                    color: colorScheme == .dark ? Color.black.opacity(0.3) : Color.gray.opacity(0.2),
-                    radius: 10,
-                    x: 0,
-                    y: 4
-                )
+                .fill(Color(hex: "2D2D2D"))
+                .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 4)
         )
     }
     
@@ -193,16 +185,7 @@ struct UserProfileSetupView: View {
     // MARK: - Background
     
     private var backgroundGradient: some View {
-        LinearGradient(
-            gradient: Gradient(
-                colors: colorScheme == .dark 
-                    ? [Color(hex: "1A1A2E"), Color(hex: "16213E")]
-                    : [Color(hex: "F5F7FA"), Color(hex: "E4E9F2")]
-            ),
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .ignoresSafeArea()
+        Color.black.ignoresSafeArea()
     }
     
     // MARK: - Methods
@@ -228,11 +211,12 @@ struct UserProfileSetupView: View {
         
         Task {
             do {
+                let email = initialUserData.authProvider == "guest" ? "" : initialUserData.email
                 let profileData = UserProfileData(
                     customUserID: customUserID,
                     displayName: displayName,
                     gender: selectedGender,
-                    email: initialUserData.email,
+                    email: email,
                     profileImageURL: initialUserData.profileImageURL,
                     authProvider: initialUserData.authProvider,
                     providerUserID: initialUserData.providerUserID
@@ -301,6 +285,7 @@ struct GenderSelectionButton: View {
                     )
             )
         }
+        .preferredColorScheme(.dark)
         .buttonStyle(PlainButtonStyle())
     }
     

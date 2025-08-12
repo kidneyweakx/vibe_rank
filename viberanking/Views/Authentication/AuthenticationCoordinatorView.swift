@@ -35,6 +35,7 @@ struct AuthenticationCoordinatorView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: authViewModel.authState)
+        .preferredColorScheme(.dark)
     }
 }
 

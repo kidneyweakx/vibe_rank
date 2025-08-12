@@ -19,10 +19,9 @@ struct SettingsView: View {
     @State private var customUserID: String = ""
     @State private var isCheckingID = false
     @State private var idAvailable: Bool? = nil
-    @State private var selectedGender: Gender? = nil
-    @State private var showGenderSheet = false
     @State private var bio = ""
     @State private var location = ""
+    @State private var pendingAvatarURL: String? = nil
     
     var body: some View {
         NavigationStack {
@@ -37,13 +36,7 @@ struct SettingsView: View {
                                 showingImagePicker = true
                             }) {
                                 Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color.pink.opacity(0.8), Color.purple.opacity(0.6)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
+                                    .fill(Color.black.opacity(0.3))
                                     .frame(width: 100, height: 100)
                                     .overlay(
                                         Group {
@@ -99,10 +92,10 @@ struct SettingsView: View {
                                             .padding(16)
                                             .background(
                                                 RoundedRectangle(cornerRadius: 12)
-                                                    .fill(Color.white.opacity(0.05))
+                                                    .fill(Color.black.opacity(0.4))
                                                     .overlay(
                                                         RoundedRectangle(cornerRadius: 12)
-                                                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
                                                     )
                                             )
                                             .onChange(of: customUserID) { _ in
@@ -128,7 +121,7 @@ struct SettingsView: View {
                                         }
                                         .padding(.horizontal, 12)
                                         .frame(height: 44)
-                                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(0.1)))
+                                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.black.opacity(0.5)))
                                     }
                                     if let idAvailable = idAvailable {
                                         Text(idAvailable ? "This ID is available" : "This ID is taken")
@@ -138,30 +131,6 @@ struct SettingsView: View {
                                         Text("ID can be changed here. We will check availability.")
                                             .font(.system(size: 12))
                                             .foregroundColor(.secondary)
-                                    }
-                                }
-                                // Gender Selection
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("Gender")
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundColor(.white.opacity(0.8))
-                                    HStack(spacing: 12) {
-                                        ForEach(Gender.allCases, id: \.self) { gender in
-                                            Button(action: { selectedGender = gender }) {
-                                                Text(gender.displayName)
-                                                    .padding(.horizontal, 12)
-                                                    .padding(.vertical, 8)
-                                                    .background(
-                                                        RoundedRectangle(cornerRadius: 10)
-                                                            .fill((selectedGender == gender) ? Color.blue.opacity(0.3) : Color.white.opacity(0.05))
-                                                    )
-                                                    .overlay(
-                                                        RoundedRectangle(cornerRadius: 10)
-                                                            .stroke((selectedGender == gender) ? Color.blue : Color.white.opacity(0.1), lineWidth: 1)
-                                                    )
-                                            }
-                                            .foregroundColor(.white)
-                                        }
                                     }
                                 }
                                 SettingsTextField(title: "Bio", text: $bio, placeholder: "Tell us about yourself")
@@ -313,24 +282,12 @@ struct SettingsView: View {
         } message: {
             Text("Are you sure you want to sign out?")
         }
-        .onAppear {
-            loadUserData()
-            // Prompt gender selection if not set
-            if selectedGender == nil { showGenderSheet = authViewModel.user?.gender == nil }
-        }
-        .sheet(isPresented: $showGenderSheet) {
-            GenderPromptView(selectedGender: $selectedGender) {
-                showGenderSheet = false
-            }
-            .presentationDetents([.height(260)])
-            .presentationDragIndicator(.visible)
-        }
+        .onAppear { loadUserData() }
     }
     
     private func loadUserData() {
         name = authViewModel.user?.name ?? ""
         customUserID = authViewModel.user?.id ?? ""
-        selectedGender = authViewModel.user?.gender
         // Load other user data
     }
     
@@ -350,14 +307,29 @@ struct SettingsView: View {
                     return
                 }
             }
-            // Update name and gender
-            do { try await authViewModel.saveProfileEdits(name: name.isEmpty ? nil : name, gender: selectedGender) } catch { return }
+            // Update name only (gender editing disabled)
+            do { try await authViewModel.saveProfileEdits(name: name.isEmpty ? nil : name, gender: nil) } catch { return }
+            // Apply pending avatar URL if any
+            if let avatar = pendingAvatarURL {
+                do { try await authViewModel.saveAvatar(urlString: avatar) } catch { /* ignore to not block */ }
+            }
             await MainActor.run { dismiss() }
         }
     }
     
     private func uploadProfileImage(_ image: UIImage) {
-        // Upload profile image logic
+        // Upload profile image and persist avatar URL
+        Task {
+            guard let userId = authViewModel.user?.id else { return }
+            let uploadService = PhotoUploadService()
+            do {
+                let photo = try await uploadService.uploadPhoto(image, for: userId)
+                let url = photo.imageURL.bestAvailableURL
+                pendingAvatarURL = url
+            } catch {
+                // ignore for now
+            }
+        }
     }
 }
 
@@ -420,10 +392,10 @@ struct SettingsTextField: View {
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white.opacity(0.05))
+                        .fill(Color.black.opacity(0.4))
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                .stroke(Color.white.opacity(0.08), lineWidth: 1)
                         )
                 )
         }
@@ -456,10 +428,10 @@ struct SettingsRow: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.white.opacity(0.05))
+                    .fill(Color.black.opacity(0.3))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                            .stroke(Color.white.opacity(0.06), lineWidth: 1)
                     )
             )
         }

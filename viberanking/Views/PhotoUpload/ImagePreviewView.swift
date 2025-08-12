@@ -18,9 +18,9 @@ struct ImagePreviewView: View {
     @State private var showingCropView = false
     @State private var uploadError: String?
     @State private var uploadSuccess = false
-    @State private var showingTagSelector = false
     @State private var selectedTagIds: Set<String> = []
     @State private var selectedTags: [Tag] = []
+    @State private var allTags: [Tag] = []
     private let tagsAPI = TagsAPI()
     
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
@@ -75,36 +75,23 @@ struct ImagePreviewView: View {
                                     .font(.caption)
                                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 8) {
-                                        if selectedTags.isEmpty {
-                                            Text("Select up to 10 tags")
-                                                .foregroundColor(.white.opacity(0.5))
-                                                .font(.caption)
-                                        } else {
-                                            ForEach(selectedTags, id: \.id) { tag in
-                                                TagChipView(tag: tag, isSelected: true, onTap: {})
+                                // Inline selectable tags (max 5)
+                                ScrollView {
+                                    LazyVGrid(columns: [
+                                        GridItem(.flexible(minimum: 80)),
+                                        GridItem(.flexible(minimum: 80)),
+                                        GridItem(.flexible(minimum: 80))
+                                    ], spacing: 8) {
+                                        ForEach(allTags, id: \.id) { tag in
+                                            let isSelected = selectedTagIds.contains(tag.id)
+                                            TagChipView(tag: tag, isSelected: isSelected) {
+                                                toggleTagSelection(tag)
                                             }
+                                            .opacity(!isSelected && selectedTagIds.count >= 5 ? 0.5 : 1.0)
                                         }
                                     }
-                                    .padding(.horizontal, 2)
                                 }
-
-                                Button {
-                                    showingTagSelector = true
-                                } label: {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "tag")
-                                        Text("Choose Tags")
-                                            .font(.subheadline)
-                                    }
-                                    .foregroundColor(.white)
-                                    .padding(.vertical, 8)
-                                    .padding(.horizontal, 12)
-                                    .background(Color.white.opacity(0.15))
-                                    .cornerRadius(12)
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .frame(maxHeight: 160)
                             }
 
                             // 操作按鈕列
@@ -162,12 +149,7 @@ struct ImagePreviewView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingTagSelector) {
-            TagSelectorSheet { ids in
-                selectedTagIds = ids
-                Task { await fetchSelectedTags() }
-            }
-        }
+        .task { await loadAllTags() }
         .onAppear {
             print("🎯 ImagePreviewView 顯示 - 圖片尺寸: \(image.size)")
         }
@@ -232,7 +214,8 @@ struct ImagePreviewView: View {
                 print("📤 調用 PhotoUploadService.uploadPhoto")
                 let uploaded = try await photoUploadService.uploadPhoto(imageToUpload, for: userId)
                 if !selectedTagIds.isEmpty {
-                    _ = try? await tagsAPI.attachTags(to: uploaded.id, tagIds: Array(selectedTagIds))
+                    let limited = Array(selectedTagIds.prefix(5))
+                    _ = try? await tagsAPI.attachTags(to: uploaded.id, tagIds: limited)
                 }
                 print("✅ 上傳完成")
                 
@@ -261,6 +244,24 @@ struct ImagePreviewView: View {
         } catch {
             await MainActor.run { selectedTags = [] }
         }
+    }
+
+    func loadAllTags() async {
+        do {
+            let response = try await tagsAPI.getAllTags()
+            await MainActor.run { self.allTags = response.data }
+        } catch {
+            await MainActor.run { self.allTags = [] }
+        }
+    }
+
+    func toggleTagSelection(_ tag: Tag) {
+        if selectedTagIds.contains(tag.id) {
+            selectedTagIds.remove(tag.id)
+        } else if selectedTagIds.count < 5 {
+            selectedTagIds.insert(tag.id)
+        }
+        Task { await fetchSelectedTags() }
     }
 }
 

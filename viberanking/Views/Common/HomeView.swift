@@ -94,11 +94,11 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader("Events", subtitle: "Latest event submissions")
             
-            // Two fixed-width columns, slightly larger cards without overlap
+            // Two columns tuned to avoid overlap on small screens
                 LazyVGrid(columns: [
-                GridItem(.flexible(minimum: 160), spacing: 14, alignment: .top),
-                GridItem(.flexible(minimum: 160), spacing: 14, alignment: .top)
-            ], spacing: 18) {
+                GridItem(.flexible(minimum: 100), spacing: 12, alignment: .top),
+                GridItem(.flexible(minimum: 100), spacing: 12, alignment: .top)
+            ], spacing: 14) {
                     ForEach(events) { item in
                         EventItemCard(item: item) { }
                 }
@@ -568,46 +568,31 @@ struct EventItemCard: View {
             }
         }) {
             VStack(spacing: 0) {
-                // Event image with 9:16 aspect ratio (vertical)
+                // Event image with enforced 9:16 aspect ratio and hard clipping to rounded rect
                 ZStack {
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .aspectRatio(9/16, contentMode: .fit)
-                    .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [Color.white.opacity(0.2), Color.white.opacity(0.05)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 1
-                                )
-                        )
+                    // Background subtle gradient
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
                     
-                            if let urlString = item.imageURL, let url = URL(string: urlString) {
-                                AsyncImage(url: url) { phase in
-                                    switch phase {
-                                    case .empty:
+                    if let urlString = item.imageURL, let url = URL(string: urlString) {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
                                 VStack(spacing: 12) {
-                                        ProgressView()
-                                            .progressViewStyle(.circular)
+                                    ProgressView()
+                                        .progressViewStyle(.circular)
                                         .tint(.white.opacity(0.7))
                                         .scaleEffect(0.8)
                                 }
-                                    case .success(let image):
-                                        image
-                                            .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .clipped()
-                                    .cornerRadius(16)
-                                    case .failure:
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            case .failure:
                                 VStack(spacing: 12) {
                                     Image(systemName: "calendar.badge.exclamationmark")
                                         .font(.system(size: 32))
@@ -616,11 +601,11 @@ struct EventItemCard: View {
                                         .font(.system(size: 12, weight: .medium))
                                         .foregroundColor(.white.opacity(0.4))
                                 }
-                                    @unknown default:
-                                        Color.clear
-                                    }
-                                }
-                            } else {
+                            @unknown default:
+                                Color.clear
+                            }
+                        }
+                    } else {
                         VStack(spacing: 12) {
                             Image(systemName: "calendar.badge.plus")
                                 .font(.system(size: 32))
@@ -637,35 +622,43 @@ struct EventItemCard: View {
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .cornerRadius(16)
                     
                     // Event info overlay removed (no title/date text)
                     VStack { Spacer() }
                     
                     // "LIVE" badge for active events
                     VStack {
-                            HStack {
+                        HStack {
                             Spacer()
                             HStack(spacing: 4) {
                                 Circle()
                                     .fill(Color.red)
                                     .frame(width: 6, height: 6)
-                                
                                 Text("LIVE")
                                     .font(.system(size: 10, weight: .bold))
                                     .foregroundColor(.white)
                             }
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(
-                                Capsule()
-                                    .fill(Color.black.opacity(0.7))
-                            )
+                            .background(Capsule().fill(Color.black.opacity(0.7)))
                         }
                         Spacer()
                     }
                     .padding(12)
                 }
+                .aspectRatio(9/16, contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.2), Color.white.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
             }
             
             // No intro line

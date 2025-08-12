@@ -119,13 +119,21 @@ class AuthenticationViewModel: ObservableObject {
         Task {
             do {
                 let user = try await authenticationService.signInWithGoogle()
+                // Route to onboarding immediately after login
                 self.user = user
-                self.isAuthenticated = true
-                self.authState = .signedIn
-                self.needsProfileSetup = false
+                self.isAuthenticated = false
+                self.initialUserData = InitialUserData(
+                    name: user.name,
+                    email: user.email,
+                    profileImageURL: user.profileImageURL,
+                    authProvider: "google",
+                    providerUserID: user.id
+                )
+                self.needsProfileSetup = true
+                self.authState = .needsProfileSetup
                 
                 // Log analytics event
-                logAuthenticationEvent(provider: "google", success: true)
+                logAuthenticationEvent(provider: "google_onboard", success: true)
             } catch {
                 // Check if this is a 404 error indicating new user needs profile setup
                 if let appError = error as? AppError,
@@ -154,13 +162,21 @@ class AuthenticationViewModel: ObservableObject {
         Task {
             do {
                 let user = try await authenticationService.signInWithApple()
+                // Route to onboarding immediately after login
                 self.user = user
-                self.isAuthenticated = true
-                self.authState = .signedIn
-                self.needsProfileSetup = false
+                self.isAuthenticated = false
+                self.initialUserData = InitialUserData(
+                    name: user.name,
+                    email: user.email,
+                    profileImageURL: user.profileImageURL,
+                    authProvider: "apple",
+                    providerUserID: user.id
+                )
+                self.needsProfileSetup = true
+                self.authState = .needsProfileSetup
                 
                 // Log analytics event
-                logAuthenticationEvent(provider: "apple", success: true)
+                logAuthenticationEvent(provider: "apple_onboard", success: true)
             } catch {
                 // Check if this is a 404 error indicating new user needs profile setup
                 if let appError = error as? AppError,
@@ -185,19 +201,28 @@ class AuthenticationViewModel: ObservableObject {
         errorMessage = nil
         authState = .signingIn
         isGuest = true
-        
+
+        // Create a temporary guest user and require onboarding
         let guestUser = User(
             id: "guest_\(UUID().uuidString)",
             name: "guest.user_name".localized,
             email: "guest@example.com"
         )
         self.user = guestUser
-        self.isAuthenticated = true
-        self.authState = .signedIn
+        self.isAuthenticated = false
+        self.initialUserData = InitialUserData(
+            name: "",
+            email: guestUser.email,
+            profileImageURL: nil,
+            authProvider: "guest",
+            providerUserID: guestUser.id
+        )
+        self.needsProfileSetup = true
+        self.authState = .needsProfileSetup
         isLoading = false
-        
+
         // Log analytics event
-        logAuthenticationEvent(provider: "guest", success: true)
+        logAuthenticationEvent(provider: "guest_onboard", success: true)
     }
     
     /// Sign out the current user
@@ -270,6 +295,16 @@ class AuthenticationViewModel: ObservableObject {
     func saveProfileEdits(name: String?, gender: Gender?) async throws {
         do {
             try await userProfileService.updateNameAndGender(name: name, gender: gender)
+        } catch {
+            self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
+            throw error
+        }
+    }
+
+    /// Update avatar URL after uploading image
+    func saveAvatar(urlString: String) async throws {
+        do {
+            try await userProfileService.updateAvatar(urlString: urlString)
         } catch {
             self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
             throw error

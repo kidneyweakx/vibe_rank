@@ -145,6 +145,42 @@ class UserProfileService: ObservableObject {
         isLoading = false
     }
 
+    /// Update only the user's avatar URL
+    func updateAvatar(urlString: String) async throws {
+        guard let currentUser = currentUser else { throw AppError.userNotFound }
+        isLoading = true
+        error = nil
+        do {
+            let response = try await userAPI.updateUserProfile(
+                userId: currentUser.id,
+                name: nil,
+                gender: nil,
+                avatar: urlString
+            )
+            // Try to refresh from repository to keep full data shape
+            if let refreshed = try? await userRepository.getUser(by: response.data.id) {
+                self.currentUser = refreshed
+            } else {
+                var updated = currentUser
+                updated = User(
+                    id: response.data.id,
+                    name: response.data.name,
+                    email: currentUser.email,
+                    profileImageURL: response.data.avatar,
+                    gender: response.data.gender.flatMap { Gender(rawValue: $0) }
+                )
+                updated.ratingProgress = currentUser.ratingProgress
+                updated.uploadedPhotos = currentUser.uploadedPhotos
+                self.currentUser = updated
+            }
+        } catch {
+            self.error = error as? AppError ?? .apiError(error)
+            isLoading = false
+            throw error
+        }
+        isLoading = false
+    }
+
     /// Attempt to change the user's ID (username). Backend may return 409 on conflict.
     func changeUserID(to newId: String) async throws {
         guard let currentUser = currentUser else { throw AppError.userNotFound }
