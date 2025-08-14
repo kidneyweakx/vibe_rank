@@ -10,6 +10,7 @@ import Foundation
 // MARK: - User Repository Implementation
 class UserRepository: UserRepositoryProtocol {
     private let apiClient = APIClient.shared
+    private let userAPI = UserAPI()
     
     // MARK: - Private Helper Methods
     
@@ -91,11 +92,17 @@ class UserRepository: UserRepositoryProtocol {
         try validateUserId(id)
         
         do {
-            return try await apiClient.performRequest(
-                endpoint: "/users/\(id)",
-                method: .GET,
-                responseType: User.self
+            let response = try await userAPI.getUserProfile(userId: id)
+            let profile = response.data
+            let mappedGender = profile.gender.flatMap { Gender(rawValue: $0) }
+            let user = User(
+                id: profile.id,
+                name: profile.name,
+                email: profile.email,
+                profileImageURL: profile.avatar,
+                gender: mappedGender
             )
+            return user
         } catch let apiError as APIError {
             if case .serverError(let code) = apiError, code == 404 {
                 print("API error while getting user: Not Found (404) – 將視為無資料並嘗試建立新檔案")
