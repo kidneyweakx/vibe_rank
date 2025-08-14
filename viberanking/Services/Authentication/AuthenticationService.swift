@@ -344,6 +344,34 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
             pendingUserData = nil // Clear pending data
             return user
         } catch let apiError as APIError {
+            // Fallback: if backend returns 400 (e.g., UNIQUE constraint on email), try updating existing profile
+            if case .serverError(let statusCode) = apiError, statusCode == 400 {
+                do {
+                    let userAPI = UserAPI()
+                    // Attempt to update profile using the chosen customUserID
+                    let updateResponse = try await userAPI.updateUserProfile(
+                        userId: profileData.customUserID,
+                        name: profileData.displayName,
+                        gender: profileData.gender.rawValue,
+                        avatar: profileData.profileImageURL
+                    )
+                    // Map minimal response to our User model
+                    let user = User(
+                        id: updateResponse.data.id,
+                        name: updateResponse.data.name,
+                        email: updateResponse.data.email,
+                        profileImageURL: updateResponse.data.avatar,
+                        gender: updateResponse.data.gender.flatMap { Gender(rawValue: $0) }
+                    )
+                    currentUser = user
+                    pendingUserData = nil
+                    return user
+                } catch let fallbackError as APIError {
+                    throw convertAPIErrorToAppError(fallbackError)
+                } catch {
+                    throw AppError.apiError(error)
+                }
+            }
             throw convertAPIErrorToAppError(apiError)
         }
     }

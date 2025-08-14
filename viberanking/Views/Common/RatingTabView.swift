@@ -221,7 +221,7 @@ private extension RatingTabView {
                         .fill(.white.opacity(0.2))
                         .frame(width: 80, height: 80)
                         .overlay(
-                            Image(systemName: "arrow.clockwise")
+                            Image(systemName: "xmark")
                                 .font(.system(size: 30, weight: .medium))
                                 .foregroundColor(.white)
                         )
@@ -261,7 +261,7 @@ private extension RatingTabView {
                     .fill(.white.opacity(0.12))
                     .frame(width: 50, height: 50)
                     .overlay(
-                        Image(systemName: "arrow.clockwise")
+                        Image(systemName: "xmark")
                             .font(.system(size: 20, weight: .medium))
                             .foregroundColor(.white.opacity(0.7))
                     )
@@ -305,7 +305,7 @@ private extension RatingTabView {
                     .fill(.white.opacity(0.12))
                     .frame(width: 50, height: 50)
                     .overlay(
-                        Image(systemName: "wrench")
+                        Image(systemName: "checkmark")
                             .font(.system(size: 18, weight: .medium))
                             .foregroundColor(.white.opacity(0.7))
                     )

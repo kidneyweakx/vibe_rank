@@ -95,20 +95,11 @@ class AuthAPI {
     // MARK: - Profile Setup
     
     func createUserProfile(_ profileData: UserProfileData) async throws -> AuthResponse {
-        // Ensure email is present and unique for guests to satisfy backend required property and UNIQUE(email)
-        let trimmedEmail = profileData.email.trimmingCharacters(in: .whitespacesAndNewlines)
-        let effectiveEmail: String = {
-            if trimmedEmail.isEmpty || trimmedEmail.lowercased() == "guest@example.com" {
-                return "guest+\(profileData.providerUserID)@example.com"
-            }
-            return trimmedEmail
-        }()
-
-        var body: [String: Any] = [
+        let body: [String: Any] = [
             "customUserID": profileData.customUserID,
             "displayName": profileData.displayName,
             "gender": profileData.gender.rawValue,
-            "email": effectiveEmail,
+            "email": profileData.email,
             "profileImageURL": profileData.profileImageURL as Any,
             "authProvider": profileData.authProvider,
             "providerUserID": profileData.providerUserID

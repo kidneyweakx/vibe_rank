@@ -63,9 +63,10 @@ class UserProfileService: ObservableObject {
                 try? await userRepository.updateLastActivity(userId: existingUser.id)
                 
             } else {
-                print("ℹ️ No existing profile found, entering profile setup flow instead of creating on /users")
-                // Defer creation to profile setup screen instead of calling POST /users which may not exist
-                throw AppError.serverError(404)
+                // No existing profile. Do not set error or throw.
+                // Defer to Authentication flow (ViewModel) to present profile setup.
+                print("ℹ️ No existing profile found. Deferring to onboarding without marking error.")
+                // Intentionally keep currentUser as nil so UI can route to onboarding.
             }
             
         } catch let appError as AppError {
