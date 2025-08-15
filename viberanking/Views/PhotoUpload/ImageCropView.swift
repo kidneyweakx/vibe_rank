@@ -27,12 +27,12 @@ struct ImageCropView: View {
                 Color.black.ignoresSafeArea()
                 
                 VStack(spacing: 20) {
-                    Text("拖動調整裁切位置")
+                    Text("crop.instruction.move".localized)
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding(.top, 20)
                     
-                    Text("雙指縮放，單指拖動")
+                    Text("crop.instruction.zoom_pan".localized)
                         .font(.subheadline)
                         .foregroundColor(.gray)
                     
@@ -132,7 +132,7 @@ struct ImageCropView: View {
                         )
                     )
                     
-                    Text("9:16 直板比例")
+                    Text("crop.aspect_916".localized)
                         .font(.caption)
                         .foregroundColor(.gray)
                     
@@ -140,7 +140,7 @@ struct ImageCropView: View {
                     
                     // 操作按鈕
                     HStack(spacing: 20) {
-                        Button("重置") {
+                        Button("crop.reset".localized) {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 imageOffset = .zero
                                 imageScale = 1.0
@@ -153,7 +153,7 @@ struct ImageCropView: View {
                         .background(Color.gray.opacity(0.3))
                         .cornerRadius(25)
                         
-                        Button("取消") {
+                        Button("common.cancel".localized) {
                             dismiss()
                         }
                         .foregroundColor(.white)
@@ -162,7 +162,7 @@ struct ImageCropView: View {
                         .background(Color.gray.opacity(0.3))
                         .cornerRadius(25)
                         
-                        Button("確認裁切") {
+                        Button("crop.confirm".localized) {
                             cropImage()
                         }
                         .foregroundColor(.white)

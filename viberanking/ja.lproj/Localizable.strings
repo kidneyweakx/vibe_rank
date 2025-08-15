@@ -59,6 +59,12 @@
 "upload.progress" = "%d%%完了";
 "upload.success" = "アップロード成功！";
 "upload.success_desc" = "あなたの写真は正常にアップロードされました。他のユーザーが評価するのを待っています";
+"upload.uploading_progress" = "アップロード中... %d%%";
+"upload.tags" = "タグ";
+"upload.crop" = "切り取り";
+"upload.please_crop_first" = "先に切り取ってください";
+"upload.please_crop_portrait" = "アップロード前に画像を9:16の縦長に切り取ってください";
+"auth.login_required" = "先にサインインしてください";
 "upload.failed" = "アップロード失敗";
 "upload.unknown_error" = "不明なエラー";
 "upload.retry" = "再試行";
@@ -418,3 +424,48 @@
 "common.ok" = "OK";
 "common.yes" = "はい";
 "common.no" = "いいえ";
+"contact.title" = "お問い合わせ";
+"contact.subtitle" = "ご意見・ご質問・サポートが必要な場合は、お気軽にご連絡ください:";
+"contact.email" = "メール";
+"contact.email.address" = "support@ninjaplus.app";
+"contact.twitter" = "Twitter";
+"contact.twitter.handle" = "@ninjaplusapp";
+"contact.business" = "ビジネスお問い合わせ";
+"contact.business.address" = "business@ninjaplus.app";
+
+// MARK: - Home
+"home.recommended.title" = "おすすめ";
+"home.recommended.subtitle" = "上位ランクのユーザー";
+"home.events.title" = "イベント";
+"home.events.subtitle" = "最新のイベント投稿";
+
+// MARK: - Common (extra)
+"common.event_photo" = "イベント写真";
+"common.event" = "イベント";
+"common.live" = "ライブ";
+"common.photo" = "写真";
+"common.no_photos" = "写真なし";
+"common.no_tag" = "タグなし";
+"common.image_load_failed" = "画像の読み込みに失敗しました";
+
+// MARK: - Upload Menu
+"upload.menu.title" = "アップロード方法を選択";
+"upload.menu.camera" = "カメラ";
+"upload.menu.library" = "フォトライブラリ";
+
+// MARK: - Image Crop
+"crop.instruction.move" = "ドラッグして切り抜きを調整";
+"crop.instruction.zoom_pan" = "ピンチで拡大縮小、ドラッグで移動";
+"crop.aspect_916" = "9:16 縦長比率";
+"crop.reset" = "リセット";
+"crop.confirm" = "切り抜きを確定";
+
+// MARK: - Profile Tab Extras
+"profile.likes" = "いいね";
+"profile.rank" = "ランク";
+"profile.share_profile" = "プロフィールを共有";
+"profile.edit_profile" = "プロフィールを編集";
+"profile.week" = "第%d週";
+"profile.add_photo" = "写真を追加";
+"profile.scan_to_view" = "スキャンしてプロフィールを表示";
+"profile.share_qr_code" = "QRコードを共有";

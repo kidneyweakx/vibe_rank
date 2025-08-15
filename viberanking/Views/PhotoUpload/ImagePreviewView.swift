@@ -56,7 +56,7 @@ struct ImagePreviewView: View {
                                     .tint(.white)
                                     .frame(width: 200)
 
-                                Text("上傳中... \(Int(uploadProgress * 100))%")
+                                Text(String(format: "upload.uploading_progress".localized, Int(uploadProgress * 100)))
                                     .foregroundColor(.white)
                                     .font(.subheadline)
                             }
@@ -70,7 +70,7 @@ struct ImagePreviewView: View {
                         VStack(spacing: 16) {
                             // 標籤選擇
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Tags")
+                                Text("upload.tags".localized)
                                     .foregroundColor(.white.opacity(0.8))
                                     .font(.caption)
                                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -99,7 +99,7 @@ struct ImagePreviewView: View {
                                     VStack(spacing: 8) {
                                         Image(systemName: "crop")
                                             .font(.title2)
-                                        Text("裁切")
+                                        Text("upload.crop".localized)
                                             .font(.caption)
                                     }
                                     .foregroundColor(.white)
@@ -117,7 +117,7 @@ struct ImagePreviewView: View {
                                     HStack(spacing: 8) {
                                         Image(systemName: "arrow.up.circle.fill")
                                             .font(.title2)
-                                        Text(croppedImage == nil ? "請先裁切" : "上傳")
+                                        Text(croppedImage == nil ? "upload.please_crop_first".localized : "upload.start_upload".localized)
                                             .font(.headline)
                                     }
                                     .foregroundColor(.white)
@@ -137,7 +137,7 @@ struct ImagePreviewView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("取消") {
+                    Button("common.cancel".localized) {
                         onCancel()
                         dismiss()
                     }
@@ -157,37 +157,37 @@ struct ImagePreviewView: View {
         .onChange(of: showingCropView) { isShowing in
             print("📱 裁切視圖狀態變更: \(isShowing)")
         }
-        .alert("上傳失敗", isPresented: .constant(uploadError != nil)) {
-            Button("確定") {
+        .alert("upload.failed".localized, isPresented: .constant(uploadError != nil)) {
+            Button("common.ok".localized) {
                 uploadError = nil
             }
         } message: {
             if let error = uploadError { Text(error) }
         }
-        .alert("上傳成功", isPresented: $uploadSuccess) {
-            Button("確定") {
+        .alert("upload.success".localized, isPresented: $uploadSuccess) {
+            Button("common.ok".localized) {
                 onCancel()
                 dismiss()
             }
         } message: {
-            Text("照片已成功上傳！")
+            Text("upload.success_desc".localized)
         }
     }
     
     func uploadImage() {
         // 檢查是否已裁切為直板
         if croppedImage == nil {
-            uploadError = "請先裁切圖片為直板後再上傳"
+            uploadError = "upload.please_crop_portrait".localized
             return
         }
         
         guard let userId = authViewModel.user?.id else {
-            uploadError = "請先登入"
+            uploadError = "auth.login_required".localized
             return
         }
         
         guard let imageToUpload = croppedImage else {
-            uploadError = "請先裁切圖片"
+            uploadError = "upload.please_crop_first".localized
             return
         }
         

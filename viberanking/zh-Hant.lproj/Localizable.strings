@@ -59,6 +59,12 @@
 "upload.progress" = "%d%% 完成";
 "upload.success" = "上傳成功！";
 "upload.success_desc" = "你的照片已成功上傳，現在等待其他用戶評分";
+"upload.uploading_progress" = "上傳中... %d%%";
+"upload.tags" = "標籤";
+"upload.crop" = "裁切";
+"upload.please_crop_first" = "請先裁切";
+"upload.please_crop_portrait" = "請先將圖片裁切為 9:16 直板後再上傳";
+"auth.login_required" = "請先登入";
 "upload.failed" = "上傳失敗";
 "upload.unknown_error" = "未知錯誤";
 "upload.retry" = "重試";
@@ -418,7 +424,51 @@
 "common.ok" = "確定";
 "common.yes" = "是";
 "common.no" = "否";
+"contact.title" = "聯絡我們";
+"contact.subtitle" = "我們很樂意聽到你的聲音。如有任何問題、回饋或需要支援，歡迎與我們聯繫：";
+"contact.email" = "電子郵件";
+"contact.email.address" = "support@ninjaplus.app";
+"contact.twitter" = "Twitter";
+"contact.twitter.handle" = "@ninjaplusapp";
+"contact.business" = "商務合作";
+"contact.business.address" = "business@ninjaplus.app";
 
+// MARK: - Home
+"home.recommended.title" = "推薦用戶";
+"home.recommended.subtitle" = "排行榜頂尖用戶";
+"home.events.title" = "活動";
+"home.events.subtitle" = "最新活動投稿";
+
+// MARK: - Common (extra)
+"common.event_photo" = "活動照片";
+"common.event" = "活動";
+"common.live" = "直播";
+"common.photo" = "照片";
+"common.no_photos" = "無照片";
+"common.no_tag" = "無標籤";
+"common.image_load_failed" = "圖片加載失敗";
+
+// MARK: - Upload Menu
+"upload.menu.title" = "選擇上傳方式";
+"upload.menu.camera" = "拍照";
+"upload.menu.library" = "相簿";
+
+// MARK: - Image Crop
+"crop.instruction.move" = "拖動調整裁切位置";
+"crop.instruction.zoom_pan" = "雙指縮放，單指拖動";
+"crop.aspect_916" = "9:16 直板比例";
+"crop.reset" = "重置";
+"crop.confirm" = "確認裁切";
+
+// MARK: - Profile Tab Extras
+"profile.likes" = "讚";
+"profile.rank" = "排名";
+"profile.share_profile" = "分享個人檔案";
+"profile.edit_profile" = "編輯個人檔案";
+"profile.week" = "第 %d 週";
+"profile.add_photo" = "新增照片";
+"profile.scan_to_view" = "掃描查看個人檔案";
+"profile.share_qr_code" = "分享 QR Code";
 "profile.title" = "個人檔案";
 "profile.settings.title" = "設定";
 "profile.guest.name" = "訪客用戶";

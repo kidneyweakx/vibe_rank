@@ -19,143 +19,143 @@ struct TermsOfServiceView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         // Header
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Vibe Ranking Terms of Service")
+                            Text("tos.title".localized)
                                 .font(.largeTitle)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
                             
-                            Text("Last Updated: August 9, 2025")
+                            Text("policy.last_updated".localized(with: "August 9, 2025"))
                                 .font(.caption)
                                 .foregroundColor(.gray)
                         }
                         
                         // Introduction
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("By accessing or using **Vibe Ranking**'s services (including our app, API, and related tools), you agree to comply with these Terms of Service (\"ToS\"). If you disagree, please refrain from using our services.")
+                            Text("tos.intro".localized)
                                 .font(.body)
                                 .foregroundColor(.white)
                         }
                         
                         // Section 1
                         TermsSection(
-                            title: "1. Eligibility",
+                            title: "tos.section1.title".localized,
                             content: [
-                                "You must be at least 13 years old (or the minimum age in your jurisdiction) to use Vibe Ranking.",
-                                "Users must ensure compliance with these terms and all applicable laws.",
-                                "By creating an account, you confirm that you meet these eligibility requirements."
+                                "tos.section1.b1".localized,
+                                "tos.section1.b2".localized,
+                                "tos.section1.b3".localized
                             ]
                         )
                         
                         // Section 2
                         TermsSection(
-                            title: "2. Acceptable Use",
+                            title: "tos.section2.title".localized,
                             content: [
-                                "You agree not to:",
-                                "• Violate laws or infringe on others' rights (e.g., privacy, intellectual property)",
-                                "• Abuse our services (e.g., excessive requests, bypassing rate limits)",
-                                "• Distribute malware, spam, or harmful content",
-                                "• Reverse-engineer, scrape, or disrupt Vibe Ranking services",
-                                "• Upload inappropriate, offensive, or copyrighted content without permission"
+                                "tos.section2.b0".localized,
+                                "tos.section2.b1".localized,
+                                "tos.section2.b2".localized,
+                                "tos.section2.b3".localized,
+                                "tos.section2.b4".localized,
+                                "tos.section2.b5".localized
                             ]
                         )
                         
                         // Section 3
                         TermsSection(
-                            title: "3. Photo Upload and Rating System",
+                            title: "tos.section3.title".localized,
                             content: [
-                                "Users may upload photos for rating by other users",
-                                "All uploaded content must comply with our community guidelines",
-                                "You retain ownership of your photos but grant us a license to display and process them",
-                                "Ratings are subjective opinions and do not reflect absolute judgments",
-                                "We reserve the right to remove content that violates our policies"
+                                "tos.section3.b1".localized,
+                                "tos.section3.b2".localized,
+                                "tos.section3.b3".localized,
+                                "tos.section3.b4".localized,
+                                "tos.section3.b5".localized
                             ]
                         )
                         
                         // Section 4
                         TermsSection(
-                            title: "4. User Data and Privacy",
+                            title: "tos.section4.title".localized,
                             content: [
-                                "We collect and process user data as described in our Privacy Policy",
-                                "User preferences and demographic information help improve our services",
-                                "You may request deletion of your account and associated data",
-                                "We implement security measures to protect your personal information"
+                                "tos.section4.b1".localized,
+                                "tos.section4.b2".localized,
+                                "tos.section4.b3".localized,
+                                "tos.section4.b4".localized
                             ]
                         )
                         
                         // Section 5
                         TermsSection(
-                            title: "5. Intellectual Property",
+                            title: "tos.section5.title".localized,
                             content: [
-                                "Vibe Ranking retains all rights to its software, branding, and content",
-                                "You retain ownership of data you submit but grant us a license to process it for service operation",
-                                "Users must respect intellectual property rights of others"
+                                "tos.section5.b1".localized,
+                                "tos.section5.b2".localized,
+                                "tos.section5.b3".localized
                             ]
                         )
                         
                         // Section 6
                         TermsSection(
-                            title: "6. Premium Features and Payments",
+                            title: "tos.section6.title".localized,
                             content: [
-                                "Some features may require payment or subscription",
-                                "All purchases are processed through Apple's App Store",
-                                "Refunds are subject to Apple's refund policy",
-                                "Premium features may be modified or discontinued with notice"
+                                "tos.section6.b1".localized,
+                                "tos.section6.b2".localized,
+                                "tos.section6.b3".localized,
+                                "tos.section6.b4".localized
                             ]
                         )
                         
                         // Section 7
                         TermsSection(
-                            title: "7. Termination",
+                            title: "tos.section7.title".localized,
                             content: [
-                                "We may suspend or terminate your access for violations, illegal activities, or threats to our infrastructure—with or without notice",
-                                "You may terminate your account at any time through the app settings",
-                                "Upon termination, your access to premium features will cease"
+                                "tos.section7.b1".localized,
+                                "tos.section7.b2".localized,
+                                "tos.section7.b3".localized
                             ]
                         )
                         
                         // Section 8
                         TermsSection(
-                            title: "8. Disclaimers & Limitation of Liability",
+                            title: "tos.section8.title".localized,
                             content: [
-                                "\"As Is\" Service: Vibe Ranking provides services without warranties (e.g., uptime, accuracy)",
-                                "No Liability: We are not liable for indirect, incidental, or consequential damages arising from service use",
-                                "Ratings and feedback are user opinions and do not constitute professional advice"
+                                "tos.section8.b1".localized,
+                                "tos.section8.b2".localized,
+                                "tos.section8.b3".localized
                             ]
                         )
                         
                         // Section 9
                         TermsSection(
-                            title: "9. Indemnification",
+                            title: "tos.section9.title".localized,
                             content: [
-                                "You agree to indemnify Vibe Ranking against claims related to your misuse of our services or violations of these terms"
+                                "tos.section9.b1".localized
                             ]
                         )
                         
                         // Section 10
                         TermsSection(
-                            title: "10. Modifications",
+                            title: "tos.section10.title".localized,
                             content: [
-                                "We may update these ToS periodically. Continued use after changes constitutes acceptance.",
-                                "Check this page for updates.",
-                                "Significant changes will be communicated through the app"
+                                "tos.section10.b1".localized,
+                                "tos.section10.b2".localized,
+                                "tos.section10.b3".localized
                             ]
                         )
                         
                         // Section 11
                         TermsSection(
-                            title: "11. Governing Law",
+                            title: "tos.section11.title".localized,
                             content: [
-                                "These terms are governed by the laws of Taiwan, and disputes will be resolved in its courts"
+                                "tos.section11.b1".localized
                             ]
                         )
                         
                         // Contact
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Contact Us")
+                            Text("contact.title".localized)
                                 .font(.headline)
                                 .foregroundColor(.white)
                             
-                            Text("If you have any questions about these Terms of Service, please contact us through the app's support feature.")
+                            Text("tos.contact".localized)
                                 .font(.body)
                                 .foregroundColor(.gray)
                         }
@@ -167,7 +167,7 @@ struct TermsOfServiceView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完成") {
+                    Button("common.done".localized) {
                         dismiss()
                     }
                     .foregroundColor(.white)

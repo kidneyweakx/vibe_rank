@@ -31,7 +31,7 @@ struct QRCodeShareView: View {
                 VStack(spacing: 24) {
                     // Header with close button
                     HStack {
-                        Text("Share Profile")
+                        Text("profile.share_profile".localized)
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.white)
                         
@@ -65,7 +65,7 @@ struct QRCodeShareView: View {
                             )
                     }
                     
-                    Text("Scan to view profile")
+                    Text("profile.scan_to_view".localized)
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.white.opacity(0.8))
                     
@@ -73,7 +73,7 @@ struct QRCodeShareView: View {
                     Button {
                         shareQRCode()
                     } label: {
-                        Text("Share QR Code")
+                        Text("profile.share_qr_code".localized)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)

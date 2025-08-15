@@ -59,6 +59,12 @@
 "upload.progress" = "%d%% Complete";
 "upload.success" = "Upload Successful!";
 "upload.success_desc" = "Your photo has been uploaded successfully, now waiting for other users to rate it";
+"upload.uploading_progress" = "Uploading... %d%%";
+"upload.tags" = "Tags";
+"upload.crop" = "Crop";
+"upload.please_crop_first" = "Please crop first";
+"upload.please_crop_portrait" = "Please crop the image to 9:16 portrait before uploading";
+"auth.login_required" = "Please sign in first";
 "upload.failed" = "Upload Failed";
 "upload.unknown_error" = "Unknown error";
 "upload.retry" = "Retry";
@@ -418,3 +424,129 @@
 "common.ok" = "OK";
 "common.yes" = "Yes";
 "common.no" = "No";
+"contact.title" = "Contact Us";
+"contact.subtitle" = "We'd love to hear from you. If you have questions, feedback, or need support, please reach out:";
+"contact.email" = "Email";
+"contact.email.address" = "support@ninjaplus.app";
+"contact.twitter" = "Twitter";
+"contact.twitter.handle" = "@ninjaplusapp";
+"contact.business" = "Business Inquiries";
+"contact.business.address" = "business@ninjaplus.app";
+
+// MARK: - Legal (Privacy & ToS)
+"policy.privacy.title" = "Privacy Policy";
+"policy.last_updated" = "Last Updated: %@";
+"policy.privacy.intro" = "We respect your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our services.";
+"policy.privacy.section1.title" = "1. Information We Collect";
+"policy.privacy.section1.b1" = "Account Data: Username, email, and profile details when you register.";
+"policy.privacy.section1.b2" = "Usage Data: IP address, device information, and interactions with our services.";
+"policy.privacy.section1.b3" = "API Data: Requests made to our API, including timestamps and endpoints accessed.";
+"policy.privacy.section1.b4" = "Cookies & Tracking: We use cookies to enhance user experience and analyze performance.";
+"policy.privacy.section2.title" = "2. How We Use Your Data";
+"policy.privacy.section2.b1" = "Provide, maintain, and improve services.";
+"policy.privacy.section2.b2" = "Monitor usage and prevent abuse.";
+"policy.privacy.section2.b3" = "Respond to inquiries and offer support.";
+"policy.privacy.section2.b4" = "Comply with legal obligations and enforce terms.";
+"policy.privacy.section3.title" = "3. Data Sharing & Disclosure";
+"policy.privacy.section3.b1" = "We do not sell your personal data. We may share it with:";
+"policy.privacy.section3.b2" = "Service Providers: trusted third parties assisting in operations.";
+"policy.privacy.section3.b3" = "Legal Compliance: if required by law or to protect rights and safety.";
+"policy.privacy.section4.title" = "4. Data Security";
+"policy.privacy.section4.b1" = "We implement industry-standard measures (encryption, access controls). No system is 100% secure—use strong passwords and report suspicious activity.";
+"policy.privacy.section5.title" = "5. Your Rights";
+"policy.privacy.section5.b1" = "Access, correct, or delete your data.";
+"policy.privacy.section5.b2" = "Opt out of marketing communications.";
+"policy.privacy.section5.b3" = "Request data portability or restrict processing.";
+"policy.privacy.section5.b4" = "Contact us to exercise these rights.";
+"policy.privacy.section6.title" = "6. Third-Party Links";
+"policy.privacy.section6.b1" = "Our services may link to external sites. Review their privacy policies separately.";
+"policy.privacy.section7.title" = "7. Changes to This Policy";
+"policy.privacy.section7.b1" = "We may update this policy periodically. Continued use after changes constitutes acceptance.";
+
+"tos.title" = "Vibe Ranking Terms of Service";
+"tos.intro" = "By accessing or using Vibe Ranking's services, you agree to these Terms of Service. If you disagree, please refrain from using our services.";
+"tos.section1.title" = "1. Eligibility";
+"tos.section1.b1" = "You must be at least 13 years old (or the minimum age in your jurisdiction).";
+"tos.section1.b2" = "Users must comply with these terms and applicable laws.";
+"tos.section1.b3" = "By creating an account, you confirm eligibility.";
+"tos.section2.title" = "2. Acceptable Use";
+"tos.section2.b0" = "You agree not to:";
+"tos.section2.b1" = "Violate laws or infringe rights (privacy, intellectual property).";
+"tos.section2.b2" = "Abuse services (excessive requests, bypassing rate limits).";
+"tos.section2.b3" = "Distribute malware, spam, or harmful content.";
+"tos.section2.b4" = "Reverse-engineer, scrape, or disrupt services.";
+"tos.section2.b5" = "Upload inappropriate or copyrighted content without permission.";
+"tos.section3.title" = "3. Photo Upload and Rating System";
+"tos.section3.b1" = "Users may upload photos for rating by other users.";
+"tos.section3.b2" = "All uploads must comply with community guidelines.";
+"tos.section3.b3" = "You retain ownership but grant a license to display and process.";
+"tos.section3.b4" = "Ratings are subjective opinions, not absolute judgments.";
+"tos.section3.b5" = "We may remove content that violates policies.";
+"tos.section4.title" = "4. User Data and Privacy";
+"tos.section4.b1" = "We collect and process data per the Privacy Policy.";
+"tos.section4.b2" = "Preferences and demographics improve services.";
+"tos.section4.b3" = "You may request deletion of your account and data.";
+"tos.section4.b4" = "Security measures protect your information.";
+"tos.section5.title" = "5. Intellectual Property";
+"tos.section5.b1" = "We retain rights to software, branding, and content.";
+"tos.section5.b2" = "You retain ownership of submitted data; you grant us a license to process it.";
+"tos.section5.b3" = "Respect others' intellectual property rights.";
+"tos.section6.title" = "6. Premium Features and Payments";
+"tos.section6.b1" = "Some features may require payment or subscription.";
+"tos.section6.b2" = "All purchases are processed through Apple's App Store.";
+"tos.section6.b3" = "Refunds follow Apple's refund policy.";
+"tos.section6.b4" = "Premium features may be modified or discontinued with notice.";
+"tos.section7.title" = "7. Termination";
+"tos.section7.b1" = "We may suspend or terminate access for violations or threats.";
+"tos.section7.b2" = "You may terminate your account at any time in settings.";
+"tos.section7.b3" = "Upon termination, access to premium features will cease.";
+"tos.section8.title" = "8. Disclaimers & Limitation of Liability";
+"tos.section8.b1" = "Services are provided \"as is\" without warranties.";
+"tos.section8.b2" = "We are not liable for indirect, incidental, or consequential damages.";
+"tos.section8.b3" = "Ratings and feedback are user opinions and not professional advice.";
+"tos.section9.title" = "9. Indemnification";
+"tos.section9.b1" = "You agree to indemnify Vibe Ranking for misuse or violations.";
+"tos.section10.title" = "10. Modifications";
+"tos.section10.b1" = "We may update these ToS periodically.";
+"tos.section10.b2" = "Check this page for updates.";
+"tos.section10.b3" = "Significant changes will be communicated in-app.";
+"tos.section11.title" = "11. Governing Law";
+"tos.section11.b1" = "These terms are governed by the laws of Taiwan.";
+"tos.contact" = "If you have any questions about these Terms of Service, please contact us through the app's support feature.";
+
+// MARK: - Home
+"home.recommended.title" = "Recommended";
+"home.recommended.subtitle" = "Top ranked users";
+"home.events.title" = "Events";
+"home.events.subtitle" = "Latest event submissions";
+
+// MARK: - Common (extra)
+"common.event_photo" = "Event Photo";
+"common.event" = "Event";
+"common.live" = "LIVE";
+"common.photo" = "Photo";
+"common.no_photos" = "No Photos";
+"common.no_tag" = "No tag";
+"common.image_load_failed" = "Failed to load image";
+
+// MARK: - Upload Menu
+"upload.menu.title" = "Choose upload method";
+"upload.menu.camera" = "Camera";
+"upload.menu.library" = "Photo Library";
+
+// MARK: - Image Crop
+"crop.instruction.move" = "Drag to adjust crop";
+"crop.instruction.zoom_pan" = "Pinch to zoom, drag to move";
+"crop.aspect_916" = "9:16 portrait ratio";
+"crop.reset" = "Reset";
+"crop.confirm" = "Confirm Crop";
+
+// MARK: - Profile Tab Extras
+"profile.likes" = "Likes";
+"profile.rank" = "Rank";
+"profile.share_profile" = "Share Profile";
+"profile.edit_profile" = "Edit Profile";
+"profile.week" = "Week %d";
+"profile.add_photo" = "Add Photo";
+"profile.scan_to_view" = "Scan to view profile";
+"profile.share_qr_code" = "Share QR Code";

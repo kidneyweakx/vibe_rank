@@ -14,7 +14,7 @@ struct UploadMenuView: View {
     
     var body: some View {
         VStack(spacing: 24) {
-            Text("選擇上傳方式")
+            Text("upload.menu.title".localized)
                 .font(.title2)
                 .fontWeight(.medium)
                 .foregroundColor(.white)
@@ -33,7 +33,7 @@ struct UploadMenuView: View {
                             .font(.largeTitle)
                             .foregroundColor(.white)
                         
-                        Text("拍照")
+                        Text("upload.menu.camera".localized)
                             .font(.body)
                             .fontWeight(.medium)
                             .foregroundColor(.white)
@@ -57,7 +57,7 @@ struct UploadMenuView: View {
                             .font(.largeTitle)
                             .foregroundColor(.white)
                         
-                        Text("相簿")
+                        Text("upload.menu.library".localized)
                             .font(.body)
                             .fontWeight(.medium)
                             .foregroundColor(.white)

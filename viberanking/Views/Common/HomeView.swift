@@ -58,7 +58,7 @@ struct HomeView: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         .scaleEffect(1.2)
                     
-                    Text("載入中...")
+                    Text("common.loading".localized)
                         .foregroundColor(.white.opacity(0.7))
                         .padding(.top, 16)
                 }
@@ -73,10 +73,12 @@ struct HomeView: View {
         }
     }
 
+    
+
     // MARK: - Recommended Section
     private var recommendedSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader("Recommended", subtitle: "Top ranked users")
+            sectionHeader("home.recommended.title".localized, subtitle: "home.recommended.subtitle".localized)
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
@@ -92,18 +94,26 @@ struct HomeView: View {
     // MARK: - Event Section
     private var eventSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader("Events", subtitle: "Latest event submissions")
+            sectionHeader("home.events.title".localized, subtitle: "home.events.subtitle".localized)
             
-            // Two columns tuned to avoid overlap on small screens
-                LazyVGrid(columns: [
-                GridItem(.adaptive(minimum: 120), spacing: 12, alignment: .top)
-            ], spacing: 16) {
-                    ForEach(events) { item in
-                        EventItemCard(item: item) { }
-                            .frame(maxWidth: .infinity)
-                            .aspectRatio(3/4, contentMode: .fit)
+            GeometryReader { proxy in
+                let spacing: CGFloat = 16
+                let availableWidth = proxy.size.width
+                let targetCardWidth: CGFloat = 160
+                let columnsCount = max(2, Int(floor((availableWidth + spacing) / (targetCardWidth + spacing))))
+                let cardWidth = floor((availableWidth - spacing * CGFloat(columnsCount - 1)) / CGFloat(columnsCount))
+                let columns = Array(repeating: GridItem(.fixed(cardWidth), spacing: spacing, alignment: .top), count: columnsCount)
+
+                ScrollView { // ensure grid lays out fully inside GeometryReader
+                    LazyVGrid(columns: columns, spacing: spacing) {
+                        ForEach(events) { item in
+                            EventItemCard(item: item) { }
+                                .frame(width: cardWidth)
+                        }
+                    }
                 }
             }
+            .frame(minHeight: 0)
         }
     }
     
@@ -465,12 +475,12 @@ struct EventPhotoCard: View {
                                     .scaledToFill()
                                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                                     .clipped()
-                            case .failure:
+                                        case .failure:
                                 VStack(spacing: 12) {
                                     Image(systemName: "photo.artframe")
                                         .font(.system(size: 32))
                                         .foregroundColor(.white.opacity(0.4))
-                                    Text("Event Photo")
+                                                Text("common.event_photo".localized)
                                         .font(.system(size: 12, weight: .medium))
                                         .foregroundColor(.white.opacity(0.4))
                                 }
@@ -484,7 +494,7 @@ struct EventPhotoCard: View {
                             Image(systemName: "photo.artframe")
                                 .font(.system(size: 32))
                                 .foregroundColor(.white.opacity(0.4))
-                            Text("Event Photo")
+                            Text("common.event_photo".localized)
                                 .font(.system(size: 12, weight: .medium))
                                 .foregroundColor(.white.opacity(0.4))
                         }
@@ -577,7 +587,7 @@ struct EventItemCard: View {
         }) {
             VStack(spacing: 0) {
                 // Event image with enforced 9:16 aspect ratio and hard clipping to rounded rect
-                ZStack {
+                        ZStack {
                     // Background subtle gradient
                     LinearGradient(
                         colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
@@ -586,27 +596,27 @@ struct EventItemCard: View {
                     )
                     
                     if let urlString = item.imageURL, let url = URL(string: urlString) {
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .empty:
+                                AsyncImage(url: url) { phase in
+                                    switch phase {
+                                    case .empty:
                                 VStack(spacing: 12) {
-                                    ProgressView()
-                                        .progressViewStyle(.circular)
+                                        ProgressView()
+                                            .progressViewStyle(.circular)
                                         .tint(.white.opacity(0.7))
                                         .scaleEffect(0.8)
                                 }
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .scaledToFill()
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
                                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                                     .clipped()
-                            case .failure:
+                                    case .failure:
                                 VStack(spacing: 12) {
                                     Image(systemName: "calendar.badge.exclamationmark")
                                         .font(.system(size: 32))
                                         .foregroundColor(.white.opacity(0.4))
-                                    Text("Event")
+                                    Text("common.event".localized)
                                         .font(.system(size: 12, weight: .medium))
                                         .foregroundColor(.white.opacity(0.4))
                                 }
@@ -620,7 +630,7 @@ struct EventItemCard: View {
                             Image(systemName: "calendar.badge.plus")
                                 .font(.system(size: 32))
                                 .foregroundColor(.white.opacity(0.4))
-                            Text("Event")
+                            Text("common.event".localized)
                                 .font(.system(size: 12, weight: .medium))
                                 .foregroundColor(.white.opacity(0.4))
                         }
@@ -638,13 +648,13 @@ struct EventItemCard: View {
                     
                     // "LIVE" badge for active events
                     VStack {
-                        HStack {
+                            HStack {
                             Spacer()
                             HStack(spacing: 4) {
                                 Circle()
                                     .fill(Color.red)
                                     .frame(width: 6, height: 6)
-                                Text("LIVE")
+                                Text("common.live".localized)
                                     .font(.system(size: 10, weight: .bold))
                                     .foregroundColor(.white)
                             }
@@ -753,7 +763,7 @@ struct RankedUserCard: View {
                                 Image(systemName: "photo.artframe")
                                     .font(.system(size: 32))
                                     .foregroundColor(.white.opacity(0.4))
-                                Text("Photo")
+                                Text("common.photo".localized)
                                     .font(.system(size: 12, weight: .medium))
                                     .foregroundColor(.white.opacity(0.4))
                             }
@@ -769,7 +779,7 @@ struct RankedUserCard: View {
                         Image(systemName: "photo.artframe")
                             .font(.system(size: 32))
                             .foregroundColor(.white.opacity(0.4))
-                        Text("No Photos")
+                        Text("common.no_photos".localized)
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(.white.opacity(0.4))
                     }

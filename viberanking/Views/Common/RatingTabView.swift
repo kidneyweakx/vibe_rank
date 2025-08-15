@@ -70,7 +70,7 @@ struct RatingTabView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         if viewModel.currentTags.isEmpty {
-                            Text("No tag")
+                            Text("common.no_tag".localized)
                                 .font(.system(size: 12, weight: .medium))
                                 .foregroundColor(.white.opacity(0.8))
                                 .padding(.horizontal, 10)
@@ -142,7 +142,7 @@ private extension RatingTabView {
                             Color.gray.opacity(0.3)
                             VStack(spacing: AppTheme.Spacing.sm) {
                                 Text("📷").font(.system(size: 60))
-                                Text("載入中...")
+                                Text("common.loading".localized)
                                     .font(AppTheme.Typography.body)
                                     .foregroundColor(.white)
                                 ProgressView().tint(.white)
@@ -171,7 +171,7 @@ private extension RatingTabView {
                             Color.gray.opacity(0.3)
                             VStack(spacing: AppTheme.Spacing.sm) {
                                 Text("⚠️").font(.system(size: 60))
-                                Text("無法載入圖片")
+                                Text("common.image_load_failed".localized)
                                     .font(AppTheme.Typography.body)
                                     .foregroundColor(.white)
                             }

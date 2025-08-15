@@ -114,7 +114,7 @@ private extension ProfileTabView {
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(authViewModel.user?.name ?? "User")
+                    Text(authViewModel.user?.name ?? "profile.unknown_user".localized)
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.white)
                     
@@ -128,7 +128,7 @@ private extension ProfileTabView {
                             Text("\(viewModel.likeCount)")
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundColor(.pink)
-                            Text("Likes")
+                            Text("profile.likes".localized)
                                 .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.6))
                         }
@@ -137,7 +137,7 @@ private extension ProfileTabView {
                             Text("#\(viewModel.overallRank)")
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundColor(.yellow)
-                            Text("Rank")
+                            Text("profile.rank".localized)
                                 .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.6))
                         }
@@ -150,7 +150,7 @@ private extension ProfileTabView {
             // Action buttons
             VStack(spacing: 12) {
                 HStack(spacing: 12) {
-                    Button("Share Profile") {
+                    Button("profile.share_profile".localized) {
                         showingQRCode = true
                     }
                     .font(.system(size: 16, weight: .semibold))
@@ -162,7 +162,7 @@ private extension ProfileTabView {
                             .fill(Color.blue)
                     )
                     
-                    Button("Edit Profile") {
+                    Button("profile.edit_profile".localized) {
                         showingSettings = true
                     }
                     .font(.system(size: 16, weight: .semibold))
@@ -262,7 +262,7 @@ struct WeeklyPhotoSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Week \(week.weekNumber)")
+                Text(String(format: "profile.week".localized, week.weekNumber))
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
                 
@@ -322,7 +322,7 @@ struct DayPhotoCard: View {
                                     Image(systemName: "plus.circle.dashed")
                                         .font(.system(size: 32))
                                         .foregroundColor(.gray.opacity(0.5))
-                                    Text("Add Photo")
+                                    Text("profile.add_photo".localized)
                                         .font(.system(size: 12, weight: .medium))
                                         .foregroundColor(.gray.opacity(0.7))
                                 }

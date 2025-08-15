@@ -18,58 +18,58 @@ struct PrivacyPolicyView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Privacy Policy")
+                            Text("policy.privacy.title".localized)
                                 .font(.largeTitle)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
-                            Text("Last Updated: August 10, 2025")
+                            Text("policy.last_updated".localized(with: "August 10, 2025"))
                                 .font(.caption)
                                 .foregroundColor(.gray)
                         }
                         
                         Group {
-                            Text("Welcome to Ninja Plus! We respect your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our services, including our API, website, and related platforms.")
+                            Text("policy.privacy.intro".localized)
                                 .foregroundColor(.gray)
                                 .font(.body)
                         }
                         
-                        PolicySection(title: "1. Information We Collect", bullets: [
-                            "Account Data: Username, email, and profile details when you register.",
-                            "Usage Data: IP address, device information, browser type, and interactions with our services.",
-                            "API Data: Requests made to our API, including timestamps and endpoints accessed.",
-                            "Cookies & Tracking: We use cookies to enhance user experience and analyze service performance."
+                        PolicySection(title: "policy.privacy.section1.title".localized, bullets: [
+                            "policy.privacy.section1.b1".localized,
+                            "policy.privacy.section1.b2".localized,
+                            "policy.privacy.section1.b3".localized,
+                            "policy.privacy.section1.b4".localized
                         ])
                         
-                        PolicySection(title: "2. How We Use Your Data", bullets: [
-                            "Provide, maintain, and improve Ninja Plus services.",
-                            "Monitor API usage and prevent abuse.",
-                            "Respond to inquiries and offer customer support.",
-                            "Comply with legal obligations and enforce our terms."
+                        PolicySection(title: "policy.privacy.section2.title".localized, bullets: [
+                            "policy.privacy.section2.b1".localized,
+                            "policy.privacy.section2.b2".localized,
+                            "policy.privacy.section2.b3".localized,
+                            "policy.privacy.section2.b4".localized
                         ])
                         
-                        PolicySection(title: "3. Data Sharing & Disclosure", bullets: [
-                            "We do not sell your personal data. However, we may share it with:",
-                            "Service Providers: Trusted third parties assisting in operations (e.g., hosting, analytics).",
-                            "Legal Compliance: If required by law or to protect our rights and safety."
+                        PolicySection(title: "policy.privacy.section3.title".localized, bullets: [
+                            "policy.privacy.section3.b1".localized,
+                            "policy.privacy.section3.b2".localized,
+                            "policy.privacy.section3.b3".localized
                         ])
                         
-                        PolicySection(title: "4. Data Security", bullets: [
-                            "We implement industry-standard measures (encryption, access controls) to protect your data. However, no system is 100% secure—please use strong passwords and report suspicious activity."
+                        PolicySection(title: "policy.privacy.section4.title".localized, bullets: [
+                            "policy.privacy.section4.b1".localized
                         ])
                         
-                        PolicySection(title: "5. Your Rights", bullets: [
-                            "Access, correct, or delete your personal data.",
-                            "Opt out of marketing communications.",
-                            "Request data portability or restrict processing.",
-                            "Contact us at [Your Contact Email] to exercise these rights."
+                        PolicySection(title: "policy.privacy.section5.title".localized, bullets: [
+                            "policy.privacy.section5.b1".localized,
+                            "policy.privacy.section5.b2".localized,
+                            "policy.privacy.section5.b3".localized,
+                            "policy.privacy.section5.b4".localized
                         ])
                         
-                        PolicySection(title: "6. Third-Party Links", bullets: [
-                            "Our services may link to external sites. We are not responsible for their privacy practices—review their policies separately."
+                        PolicySection(title: "policy.privacy.section6.title".localized, bullets: [
+                            "policy.privacy.section6.b1".localized
                         ])
                         
-                        PolicySection(title: "7. Changes to This Policy", bullets: [
-                            "We may update this policy periodically. Continued use of Ninja Plus after changes constitutes acceptance."
+                        PolicySection(title: "policy.privacy.section7.title".localized, bullets: [
+                            "policy.privacy.section7.b1".localized
                         ])
                     }
                     .padding(20)
@@ -79,7 +79,7 @@ struct PrivacyPolicyView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button("common.done".localized) {
                         dismiss()
                     }
                     .foregroundColor(.white)

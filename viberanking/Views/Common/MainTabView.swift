@@ -137,7 +137,7 @@ struct MainTabView: View {
                         print("🖼️ 顯示 ImagePreviewView - 圖片尺寸: \(image.size)")
                     }
                 } else {
-                    Text("圖片加載失敗")
+                    Text("common.image_load_failed".localized)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Color.black)
@@ -149,12 +149,12 @@ struct MainTabView: View {
             }
         }
         .alert("無法上傳", isPresented: $showingUploadAlert) {
-            Button("確定", role: .cancel) { }
+            Button("common.ok".localized, role: .cancel) { }
         } message: {
             Text(uploadAlertMessage)
         }
         .alert("無法使用相機", isPresented: $showingCameraAlert) {
-            Button("確定", role: .cancel) { }
+            Button("common.ok".localized, role: .cancel) { }
         } message: {
             Text(cameraAlertMessage)
         }

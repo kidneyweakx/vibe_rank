@@ -17,38 +17,38 @@ struct ContactUsView: View {
                 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Contact Us")
+                        Text("contact.title".localized)
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
                         
-                        Text("We'd love to hear from you. If you have questions, feedback, or need support, please reach out:")
+                        Text("contact.subtitle".localized)
                             .font(.body)
                             .foregroundColor(.gray)
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Email")
+                            Text("contact.email".localized)
                                 .font(.headline)
                                 .foregroundColor(.white)
-                            Text("support@ninjaplus.app")
+                            Text("contact.email.address".localized)
                                 .font(.body)
                                 .foregroundColor(.gray)
                         }
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Twitter")
+                            Text("contact.twitter".localized)
                                 .font(.headline)
                                 .foregroundColor(.white)
-                            Text("@ninjaplusapp")
+                            Text("contact.twitter.handle".localized)
                                 .font(.body)
                                 .foregroundColor(.gray)
                         }
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Business Inquiries")
+                            Text("contact.business".localized)
                                 .font(.headline)
                                 .foregroundColor(.white)
-                            Text("business@ninjaplus.app")
+                            Text("contact.business.address".localized)
                                 .font(.body)
                                 .foregroundColor(.gray)
                         }
@@ -60,7 +60,7 @@ struct ContactUsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button("common.done".localized) {
                         dismiss()
                     }
                     .foregroundColor(.white)
