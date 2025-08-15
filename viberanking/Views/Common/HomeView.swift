@@ -84,9 +84,11 @@ struct HomeView: View {
                 HStack(spacing: 16) {
                     ForEach(topUserGalleries, id: \.userId) { gallery in
                         RankedUserCard(gallery: gallery)
+                            .frame(width: 100)  // 進一步縮小到100
                     }
                 }
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 20)
+                .padding(.trailing, 20) // Extra padding for last item
             }
         }
     }
@@ -97,23 +99,18 @@ struct HomeView: View {
             sectionHeader("home.events.title".localized, subtitle: "home.events.subtitle".localized)
             
             GeometryReader { proxy in
-                let spacing: CGFloat = 16
-                let availableWidth = proxy.size.width
-                let targetCardWidth: CGFloat = 160
-                let columnsCount = max(2, Int(floor((availableWidth + spacing) / (targetCardWidth + spacing))))
-                let cardWidth = floor((availableWidth - spacing * CGFloat(columnsCount - 1)) / CGFloat(columnsCount))
-                let columns = Array(repeating: GridItem(.fixed(cardWidth), spacing: spacing, alignment: .top), count: columnsCount)
-
-                ScrollView { // ensure grid lays out fully inside GeometryReader
-                    LazyVGrid(columns: columns, spacing: spacing) {
+                let gridConfig = calculateGridConfiguration(for: proxy.size.width)
+                
+                ScrollView {
+                    LazyVGrid(columns: gridConfig.columns, spacing: gridConfig.spacing) {
                         ForEach(events) { item in
                             EventItemCard(item: item) { }
-                                .frame(width: cardWidth)
                         }
                     }
+                    .padding(.bottom, 20)
                 }
             }
-            .frame(minHeight: 0)
+            .frame(minHeight: 400) // Ensure minimum height for proper display
         }
     }
     
@@ -136,6 +133,28 @@ struct HomeView: View {
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.white.opacity(0.6))
         }
+    }
+    
+    private func calculateGridConfiguration(for availableWidth: CGFloat) -> (columns: [GridItem], spacing: CGFloat, cardWidth: CGFloat) {
+        let spacing: CGFloat = 16
+        
+        // 根據螢幕寬度決定列數，使用flexible佈局避免黑邊
+        let columnsCount: Int
+        if availableWidth >= 350 {
+            columnsCount = 3
+        } else if availableWidth >= 250 {
+            columnsCount = 2
+        } else {
+            columnsCount = 1
+        }
+        
+        // 計算每個卡片的實際寬度（平均分配可用空間）
+        let cardWidth = (availableWidth - spacing * CGFloat(columnsCount - 1)) / CGFloat(columnsCount)
+        
+        // 使用flexible GridItem，讓卡片自動填滿可用空間
+        let columns = Array(repeating: GridItem(.flexible(), spacing: spacing, alignment: .top), count: columnsCount)
+        
+        return (columns: columns, spacing: spacing, cardWidth: cardWidth)
     }
     
     private func loadData() {
@@ -755,7 +774,7 @@ struct RankedUserCard: View {
                             image
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: 160)
+                                .frame(width: 100)
                                 .aspectRatio(9/16, contentMode: .fill)
                                 .clipped()
                         case .failure:
@@ -771,7 +790,7 @@ struct RankedUserCard: View {
                             Color.clear
                         }
                     }
-                    .frame(width: 160)
+                    .frame(width: 100)
                     .aspectRatio(9/16, contentMode: .fit)
                     .clipped()
                 } else {
@@ -785,7 +804,7 @@ struct RankedUserCard: View {
                     }
                 }
             }
-            .frame(width: 160)
+            .frame(width: 100)
             .aspectRatio(9/16, contentMode: .fit)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
@@ -805,7 +824,7 @@ struct RankedUserCard: View {
                 .foregroundColor(.white)
                 .lineLimit(1)
         }
-        .frame(width: 160)
+        .frame(width: 100)
         .padding(.vertical, 8)
     }
     
