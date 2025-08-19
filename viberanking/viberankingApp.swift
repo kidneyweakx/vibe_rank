@@ -48,27 +48,9 @@ struct viberankingApp: App {
     
     /// Check Apple ID credential state when app launches
     private func checkAppleIDCredentialStateAtLaunch() {
-        Task {
-            let authService = AuthenticationService()
-            if let credentialState = await authService.checkAppleIDCredentialState() {
-                await MainActor.run {
-                    switch credentialState {
-                    case .authorized:
-                        print("✅ Apple ID credential is valid")
-                        // User is still authorized, continue with app
-                    case .revoked, .notFound:
-                        print("⚠️ Apple ID credential is revoked or not found")
-                        // Force user to sign in again
-                        authenticationViewModel.signOut()
-                    case .transferred:
-                        print("📱 Apple ID credential transferred to new device")
-                        // Handle credential transfer
-                    @unknown default:
-                        print("❓ Unknown Apple ID credential state")
-                    }
-                }
-            }
-        }
+        // 這個檢查現在由 AuthenticationService 的 init 方法處理
+        // 不需要在這裡重複檢查
+        print("ℹ️ 認證狀態檢查將由 AuthenticationService 處理")
     }
 
     var body: some Scene {

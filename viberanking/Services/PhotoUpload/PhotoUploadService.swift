@@ -11,7 +11,7 @@ import UniformTypeIdentifiers
 import os.log
 
 // MARK: - Photo Upload Service Implementation
-class PhotoUploadService: PhotoUploadServiceProtocol {
+class PhotoUploadService {
     
     // MARK: - Dependencies
     private let fileAPI = FileAPI()

@@ -40,16 +40,16 @@ class PhotoUploadViewModel: BaseViewModel {
     @Published var sourceType: PhotoSourceType = .photoLibrary
     
     // MARK: - Dependencies
-    private let photoUploadService: PhotoUploadServiceProtocol
-    private let authService: AuthenticationServiceProtocol
+    private let photoUploadService: PhotoUploadService
+    private let authService: AuthenticationService
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
     private var currentUploadTask: Task<Void, Never>?
     
     // MARK: - Initialization
-    init(photoUploadService: PhotoUploadServiceProtocol,
-         authService: AuthenticationServiceProtocol) {
+    init(photoUploadService: PhotoUploadService,
+         authService: AuthenticationService) {
         self.photoUploadService = photoUploadService
         self.authService = authService
         super.init()

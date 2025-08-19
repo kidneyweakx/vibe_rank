@@ -14,7 +14,7 @@ import SwiftUI
 import Combine
 
 @MainActor
-class AuthenticationService: NSObject, ObservableObject, AuthenticationServiceProtocol, ASAuthorizationControllerDelegate {
+class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControllerDelegate {
     
     @Published var currentUser: User?
     
@@ -24,6 +24,14 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
     private var pendingUserData: InitialUserData?
     
     var isAuthenticated: Bool { currentUser != nil }
+    
+    override init() {
+        super.init()
+        // 在初始化時檢查已保存的登入狀態
+        Task {
+            await checkSavedAuthState()
+        }
+    }
     
     private var rootViewController: UIViewController? {
         UIApplication.shared.connectedScenes
@@ -58,6 +66,7 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
                 )
                 
                 currentUser = user
+                saveUserToKeychain(user)
                 return user
                 
             } catch let error as AppError {
@@ -204,6 +213,7 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
                 }
                 
                 currentUser = user
+                saveUserToKeychain(user)
                 appleSignInCompletion?(.success(user))
                 
             } catch {
@@ -324,6 +334,22 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
         }
     }
     
+    // MARK: - Guest Sign-In
+    
+    func signInAsGuest() async -> User {
+        print("👤 開始訪客登入...")
+        let guestUser = User(
+            id: "guest_\(UUID().uuidString)",
+            name: "訪客用戶",
+            email: "guest@example.com"
+        )
+        
+        currentUser = guestUser
+        saveUserToKeychain(guestUser)
+        print("✅ 訪客登入成功: \(guestUser.name)")
+        return guestUser
+    }
+    
     // MARK: - Profile Setup
     
     func getPendingUserData() -> InitialUserData? {
@@ -341,6 +367,7 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
             )
             
             currentUser = user
+            saveUserToKeychain(user)
             pendingUserData = nil // Clear pending data
             return user
         } catch let apiError as APIError {
@@ -376,6 +403,134 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
         }
     }
     
+    // MARK: - Auto Login Check
+    
+    /// 檢查已保存的認證狀態並嘗試自動登入
+    func checkSavedAuthState() async {
+        print("🔍 開始檢查已保存的認證狀態...")
+        
+        // 檢查 Google Sign-In 的自動登入
+        if let googleUser = GIDSignIn.sharedInstance.currentUser {
+            print("📱 找到 Google 用戶: \(googleUser.profile?.email ?? "unknown")")
+            if let expirationDate = googleUser.accessToken.expirationDate {
+                print("⏰ Google token 過期時間: \(expirationDate)")
+                if expirationDate > Date() {
+                    print("✅ Google token 仍然有效，嘗試自動登入...")
+                    do {
+                        let user = try await verifyGoogleToken(
+                            idToken: googleUser.idToken?.tokenString ?? "",
+                            accessToken: googleUser.accessToken.tokenString
+                        )
+                        currentUser = user
+                        saveUserToKeychain(user)
+                        print("✅ Google 自動登入成功: \(user.name)")
+                        return
+                    } catch {
+                        print("❌ Google 自動登入失敗: \(error)")
+                    }
+                } else {
+                    print("⚠️ Google token 已過期")
+                }
+            } else {
+                print("⚠️ Google token 沒有過期時間")
+            }
+        } else {
+            print("ℹ️ 沒有找到 Google 用戶")
+        }
+        
+        // 檢查保存的用戶數據（不依賴於特定的登入提供商）
+        if let savedUser = getSavedUserFromKeychain() {
+            print("📦 找到保存的用戶數據: \(savedUser.name)")
+            do {
+                let validatedUser = try await validateSavedUser(savedUser)
+                currentUser = validatedUser
+                print("✅ 使用保存的用戶數據自動登入成功: \(validatedUser.name)")
+                return
+            } catch {
+                print("⚠️ 保存的用戶信息無效，清除數據: \(error)")
+                clearSavedUser()
+            }
+        } else {
+            print("ℹ️ 沒有找到保存的用戶數據")
+        }
+        
+        // 檢查 Apple Sign-In 的自動登入
+        if let userIdentifier = getCurrentUserIdentifier() {
+            print("🍎 找到 Apple 用戶標識符: \(userIdentifier)")
+            do {
+                let credentialState = try await ASAuthorizationAppleIDProvider().credentialState(forUserID: userIdentifier)
+                print("🔐 Apple 憑證狀態: \(credentialState.rawValue)")
+                if credentialState == .authorized {
+                    print("✅ Apple 憑證仍然有效")
+                } else {
+                    print("⚠️ Apple 憑證已撤銷或不存在，清除保存的數據")
+                    clearUserIdentifier()
+                    clearSavedUser()
+                }
+            } catch {
+                print("❌ Apple 憑證檢查失敗: \(error)")
+            }
+        } else {
+            print("ℹ️ 沒有找到 Apple 用戶標識符")
+        }
+        
+        print("ℹ️ 沒有找到有效的已保存登入狀態")
+    }
+    
+    // MARK: - User Data Persistence
+    
+    /// 保存用戶信息到 keychain
+    private func saveUserToKeychain(_ user: User) {
+        print("💾 嘗試保存用戶信息到 keychain: \(user.name)")
+        do {
+            let userData = try JSONEncoder().encode(user)
+            let keychainItem = KeychainItem(service: "com.viberanking.userdata", account: "currentUser")
+            try keychainItem.saveItem(String(data: userData, encoding: .utf8) ?? "")
+            print("✅ 用戶信息已成功保存到 keychain")
+        } catch {
+            print("❌ 保存用戶信息失敗: \(error)")
+        }
+    }
+    
+    /// 從 keychain 獲取保存的用戶信息
+    private func getSavedUserFromKeychain() -> User? {
+        print("🔍 嘗試從 keychain 獲取保存的用戶信息...")
+        do {
+            let keychainItem = KeychainItem(service: "com.viberanking.userdata", account: "currentUser")
+            let userDataString = try keychainItem.readItem()
+            guard let userData = userDataString.data(using: .utf8) else { 
+                print("⚠️ 無法將用戶數據字符串轉換為 Data")
+                return nil 
+            }
+            let user = try JSONDecoder().decode(User.self, from: userData)
+            print("✅ 成功從 keychain 獲取用戶信息: \(user.name)")
+            return user
+        } catch KeychainItem.KeychainError.noPassword {
+            print("ℹ️ keychain 中沒有保存的用戶信息")
+            return nil
+        } catch {
+            print("❌ 獲取保存的用戶信息失敗: \(error)")
+            return nil
+        }
+    }
+    
+    /// 清除保存的用戶信息
+    private func clearSavedUser() {
+        do {
+            let keychainItem = KeychainItem(service: "com.viberanking.userdata", account: "currentUser")
+            try keychainItem.deleteItem()
+        } catch {
+            print("❌ 清除用戶信息失敗: \(error)")
+        }
+    }
+    
+    /// 驗證保存的用戶信息是否仍然有效
+    private func validateSavedUser(_ user: User) async throws -> User {
+        // 這裡可以調用 API 來驗證用戶信息是否仍然有效
+        // 暫時直接返回用戶，在實際應用中應該調用後端 API
+        return user
+    }
+    
     // MARK: - Sign Out
     
     func signOut() async throws {
@@ -384,6 +539,7 @@ class AuthenticationService: NSObject, ObservableObject, AuthenticationServicePr
         }
         
         clearUserIdentifier()
+        clearSavedUser()
         currentUser = nil
         
         // Optional API notification

@@ -24,7 +24,7 @@ class AuthenticationViewModel: ObservableObject {
     @Published var needsProfileSetup: Bool = false
     @Published var initialUserData: InitialUserData?
     
-    private let authenticationService: AuthenticationServiceProtocol
+    private let authenticationService: AuthenticationService
     private let userProfileService: UserProfileService
     private var cancellables = Set<AnyCancellable>()
 
@@ -67,6 +67,25 @@ class AuthenticationViewModel: ObservableObject {
         
         // Setup bindings and listeners
         setupUserProfileBindings()
+        
+        // 檢查已保存的登入狀態
+        checkSavedAuthenticationState()
+    }
+    
+    /// 檢查已保存的認證狀態
+    private func checkSavedAuthenticationState() {
+        Task {
+            // 等待 AuthenticationService 完成自動登入檢查
+            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5秒延遲
+            
+            // 檢查是否有用戶已經登入
+            if let currentUser = authenticationService.currentUser {
+                self.user = currentUser
+                self.isAuthenticated = true
+                self.authState = .signedIn
+                print("✅ 自動登入成功: \(currentUser.name)")
+            }
+        }
     }
     
 
@@ -202,27 +221,35 @@ class AuthenticationViewModel: ObservableObject {
         authState = .signingIn
         isGuest = true
 
-        // Create a temporary guest user and require onboarding
-        let guestUser = User(
-            id: "guest_\(UUID().uuidString)",
-            name: "guest.user_name".localized,
-            email: "guest@example.com"
-        )
-        self.user = guestUser
-        self.isAuthenticated = false
-        self.initialUserData = InitialUserData(
-            name: "",
-            email: guestUser.email,
-            profileImageURL: nil,
-            authProvider: "guest",
-            providerUserID: guestUser.id
-        )
-        self.needsProfileSetup = true
-        self.authState = .needsProfileSetup
-        isLoading = false
-
-        // Log analytics event
-        logAuthenticationEvent(provider: "guest_onboard", success: true)
+        Task {
+            do {
+                let guestUser = try await authenticationService.signInAsGuest()
+                
+                // Route to onboarding immediately after login
+                self.user = guestUser
+                self.isAuthenticated = false
+                self.initialUserData = InitialUserData(
+                    name: "",
+                    email: guestUser.email,
+                    profileImageURL: nil,
+                    authProvider: "guest",
+                    providerUserID: guestUser.id
+                )
+                self.needsProfileSetup = true
+                self.authState = .needsProfileSetup
+                
+                // Log analytics event
+                logAuthenticationEvent(provider: "guest_onboard", success: true)
+            } catch {
+                self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
+                self.authState = .error(self.errorMessage ?? "Unknown error")
+                
+                // Log analytics event
+                logAuthenticationEvent(provider: "guest", success: false)
+            }
+            
+            isLoading = false
+        }
     }
     
     /// Sign out the current user
