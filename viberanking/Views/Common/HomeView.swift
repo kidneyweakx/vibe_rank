@@ -105,6 +105,9 @@ struct HomeView: View {
                     LazyVGrid(columns: gridConfig.columns, spacing: gridConfig.spacing) {
                         ForEach(events) { item in
                             EventItemCard(item: item) { }
+                                .frame(width: gridConfig.cardWidth)
+                                .aspectRatio(9/16, contentMode: .fit)
+                                .clipShape(RoundedRectangle(cornerRadius: 16)) 
                         }
                     }
                     .padding(.bottom, 20)
@@ -243,7 +246,7 @@ struct HomeView: View {
             return []
         }
     }
-    
+    // @TODO: delete or replace random users
     private func generateRandomUsers() -> [TopUserGallery] {
         let names = ["Alex Chen", "Sarah Kim", "Mike Johnson", "Emma Liu", "David Park"]
         let sampleImages = [
@@ -776,7 +779,7 @@ struct RankedUserCard: View {
                                 .scaledToFill()
                                 .frame(width: 100)
                                 .aspectRatio(9/16, contentMode: .fill)
-                                .clipped()
+                                .clipShape(RoundedRectangle(cornerRadius: 16)) 
                         case .failure:
                             VStack(spacing: 8) {
                                 Image(systemName: "photo.artframe")
