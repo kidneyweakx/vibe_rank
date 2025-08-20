@@ -139,15 +139,17 @@ private extension RatingTabView {
                     switch phase {
                     case .empty:
                         ZStack {
-                            Color.gray.opacity(0.3)
+                            Color.black.opacity(0.3)
                             VStack(spacing: AppTheme.Spacing.sm) {
-                                Text("📷").font(.system(size: 60))
+                                ProgressView()
+                                    .scaleEffect(1.2)
+                                    .tint(.white)
                                 Text("common.loading".localized)
                                     .font(AppTheme.Typography.body)
                                     .foregroundColor(.white)
-                                ProgressView().tint(.white)
                             }
                         }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .onAppear {
                             imageLoadStartTimes[urlString] = Date()
                             ratingLogger.debug("Image load start [index=\(index)] [photoId=\(photo.id)] url=\(urlString)")
@@ -168,14 +170,16 @@ private extension RatingTabView {
                             }
                     case .failure(let error):
                         ZStack {
-                            Color.gray.opacity(0.3)
+                            Color.black.opacity(0.3)
                             VStack(spacing: AppTheme.Spacing.sm) {
-                                Text("⚠️").font(.system(size: 60))
+                                Text("⚠️")
+                                    .font(.system(size: 60))
                                 Text("common.image_load_failed".localized)
                                     .font(AppTheme.Typography.body)
                                     .foregroundColor(.white)
                             }
                         }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .onAppear {
                             let elapsedMs = finishImageLoad(for: urlString)
                             if let elapsedMs {
@@ -319,15 +323,19 @@ private extension RatingTabView {
     }
     
     var loadingView: some View {
-        VStack(spacing: AppTheme.Spacing.lg) {
-            ProgressView()
-                .scaleEffect(1.5)
-                .tint(.white)
-            
-            Text("rating.loading".localized)
-                .font(AppTheme.Typography.headline)
-                .foregroundColor(.white)
+        ZStack {
+            Color.black.opacity(0.3)
+            VStack(spacing: AppTheme.Spacing.lg) {
+                ProgressView()
+                    .scaleEffect(1.5)
+                    .tint(.white)
+                
+                Text("rating.loading".localized)
+                    .font(AppTheme.Typography.headline)
+                    .foregroundColor(.white)
+            }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     var emptyStateView: some View {
