@@ -21,7 +21,7 @@ struct AuthenticationCoordinatorView: View {
                 
             case .needsProfileSetup:
                 if let initialUserData = authViewModel.initialUserData {
-                    UserProfileSetupView(initialUserData: initialUserData)
+                    OnboardingSetupView(initialUserData: initialUserData)
                         .transition(.slide)
                 } else {
                     // Fallback to login if no user data is available
