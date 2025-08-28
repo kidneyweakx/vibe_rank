@@ -14,9 +14,10 @@ struct OnboardingStepGender: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Select your gender")
-                        .font(.system(size: 24, weight: .bold))
+                VStack(alignment: .leading, spacing: 18) {
+                    Text("onb.gender.title".localized(table: "Onboarding"))
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundColor(.white)
 
                     HStack(spacing: 12) {
                         ForEach(Gender.allCases, id: \.self) { gender in
@@ -29,14 +30,16 @@ struct OnboardingStepGender: View {
 
             HStack(spacing: 12) {
                 Button(action: back) {
-                    Text("Back")
+                    Text("common.back".localized(table: "Onboarding"))
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3)))
+                        .foregroundColor(.white)
+                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.25)))
                 }
             }
             .padding(20)
         }
+        .preferredColorScheme(.dark)
     }
 }
 

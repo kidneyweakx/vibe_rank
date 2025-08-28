@@ -86,6 +86,10 @@ class LocalizationManager: ObservableObject {
     func localizedString(for key: String, comment: String = "") -> String {
         return NSLocalizedString(key, bundle: bundle, comment: comment)
     }
+
+    func localizedString(for key: String, table: String, comment: String = "") -> String {
+        return NSLocalizedString(key, tableName: table, bundle: bundle, comment: comment)
+    }
 }
 
 // MARK: - String Extension for Localization
@@ -96,6 +100,10 @@ extension String {
     
     func localized(with arguments: CVarArg...) -> String {
         return String(format: self.localized, arguments: arguments)
+    }
+
+    func localized(table: String) -> String {
+        return LocalizationManager.shared.localizedString(for: self, table: table)
     }
 }
 

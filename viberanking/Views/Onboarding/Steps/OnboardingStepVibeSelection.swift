@@ -33,32 +33,34 @@ struct OnboardingStepVibeSelection: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(zhTitle)
-                        .font(.system(size: 20, weight: .semibold))
-                    Text(enTitle)
-                        .font(.system(size: 14))
-                        .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 18) {
+                    Text("onb.vibe.title.zh".localized(table: "Onboarding"))
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(.white)
+                    Text("onb.vibe.title.en".localized(table: "Onboarding"))
+                        .font(.system(size: 15))
+                        .foregroundColor(.white.opacity(0.75))
 
                     VStack(spacing: 12) {
                         ForEach(0..<zhOptions.count, id: \.self) { index in
                             Button(action: { selectedIndex = index }) {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text(zhOptions[index])
-                                        .font(.system(size: 15, weight: .medium))
-                                    Text(enOptions[index])
-                                        .font(.system(size: 12))
-                                        .foregroundColor(.secondary)
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text(String(format: NSLocalizedString("onb.vibe.option.zh.%d", tableName: "Onboarding", comment: ""), index + 1))
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.white)
+                                    Text(String(format: NSLocalizedString("onb.vibe.option.en.%d", tableName: "Onboarding", comment: ""), index + 1))
+                                        .font(.system(size: 13))
+                                        .foregroundColor(.white.opacity(0.7))
                                 }
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(selectedIndex == index ? Color.blue.opacity(0.2) : Color.gray.opacity(0.12))
+                                        .fill(selectedIndex == index ? Color.blue.opacity(0.2) : Color.white.opacity(0.08))
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .stroke(selectedIndex == index ? Color.blue : Color.gray.opacity(0.3), lineWidth: 1)
+                                        .stroke(selectedIndex == index ? Color.blue : Color.white.opacity(0.25), lineWidth: 1)
                                 )
                             }
                             .buttonStyle(.plain)
@@ -70,14 +72,15 @@ struct OnboardingStepVibeSelection: View {
 
             HStack(spacing: 12) {
                 Button(action: back) {
-                    Text("Back")
+                    Text("common.back".localized(table: "Onboarding"))
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3)))
+                        .foregroundColor(.white)
+                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.25)))
                 }
 
                 Button(action: next) {
-                    Text("Next")
+                    Text("common.next".localized(table: "Onboarding"))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -88,6 +91,7 @@ struct OnboardingStepVibeSelection: View {
             }
             .padding(20)
         }
+        .preferredColorScheme(.dark)
     }
 }
 

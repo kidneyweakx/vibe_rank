@@ -24,7 +24,7 @@ struct OnboardingSetupView: View {
             // Progress Bar
             ProgressView(value: progressValue)
                 .progressViewStyle(LinearProgressViewStyle())
-                .tint(.blue)
+                .tint(.white)
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
 
@@ -53,8 +53,9 @@ struct OnboardingSetupView: View {
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
         }
-        .background(themeManager.currentTheme.colors.background.ignoresSafeArea())
+        .background(Color.black.ignoresSafeArea())
         .animation(.easeInOut, value: currentStepIndex)
+        .preferredColorScheme(.dark)
         .fullScreenCover(isPresented: $showProfileSetup) {
             UserProfileSetupView(initialUserData: initialUserData)
                 .environmentObject(authViewModel)

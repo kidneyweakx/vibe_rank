@@ -16,23 +16,25 @@ struct OnboardingStepTimeInvestment: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("How much time do you spend each month working on your vibe / getting ready?")
-                        .font(.system(size: 18, weight: .semibold))
-                    Text("Slide: \(Int(hoursPerWeek)) hours/week\n(0 = almost none, 30 = nearly every day putting in effort)")
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 18) {
+                    Text("onb.time.title.en".localized(table: "Onboarding"))
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.white)
+                    Text(String(format: NSLocalizedString("onb.time.subtitle.en", tableName: "Onboarding", comment: ""), Int(hoursPerWeek)))
+                        .font(.system(size: 14))
+                        .foregroundColor(.white.opacity(0.75))
 
                     // Modern draggable pie chart (approximation): split hours vs remaining
                     TimePieChartView(value: hoursPerWeek / 30.0)
                         .frame(height: 180)
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("一週花多少時間在「提升 vibe / 打扮」？")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text("差不多 \(Int(hoursPerWeek)) 小時")
-                            .font(.system(size: 14))
-                            .foregroundColor(.secondary)
+                        Text("onb.time.title.zh".localized(table: "Onboarding"))
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.white)
+                        Text(String(format: NSLocalizedString("onb.time.subtitle.zh", tableName: "Onboarding", comment: ""), Int(hoursPerWeek)))
+                            .font(.system(size: 15))
+                            .foregroundColor(.white.opacity(0.75))
                     }
 
                     Slider(value: $hoursPerWeek, in: 0...30, step: 1)
@@ -42,14 +44,15 @@ struct OnboardingStepTimeInvestment: View {
 
             HStack(spacing: 12) {
                 Button(action: back) {
-                    Text("Back")
+                    Text("common.back".localized(table: "Onboarding"))
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3)))
+                        .foregroundColor(.white)
+                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.25)))
                 }
 
                 Button(action: next) {
-                    Text("Next")
+                    Text("common.next".localized(table: "Onboarding"))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -58,6 +61,8 @@ struct OnboardingStepTimeInvestment: View {
             }
             .padding(20)
         }
+        .background(Color.black)
+        .preferredColorScheme(.dark)
     }
 }
 

@@ -19,20 +19,23 @@ struct OnboardingStepAge: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("How old are you")
-                        .font(.system(size: 24, weight: .bold))
+                VStack(alignment: .leading, spacing: 18) {
+                    Text("onb.age.title".localized(table: "Onboarding"))
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundColor(.white)
 
                     LazyVStack(spacing: 12) {
                         ForEach(ageRanges, id: \.self) { range in
                             Button(action: { selectAge(range) }) {
                                 HStack {
                                     Text(range)
+                                        .foregroundColor(.white)
                                     Spacer()
                                     Image(systemName: "chevron.right")
+                                        .foregroundColor(.white.opacity(0.7))
                                 }
                                 .padding()
-                                .background(RoundedRectangle(cornerRadius: 12).fill(Color.gray.opacity(0.12)))
+                                .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.08)))
                             }
                             .buttonStyle(.plain)
                         }
@@ -43,14 +46,16 @@ struct OnboardingStepAge: View {
 
             HStack(spacing: 12) {
                 Button(action: back) {
-                    Text("Back")
+                    Text("common.back".localized(table: "Onboarding"))
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3)))
+                        .foregroundColor(.white)
+                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.25)))
                 }
             }
             .padding(20)
         }
+        .preferredColorScheme(.dark)
     }
 }
 

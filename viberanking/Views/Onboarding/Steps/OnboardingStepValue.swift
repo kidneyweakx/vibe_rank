@@ -14,49 +14,39 @@ struct OnboardingStepValue: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 22) {
                     // Simple placeholder charts
                     HStack(spacing: 16) {
-                        GrowthChartView(title: "Growth")
-                        SpendChartView(title: "Spend ↓")
+                        GrowthChartView(title: "onb.value.chart.growth".localized(table: "Onboarding"))
+                        SpendChartView(title: "onb.value.chart.spend".localized(table: "Onboarding"))
                     }
                     .frame(height: 160)
 
                     Group {
-                        Text("You think new clothes, more skincare, endless outfits make you better.\nBut the truth is—70% of your money is wasted on a vibe that doesn’t even fit you.")
-                        Text("We makes it clear:")
-                        Text("✨ See exactly what’s worth spending on, and what’s not")
-                        Text("✨ Stop blind shopping and getting played by marketing")
-                        Text("✨ Grow 1% every day, double your confidence in 30 days")
-                        Text("👉 Stop burning cash on the wrong vibe. Start investing in the real you.")
+                        Text("onb.value.p1".localized(table: "Onboarding"))
+                        Text("onb.value.p2".localized(table: "Onboarding"))
+                        Text("onb.value.p3".localized(table: "Onboarding"))
+                        Text("onb.value.p4".localized(table: "Onboarding"))
+                        Text("onb.value.p5".localized(table: "Onboarding"))
+                        Text("onb.value.p6".localized(table: "Onboarding"))
                     }
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary)
-
-                    Group {
-                        Text("你以為每天換衣服、補保養、試穿不同風格是在變好，\n但真相是——70% 的錢都丟在不適合你的 vibe 上。")
-                        Text("幫你算清楚：")
-                        Text("✨ 哪些錢花得值得，哪些完全沒必要")
-                        Text("✨ 停止盲目亂買，別再買不適合自己的東西")
-                        Text("✨ 每天 vibe +1%，30 天後自信翻倍")
-                        Text("👉 別再亂花錢，找到自己最佳的 vibe。")
-                    }
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 16))
+                    .foregroundColor(.white.opacity(0.8))
                 }
                 .padding(24)
             }
 
             HStack(spacing: 12) {
                 Button(action: back) {
-                    Text("Back")
+                    Text("common.back".localized(table: "Onboarding"))
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3)))
+                        .foregroundColor(.white)
+                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.25)))
                 }
 
                 Button(action: next) {
-                    Text("GOT IT")
+                    Text("onb.value.cta.gotit".localized(table: "Onboarding"))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -65,6 +55,8 @@ struct OnboardingStepValue: View {
             }
             .padding(20)
         }
+        .background(Color.black)
+        .preferredColorScheme(.dark)
     }
 }
 
