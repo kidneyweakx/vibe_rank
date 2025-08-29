@@ -26,13 +26,12 @@ struct MainTabView: View {
     @State private var showSpotlight: Bool = false
     @State private var currentSpotlightIndex: Int = 0
     @State private var spotlightFrames: [String: CGRect] = [:]
-    private let spotlightSteps: [(id: String, title: String, message: String, corner: CGFloat)] = [
-        ("tab_rating", "Vibe", "進入評分頁，開始你的 Vibe 體驗", 12),
-        ("tab_trend", "Trend", "看看目前最受歡迎的用戶與活動", 12),
-        ("tab_plus", "上傳", "完成解鎖後可在這裡上傳你的照片", 28),
-        ("tab_journey", "Journey", "追蹤你的排名與吸引力旅程", 12),
-        ("tab_profile", "Profile", "管理你的個人檔案與設定", 12)
-    ]
+    @State private var overrideSpotlightStep: SpotlightStepModel?
+    private let spotlightStepsModels: [SpotlightStepModel] = SpotlightScripts.mainSteps
+    @AppStorage("has_seen_spotlight_rating_page") private var hasSeenRatingPageSpotlight: Bool = false
+    @AppStorage("has_seen_spotlight_trend_page") private var hasSeenTrendPageSpotlight: Bool = false
+    @AppStorage("has_seen_spotlight_journey_page") private var hasSeenJourneyPageSpotlight: Bool = false
+    @AppStorage("has_seen_spotlight_profile_page") private var hasSeenProfilePageSpotlight: Bool = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -82,28 +81,49 @@ struct MainTabView: View {
             )
 
             // Spotlight overlay layer
-            if showSpotlight, currentSpotlightIndex < spotlightSteps.count {
-                let step = spotlightSteps[currentSpotlightIndex]
-                if let frame = spotlightFrames[step.id], !frame.isNull, !frame.isEmpty, frame.width > 1, frame.height > 1 {
+            if showSpotlight {
+                if let override = overrideSpotlightStep,
+                   let frame = spotlightFrames[override.id], !frame.isNull, !frame.isEmpty, frame.width > 1, frame.height > 1 {
                     SpotlightOverlay(
                         targetFrame: frame,
-                        cornerRadius: step.corner,
-                        title: step.title,
-                        message: step.message,
+                        cornerRadius: override.cornerRadius,
+                        title: override.title,
+                        message: override.message,
                         onNext: {
-                            if currentSpotlightIndex < spotlightSteps.count - 1 {
-                                currentSpotlightIndex += 1
-                            } else {
-                                hasSeenMainSpotlight = true
-                                withAnimation { showSpotlight = false }
-                            }
+                            markCurrentPageSpotlightSeen(for: selectedTab)
+                            overrideSpotlightStep = nil
+                            withAnimation { showSpotlight = false }
                         },
                         onSkip: {
-                            hasSeenMainSpotlight = true
+                            markCurrentPageSpotlightSeen(for: selectedTab)
+                            overrideSpotlightStep = nil
                             withAnimation { showSpotlight = false }
                         }
                     )
                     .transition(.opacity)
+                } else if currentSpotlightIndex < spotlightStepsModels.count {
+                    let step = spotlightStepsModels[currentSpotlightIndex]
+                    if let frame = spotlightFrames[step.id], !frame.isNull, !frame.isEmpty, frame.width > 1, frame.height > 1 {
+                        SpotlightOverlay(
+                            targetFrame: frame,
+                            cornerRadius: step.cornerRadius,
+                            title: step.title,
+                            message: step.message,
+                            onNext: {
+                                if currentSpotlightIndex < spotlightStepsModels.count - 1 {
+                                    currentSpotlightIndex += 1
+                                } else {
+                                    hasSeenMainSpotlight = true
+                                    withAnimation { showSpotlight = false }
+                                }
+                            },
+                            onSkip: {
+                                hasSeenMainSpotlight = true
+                                withAnimation { showSpotlight = false }
+                            }
+                        )
+                        .transition(.opacity)
+                    }
                 }
             }
         }
@@ -212,12 +232,18 @@ struct MainTabView: View {
                 print("🔄 當前 selectedImage 是否為 nil: \(selectedImage == nil)")
             }
         }
+        .onChange(of: selectedTab) { newTab in
+            maybeShowPerPageSpotlight(for: newTab)
+        }
         .onAppear {
             if !hasSeenMainSpotlight {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                     currentSpotlightIndex = 0
                     withAnimation { showSpotlight = true }
                 }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                maybeShowPerPageSpotlight(for: selectedTab)
             }
         }
     }
@@ -315,6 +341,35 @@ struct CustomTikTokTabBar: View {
             Color.black
                 .ignoresSafeArea(edges: .bottom)
         )
+    }
+}
+
+// MARK: - Per-Page Spotlight Helpers
+extension MainTabView {
+    private func maybeShowPerPageSpotlight(for tab: TabItem) {
+        if showSpotlight { return }
+        if hasSeenPageSpotlight(for: tab) { return }
+        let step = SpotlightScripts.pageStep(for: tab)
+        overrideSpotlightStep = step
+        withAnimation { showSpotlight = true }
+    }
+
+    private func hasSeenPageSpotlight(for tab: TabItem) -> Bool {
+        switch tab {
+        case .rating: return hasSeenRatingPageSpotlight
+        case .home: return hasSeenTrendPageSpotlight
+        case .journey: return hasSeenJourneyPageSpotlight
+        case .profile: return hasSeenProfilePageSpotlight
+        }
+    }
+
+    private func markCurrentPageSpotlightSeen(for tab: TabItem) {
+        switch tab {
+        case .rating: hasSeenRatingPageSpotlight = true
+        case .home: hasSeenTrendPageSpotlight = true
+        case .journey: hasSeenJourneyPageSpotlight = true
+        case .profile: hasSeenProfilePageSpotlight = true
+        }
     }
 }
 
