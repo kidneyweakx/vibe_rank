@@ -22,6 +22,17 @@ struct MainTabView: View {
     @State private var uploadAlertMessage = ""
     @State private var showingCameraAlert = false
     @State private var cameraAlertMessage = ""
+    @AppStorage("has_seen_main_spotlight") private var hasSeenMainSpotlight: Bool = false
+    @State private var showSpotlight: Bool = false
+    @State private var currentSpotlightIndex: Int = 0
+    @State private var spotlightFrames: [String: CGRect] = [:]
+    private let spotlightSteps: [(id: String, title: String, message: String, corner: CGFloat)] = [
+        ("tab_rating", "Vibe", "進入評分頁，開始你的 Vibe 體驗", 12),
+        ("tab_trend", "Trend", "看看目前最受歡迎的用戶與活動", 12),
+        ("tab_plus", "上傳", "完成解鎖後可在這裡上傳你的照片", 28),
+        ("tab_journey", "Journey", "追蹤你的排名與吸引力旅程", 12),
+        ("tab_profile", "Profile", "管理你的個人檔案與設定", 12)
+    ]
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -69,6 +80,36 @@ struct MainTabView: View {
                     }
                 }
             )
+
+            // Spotlight overlay layer
+            if showSpotlight, currentSpotlightIndex < spotlightSteps.count {
+                let step = spotlightSteps[currentSpotlightIndex]
+                if let frame = spotlightFrames[step.id], !frame.isNull, !frame.isEmpty, frame.width > 1, frame.height > 1 {
+                    SpotlightOverlay(
+                        targetFrame: frame,
+                        cornerRadius: step.corner,
+                        title: step.title,
+                        message: step.message,
+                        onNext: {
+                            if currentSpotlightIndex < spotlightSteps.count - 1 {
+                                currentSpotlightIndex += 1
+                            } else {
+                                hasSeenMainSpotlight = true
+                                withAnimation { showSpotlight = false }
+                            }
+                        },
+                        onSkip: {
+                            hasSeenMainSpotlight = true
+                            withAnimation { showSpotlight = false }
+                        }
+                    )
+                    .transition(.opacity)
+                }
+            }
+        }
+        .coordinateSpace(name: "spotlight")
+        .onPreferenceChange(SpotlightPreferenceKey.self) { value in
+            spotlightFrames = value
         }
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showingUploadMenu) {
@@ -171,6 +212,14 @@ struct MainTabView: View {
                 print("🔄 當前 selectedImage 是否為 nil: \(selectedImage == nil)")
             }
         }
+        .onAppear {
+            if !hasSeenMainSpotlight {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    currentSpotlightIndex = 0
+                    withAnimation { showSpotlight = true }
+                }
+            }
+        }
     }
     
     private var canUpload: Bool {
@@ -203,6 +252,7 @@ struct CustomTikTokTabBar: View {
             ) {
                 onVibeTap() // 直接調用 vibe 模式
             }
+            .spotlightTarget(id: "tab_rating")
             
             Spacer()
             
@@ -214,6 +264,7 @@ struct CustomTikTokTabBar: View {
             ) {
                 selectedTab = .home
             }
+            .spotlightTarget(id: "tab_trend")
             
             Spacer()
             
@@ -231,6 +282,7 @@ struct CustomTikTokTabBar: View {
                 }
             }
             .offset(y: -10)
+            .spotlightTarget(id: "tab_plus")
             
             Spacer()
             
@@ -242,6 +294,7 @@ struct CustomTikTokTabBar: View {
             ) {
                 selectedTab = .journey
             }
+            .spotlightTarget(id: "tab_journey")
             
             Spacer()
             
@@ -253,6 +306,7 @@ struct CustomTikTokTabBar: View {
             ) {
                 selectedTab = .profile
             }
+            .spotlightTarget(id: "tab_profile")
         }
         .padding(.horizontal, 20)
         .padding(.top, 8)
