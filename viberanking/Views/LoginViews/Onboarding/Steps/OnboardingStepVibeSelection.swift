@@ -45,10 +45,10 @@ struct OnboardingStepVibeSelection: View {
                         ForEach(0..<zhOptions.count, id: \.self) { index in
                             Button(action: { selectedIndex = index }) {
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Text(String(format: NSLocalizedString("onb.vibe.option.zh.%d", tableName: "Onboarding", comment: ""), index + 1))
+                                    Text("onb.vibe.option.zh.\(index + 1)".localized(table: "Onboarding"))
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundColor(.white)
-                                    Text(String(format: NSLocalizedString("onb.vibe.option.en.%d", tableName: "Onboarding", comment: ""), index + 1))
+                                    Text("onb.vibe.option.en.\(index + 1)".localized(table: "Onboarding"))
                                         .font(.system(size: 13))
                                         .foregroundColor(.white.opacity(0.7))
                                 }
