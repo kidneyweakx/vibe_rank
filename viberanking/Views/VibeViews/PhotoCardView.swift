@@ -14,8 +14,12 @@ struct PhotoCardView: View {
     let photo: Photo
     let index: Int
     let isTopCard: Bool
-    @Binding var currentCardOffset: CGSize
-    @Binding var imageLoadStartTimes: [String: Date]
+    let cardOffset: CGSize
+    let onSwipe: (SwipeDirection) -> Void
+    
+    // Image loading state
+    @State private var imageLoadState: ImageLoadState = .loading
+    @State private var cachedImage: UIImage?
     
     var body: some View {
         let urlString = photo.imageURL.bestAvailableURL
@@ -23,49 +27,17 @@ struct PhotoCardView: View {
         return ZStack {
             // 16:9 Card container
             ZStack {
-                AsyncImage(url: URL(string: urlString)) { phase in
-                    switch phase {
-                    case .empty:
-                        loadingPlaceholder
-                            .onAppear {
-                                imageLoadStartTimes[urlString] = Date()
-                                photoCardLogger.debug("Image load start [index=\(index)] [photoId=\(photo.id)] url=\(urlString)")
-                            }
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .clipped()
-                            .onAppear {
-                                let elapsedMs = finishImageLoad(for: urlString)
-                                if let elapsedMs {
-                                    photoCardLogger.debug("Image load success [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=\(elapsedMs)ms")
-                                } else {
-                                    photoCardLogger.debug("Image load success [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=unknown")
-                                }
-                            }
-                    case .failure(let error):
-                        errorPlaceholder
-                            .onAppear {
-                                let elapsedMs = finishImageLoad(for: urlString)
-                                if let elapsedMs {
-                                    photoCardLogger.error("Image load failure [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=\(elapsedMs)ms error=\(error.localizedDescription)")
-                                } else {
-                                    photoCardLogger.error("Image load failure [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=unknown error=\(error.localizedDescription)")
-                                }
-                            }
-                    @unknown default:
-                        Color.gray.opacity(0.3)
-                            .onAppear {
-                                let elapsedMs = finishImageLoad(for: urlString)
-                                if let elapsedMs {
-                                    photoCardLogger.error("Image load unknown phase [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=\(elapsedMs)ms")
-                                } else {
-                                    photoCardLogger.error("Image load unknown phase [index=\(index)] [photoId=\(photo.id)] url=\(urlString) elapsed=unknown")
-                                }
-                            }
-                    }
+                // Show cached image first if available
+                if let cachedImage = cachedImage {
+                    Image(uiImage: cachedImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .clipped()
+                        .transition(.opacity.animation(.easeInOut(duration: 0.2)))
+                } else {
+                    // Load image with optimized strategy
+                    optimizedImageLoader(urlString: urlString)
                 }
             }
             .frame(maxWidth: .infinity)
@@ -73,28 +45,54 @@ struct PhotoCardView: View {
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 6)
             
-            // Swipe indicators
+            // Swipe indicators only for top card
             if isTopCard {
                 swipeIndicators
             }
         }
-        .offset(x: currentCardOffset.width, y: 0)
-        .scaleEffect(1.0)
-        .rotationEffect(.degrees(Double(currentCardOffset.width) / 25.0))
-        .zIndex(10)
+        .offset(x: cardOffset.width, y: cardOffset.height)
+        .scaleEffect(1.0 - abs(cardOffset.width) / 1000) // Slight scale effect
+        .rotationEffect(.degrees(Double(cardOffset.width) / 25.0))
+        .zIndex(isTopCard ? 10 : Double(10 - index)) // Stack cards by z-index
         .gesture(
             DragGesture()
                 .onChanged { value in
-                    withAnimation(.interactiveSpring(response: 0.3, dampingFraction: 0.8)) {
-                        currentCardOffset = value.translation
+                    // Only allow gesture on top card
+                    if isTopCard {
+                        onSwipe(.dragging(value.translation))
                     }
                 }
                 .onEnded { value in
-                    handleSwipeEnd(value)
+                    if isTopCard {
+                        onSwipe(.ended(value.translation))
+                    }
                 }
         )
-        .allowsHitTesting(true)
-        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: currentCardOffset)
+        .allowsHitTesting(isTopCard)
+        .onAppear {
+            preloadImage(urlString: urlString)
+        }
+    }
+    
+    // MARK: - Optimized Image Loader
+    @ViewBuilder
+    private func optimizedImageLoader(urlString: String) -> some View {
+        switch imageLoadState {
+        case .loading:
+            loadingPlaceholder
+                .onAppear {
+                    startImageLoad(urlString: urlString)
+                }
+        case .success(let image):
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
+                .transition(.opacity.animation(.easeInOut(duration: 0.2)))
+        case .failure:
+            errorPlaceholder
+        }
     }
     
     // MARK: - Private Views
@@ -130,7 +128,7 @@ struct PhotoCardView: View {
     private var swipeIndicators: some View {
         Group {
             // Right swipe indicator (flame)
-            if currentCardOffset.width > 30 {
+            if cardOffset.width > 30 {
                 Circle()
                     .fill(.white.opacity(0.2))
                     .frame(width: 80, height: 80)
@@ -139,12 +137,12 @@ struct PhotoCardView: View {
                             .font(.system(size: 34, weight: .medium))
                             .foregroundColor(.white)
                     )
-                    .opacity(min(Double(currentCardOffset.width) / 120.0, 1.0))
-                    .scaleEffect(0.9 + min(Double(currentCardOffset.width) / 400.0, 0.2))
+                    .opacity(min(Double(cardOffset.width) / 120.0, 1.0))
+                    .scaleEffect(0.9 + min(Double(cardOffset.width) / 400.0, 0.2))
             }
             
             // Left swipe indicator (x)
-            if currentCardOffset.width < -30 {
+            if cardOffset.width < -30 {
                 Circle()
                     .fill(.white.opacity(0.2))
                     .frame(width: 80, height: 80)
@@ -153,44 +151,54 @@ struct PhotoCardView: View {
                             .font(.system(size: 30, weight: .medium))
                             .foregroundColor(.white)
                     )
-                    .opacity(min(Double(-currentCardOffset.width) / 120.0, 1.0))
-                    .scaleEffect(0.9 + min(Double(-currentCardOffset.width) / 400.0, 0.2))
+                    .opacity(min(Double(-cardOffset.width) / 120.0, 1.0))
+                    .scaleEffect(0.9 + min(Double(-cardOffset.width) / 400.0, 0.2))
             }
         }
     }
     
     // MARK: - Private Methods
-    private func finishImageLoad(for urlString: String) -> Int? {
-        let now = Date()
-        guard let start = imageLoadStartTimes.removeValue(forKey: urlString) else {
-            return nil
+    private func startImageLoad(urlString: String) {
+        photoCardLogger.debug("Image load start [index=\(index)] [photoId=\(photo.id)] url=\(urlString)")
+        
+        Task {
+            await loadImage(urlString: urlString)
         }
-        let elapsedMs = Int(now.timeIntervalSince(start) * 1000)
-        return elapsedMs
     }
     
-    private func handleSwipeEnd(_ value: DragGesture.Value) {
-        let threshold: CGFloat = 100
-        
-        if value.translation.width > threshold {
-            // Swiped right - LIKE
-            NotificationCenter.default.post(name: .photoCardSwipedRight, object: nil)
-        } else if value.translation.width < -threshold {
-            // Swiped left - SKIP
-            NotificationCenter.default.post(name: .photoCardSwipedLeft, object: nil)
+    private func loadImage(urlString: String) async {
+        // Use the enhanced image cache service
+        if let image = await ImageCache.shared.getImage(from: urlString) {
+            await MainActor.run {
+                cachedImage = image
+                imageLoadState = .success(image)
+                photoCardLogger.debug("Image load success [index=\(index)] [photoId=\(photo.id)] url=\(urlString)")
+            }
         } else {
-            // Return to center
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                currentCardOffset = .zero
+            await MainActor.run {
+                imageLoadState = .failure
+                photoCardLogger.error("Image load failure [index=\(index)] [photoId=\(photo.id)] url=\(urlString)")
             }
         }
     }
+    
+    private func preloadImage(urlString: String) {
+        // Preload next images for better performance
+        ImageCache.shared.preloadImages(urls: [urlString])
+    }
 }
 
-// MARK: - Notification Names
-extension Notification.Name {
-    static let photoCardSwipedRight = Notification.Name("photoCardSwipedRight")
-    static let photoCardSwipedLeft = Notification.Name("photoCardSwipedLeft")
+// MARK: - Swipe Direction
+enum SwipeDirection {
+    case dragging(CGSize)
+    case ended(CGSize)
+}
+
+// MARK: - Image Load State
+enum ImageLoadState: Equatable {
+    case loading
+    case success(UIImage)
+    case failure
 }
 
 #Preview {
@@ -198,8 +206,8 @@ extension Notification.Name {
         photo: Photo(id: "1", userId: "user1", imageURL: PhotoURLs(original: "test")),
         index: 0,
         isTopCard: true,
-        currentCardOffset: .constant(.zero),
-        imageLoadStartTimes: .constant([:])
+        cardOffset: .zero,
+        onSwipe: { _ in }
     )
     .background(Color.black)
 }
