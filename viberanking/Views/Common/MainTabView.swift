@@ -129,6 +129,10 @@ struct MainTabView: View {
         .coordinateSpace(name: "spotlight")
         .onPreferenceChange(SpotlightPreferenceKey.self) { value in
             spotlightFrames = value
+            print("🔄 Spotlight frames updated: \(value.keys)")
+            for (id, frame) in value {
+                print("  - \(id): \(frame)")
+            }
         }
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showingUploadMenu) {
@@ -235,13 +239,19 @@ struct MainTabView: View {
             maybeShowPerPageSpotlight(for: newTab)
         }
         .onAppear {
+            print("🔄 MainTabView onAppear - hasSeenMainSpotlight: \(hasSeenMainSpotlight)")
             if !hasSeenMainSpotlight {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                print("🔄 Showing main spotlight after delay...")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    print("🔄 Setting currentSpotlightIndex to 0 and showing spotlight")
                     currentSpotlightIndex = 0
                     withAnimation { showSpotlight = true }
                 }
+            } else {
+                print("ℹ️ User has already seen main spotlight")
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                print("🔄 Checking per-page spotlight for tab: \(selectedTab)")
                 maybeShowPerPageSpotlight(for: selectedTab)
             }
         }
@@ -253,6 +263,49 @@ struct MainTabView: View {
         
         // 原本的邏輯：
         // !authViewModel.isGuest && (authViewModel.user?.ratingProgress.hasUnlockedUpload ?? false)
+    }
+    
+    /// Reset spotlight state for testing purposes
+    func resetSpotlightForTesting() {
+        print("🧪 Resetting spotlight state for testing...")
+        hasSeenMainSpotlight = false
+        hasSeenRatingPageSpotlight = false
+        hasSeenTrendPageSpotlight = false
+        hasSeenJourneyPageSpotlight = false
+        hasSeenProfilePageSpotlight = false
+        currentSpotlightIndex = 0
+        showSpotlight = false
+        overrideSpotlightStep = nil
+        print("✅ Spotlight state reset complete")
+    }
+    
+    /// Check current spotlight state for debugging
+    func debugSpotlightState() {
+        print("🔍 Current Spotlight State:")
+        print("  - hasSeenMainSpotlight: \(hasSeenMainSpotlight)")
+        print("  - hasSeenRatingPageSpotlight: \(hasSeenRatingPageSpotlight)")
+        print("  - hasSeenTrendPageSpotlight: \(hasSeenTrendPageSpotlight)")
+        print("  - hasSeenJourneyPageSpotlight: \(hasSeenJourneyPageSpotlight)")
+        print("  - hasSeenProfilePageSpotlight: \(hasSeenProfilePageSpotlight)")
+        print("  - currentSpotlightIndex: \(currentSpotlightIndex)")
+        print("  - showSpotlight: \(showSpotlight)")
+        print("  - overrideSpotlightStep: \(overrideSpotlightStep?.id ?? "nil")")
+        print("  - selectedTab: \(selectedTab)")
+    }
+    
+    /// Force show spotlight for testing purposes
+    func forceShowSpotlight() {
+        print("🧪 Force showing spotlight...")
+        hasSeenMainSpotlight = false
+        currentSpotlightIndex = 0
+        showSpotlight = false
+        overrideSpotlightStep = nil
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            print("🧪 Showing main spotlight...")
+            self.currentSpotlightIndex = 0
+            withAnimation { self.showSpotlight = true }
+        }
     }
 }
 

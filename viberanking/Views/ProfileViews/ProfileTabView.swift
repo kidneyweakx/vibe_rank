@@ -47,7 +47,16 @@ struct ProfileTabView: View {
         .fullScreenCover(isPresented: $showingSettings, onDismiss: {
             Task { await viewModel.refreshData() }
         }) {
-            SettingsView()
+            SettingsView(onResetSpotlight: {
+                // This will be connected to MainTabView's resetSpotlightForTesting method
+                // For now, we'll use UserDefaults to reset the spotlight state
+                UserDefaults.standard.set(false, forKey: "has_seen_main_spotlight")
+                UserDefaults.standard.set(false, forKey: "has_seen_spotlight_rating_page")
+                UserDefaults.standard.set(false, forKey: "has_seen_spotlight_trend_page")
+                UserDefaults.standard.set(false, forKey: "has_seen_spotlight_journey_page")
+                UserDefaults.standard.set(false, forKey: "has_seen_spotlight_profile_page")
+                print("🔄 Spotlight state reset from settings")
+            })
         }
         .task {
             if let userId = authViewModel.user?.id {

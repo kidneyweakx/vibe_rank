@@ -22,6 +22,10 @@ struct SettingsView: View {
     @State private var bio = ""
     @State private var location = ""
     @State private var pendingAvatarURL: String? = nil
+    @State private var showingSpotlightResetAlert = false
+    
+    // Callback for resetting spotlight
+    var onResetSpotlight: (() -> Void)?
     
     var body: some View {
         NavigationStack {
@@ -192,6 +196,14 @@ struct SettingsView: View {
                                         showContact = true
                                     }
                                 )
+                                
+                                SettingsRow(
+                                    icon: "lightbulb.fill",
+                                    title: "Reset Tutorial",
+                                    action: {
+                                        showingSpotlightResetAlert = true
+                                    }
+                                )
                             }
                         }
                         
@@ -281,6 +293,15 @@ struct SettingsView: View {
             }
         } message: {
             Text("Are you sure you want to sign out?")
+        }
+        .alert("Reset Tutorial", isPresented: $showingSpotlightResetAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Reset", role: .destructive) {
+                onResetSpotlight?()
+                dismiss()
+            }
+        } message: {
+            Text("This will show the app tutorial again. Are you sure you want to reset it?")
         }
         .onAppear { loadUserData() }
     }

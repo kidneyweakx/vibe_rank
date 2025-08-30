@@ -151,6 +151,9 @@ class AuthenticationViewModel: ObservableObject {
                 self.needsProfileSetup = true
                 self.authState = .needsProfileSetup
                 
+                // Reset spotlight state for new users
+                resetSpotlightState()
+                
                 // Log analytics event
                 logAuthenticationEvent(provider: "google_onboard", success: true)
             } catch {
@@ -159,6 +162,8 @@ class AuthenticationViewModel: ObservableObject {
                    case .serverError(let statusCode) = appError,
                    statusCode == 404 {
                     self.handleNewUserProfileSetup(provider: "google")
+                    // Reset spotlight state for new users
+                    resetSpotlightState()
                 } else {
                     self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
                     self.authState = .error(self.errorMessage ?? "Unknown error")
@@ -194,6 +199,9 @@ class AuthenticationViewModel: ObservableObject {
                 self.needsProfileSetup = true
                 self.authState = .needsProfileSetup
                 
+                // Reset spotlight state for new users
+                resetSpotlightState()
+                
                 // Log analytics event
                 logAuthenticationEvent(provider: "apple_onboard", success: true)
             } catch {
@@ -202,6 +210,8 @@ class AuthenticationViewModel: ObservableObject {
                    case .serverError(let statusCode) = appError,
                    statusCode == 404 {
                     self.handleNewUserProfileSetup(provider: "apple")
+                    // Reset spotlight state for new users
+                    resetSpotlightState()
                 } else {
                     self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
                     self.authState = .error(self.errorMessage ?? "Unknown error")
@@ -237,6 +247,9 @@ class AuthenticationViewModel: ObservableObject {
                 )
                 self.needsProfileSetup = true
                 self.authState = .needsProfileSetup
+                
+                // Reset spotlight state for new users
+                resetSpotlightState()
                 
                 // Log analytics event
                 logAuthenticationEvent(provider: "guest_onboard", success: true)
@@ -417,6 +430,9 @@ class AuthenticationViewModel: ObservableObject {
             self.authState = .signedIn
             self.initialUserData = nil
             
+            // Reset spotlight state for new users
+            resetSpotlightState()
+            
             // Log analytics event
             logAuthenticationEvent(provider: "profile_setup", success: true)
         } catch {
@@ -435,5 +451,16 @@ class AuthenticationViewModel: ObservableObject {
     private func logAuthenticationEvent(provider: String, success: Bool) {
         // In a real app, this would use Firebase Analytics
         print("Authentication event: provider=\(provider), success=\(success)")
+    }
+    
+    /// Reset spotlight state for new users
+    private func resetSpotlightState() {
+        // Reset all spotlight flags to show spotlight for new users
+        UserDefaults.standard.set(false, forKey: "has_seen_main_spotlight")
+        UserDefaults.standard.set(false, forKey: "has_seen_spotlight_rating_page")
+        UserDefaults.standard.set(false, forKey: "has_seen_spotlight_trend_page")
+        UserDefaults.standard.set(false, forKey: "has_seen_spotlight_journey_page")
+        UserDefaults.standard.set(false, forKey: "has_seen_spotlight_profile_page")
+        print("🔄 Spotlight state reset for new user")
     }
 }
