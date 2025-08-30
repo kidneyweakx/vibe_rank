@@ -455,12 +455,28 @@ class AuthenticationViewModel: ObservableObject {
     
     /// Reset spotlight state for new users
     private func resetSpotlightState() {
-        // Reset all spotlight flags to show spotlight for new users
-        UserDefaults.standard.set(false, forKey: "has_seen_main_spotlight")
-        UserDefaults.standard.set(false, forKey: "has_seen_spotlight_rating_page")
-        UserDefaults.standard.set(false, forKey: "has_seen_spotlight_trend_page")
-        UserDefaults.standard.set(false, forKey: "has_seen_spotlight_journey_page")
-        UserDefaults.standard.set(false, forKey: "has_seen_spotlight_profile_page")
-        print("🔄 Spotlight state reset for new user")
+        // Only reset spotlight if this user hasn't seen it before
+        guard let userId = user?.id else {
+            print("⚠️ No user ID available, skipping spotlight reset")
+            return
+        }
+        
+        let userSpotlightKey = "has_seen_spotlight_user_\(userId)"
+        let hasSeenSpotlight = UserDefaults.standard.bool(forKey: userSpotlightKey)
+        
+        if !hasSeenSpotlight {
+            // This is a truly new user, reset all spotlight flags
+            UserDefaults.standard.set(false, forKey: "has_seen_main_spotlight")
+            UserDefaults.standard.set(false, forKey: "has_seen_spotlight_rating_page")
+            UserDefaults.standard.set(false, forKey: "has_seen_spotlight_trend_page")
+            UserDefaults.standard.set(false, forKey: "has_seen_spotlight_journey_page")
+            UserDefaults.standard.set(false, forKey: "has_seen_spotlight_profile_page")
+            
+            // Mark this user as having seen the spotlight
+            UserDefaults.standard.set(true, forKey: userSpotlightKey)
+            print("🔄 Spotlight state reset for new user: \(userId)")
+        } else {
+            print("ℹ️ User \(userId) has already seen spotlight, skipping reset")
+        }
     }
 }

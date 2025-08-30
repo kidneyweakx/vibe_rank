@@ -33,6 +33,13 @@ struct MainTabView: View {
     @AppStorage("has_seen_spotlight_journey_page") var hasSeenJourneyPageSpotlight: Bool = false
     @AppStorage("has_seen_spotlight_profile_page") var hasSeenProfilePageSpotlight: Bool = false
     
+    // Computed property to check if current user has seen spotlight
+    private var currentUserHasSeenSpotlight: Bool {
+        guard let userId = authViewModel.user?.id else { return false }
+        let userSpotlightKey = "has_seen_spotlight_user_\(userId)"
+        return UserDefaults.standard.bool(forKey: userSpotlightKey)
+    }
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
@@ -113,11 +120,15 @@ struct MainTabView: View {
                                     currentSpotlightIndex += 1
                                 } else {
                                     hasSeenMainSpotlight = true
+                                    // Mark that current user has seen spotlight globally
+                                    markCurrentUserSpotlightSeen()
                                     withAnimation { showSpotlight = false }
                                 }
                             },
                             onSkip: {
                                 hasSeenMainSpotlight = true
+                                // Mark that current user has seen spotlight globally
+                                markCurrentUserSpotlightSeen()
                                 withAnimation { showSpotlight = false }
                             }
                         )
@@ -240,7 +251,10 @@ struct MainTabView: View {
         }
         .onAppear {
             print("🔄 MainTabView onAppear - hasSeenMainSpotlight: \(hasSeenMainSpotlight)")
-            if !hasSeenMainSpotlight {
+            print("🔄 Current user has seen spotlight: \(currentUserHasSeenSpotlight)")
+            
+            // Only show spotlight if current user hasn't seen it before
+            if !hasSeenMainSpotlight && !currentUserHasSeenSpotlight {
                 print("🔄 Showing main spotlight after delay...")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     print("🔄 Setting currentSpotlightIndex to 0 and showing spotlight")
@@ -248,7 +262,7 @@ struct MainTabView: View {
                     withAnimation { showSpotlight = true }
                 }
             } else {
-                print("ℹ️ User has already seen main spotlight")
+                print("ℹ️ User has already seen main spotlight or current user has seen spotlight")
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                 print("🔄 Checking per-page spotlight for tab: \(selectedTab)")
@@ -276,6 +290,14 @@ struct MainTabView: View {
         currentSpotlightIndex = 0
         showSpotlight = false
         overrideSpotlightStep = nil
+        
+        // Also reset user-specific spotlight state if available
+        if let userId = getCurrentUserId() {
+            let userSpotlightKey = "has_seen_spotlight_user_\(userId)"
+            UserDefaults.standard.set(false, forKey: userSpotlightKey)
+            print("🧪 Reset user-specific spotlight state for user: \(userId)")
+        }
+        
         print("✅ Spotlight state reset complete")
     }
     
@@ -301,11 +323,43 @@ struct MainTabView: View {
         showSpotlight = false
         overrideSpotlightStep = nil
         
+        // Also reset user-specific spotlight state if available
+        if let userId = getCurrentUserId() {
+            let userSpotlightKey = "has_seen_spotlight_user_\(userId)"
+            UserDefaults.standard.set(false, forKey: userSpotlightKey)
+            print("🧪 Reset user-specific spotlight state for user: \(userId)")
+        }
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             print("🧪 Showing main spotlight...")
             self.currentSpotlightIndex = 0
             withAnimation { self.showSpotlight = true }
         }
+        
+        print("✅ Spotlight state reset complete")
+    }
+    
+    // MARK: - Public Spotlight Methods for Extension
+    
+    /// Check if current user has seen spotlight globally
+    func hasCurrentUserSeenSpotlight() -> Bool {
+        guard let userId = authViewModel.user?.id else { return false }
+        let userSpotlightKey = "has_seen_spotlight_user_\(userId)"
+        return UserDefaults.standard.bool(forKey: userSpotlightKey)
+    }
+    
+    /// Mark current user as having seen spotlight globally
+    func markCurrentUserSpotlightSeen() {
+        if let userId = authViewModel.user?.id {
+            let userSpotlightKey = "has_seen_spotlight_user_\(userId)"
+            UserDefaults.standard.set(true, forKey: userSpotlightKey)
+            print("🔄 Marked user \(userId) as having seen spotlight globally")
+        }
+    }
+    
+    /// Get current user ID for spotlight operations
+    func getCurrentUserId() -> String? {
+        return authViewModel.user?.id
     }
 }
 

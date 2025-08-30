@@ -14,43 +14,24 @@ struct OnboardingStepNotifications: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 24) {
                     Text("onb.notif.title.en".localized(table: "Onboarding"))
-                        .font(.system(size: 22, weight: .semibold))
+                        .font(.system(size: 24, weight: .semibold))
                         .foregroundColor(.white)
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 12) {
-                            Rectangle().fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing)).frame(width: 6)
-                            Text("onb.notif.item.en.1".localized(table: "Onboarding"))
-                        }
-                        HStack(spacing: 12) {
-                            Rectangle().fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing)).frame(width: 6)
-                            Text("onb.notif.item.en.2".localized(table: "Onboarding"))
-                        }
-                        HStack(spacing: 12) {
-                            Rectangle().fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing)).frame(width: 6)
-                            Text("onb.notif.item.en.3".localized(table: "Onboarding"))
-                        }
-                    }
-
-                    Text("onb.notif.title.zh".localized(table: "Onboarding"))
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(.white)
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 12) {
-                            Rectangle().fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing)).frame(width: 6)
-                            Text("onb.notif.item.zh.1".localized(table: "Onboarding"))
-                        }
-                        HStack(spacing: 12) {
-                            Rectangle().fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing)).frame(width: 6)
-                            Text("onb.notif.item.zh.2".localized(table: "Onboarding"))
-                        }
-                        HStack(spacing: 12) {
-                            Rectangle().fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing)).frame(width: 6)
-                            Text("onb.notif.item.zh.3".localized(table: "Onboarding"))
-                        }
+                    VStack(alignment: .leading, spacing: 16) {
+                        NotificationItemView(
+                            text: "onb.notif.item.en.1".localized(table: "Onboarding"),
+                            icon: "📈"
+                        )
+                        NotificationItemView(
+                            text: "onb.notif.item.en.2".localized(table: "Onboarding"),
+                            icon: "🔄"
+                        )
+                        NotificationItemView(
+                            text: "onb.notif.item.en.3".localized(table: "Onboarding"),
+                            icon: "✨"
+                        )
                     }
                 }
                 .padding(24)
@@ -77,6 +58,26 @@ struct OnboardingStepNotifications: View {
         }
         .background(Color.black)
         .preferredColorScheme(.dark)
+    }
+}
+
+private struct NotificationItemView: View {
+    let text: String
+    let icon: String
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            Text(icon)
+                .font(.system(size: 24))
+            
+            Text(text)
+                .font(.system(size: 16))
+                .foregroundColor(.white.opacity(0.9))
+                .multilineTextAlignment(.leading)
+            
+            Spacer()
+        }
+        .padding(.vertical, 8)
     }
 }
 

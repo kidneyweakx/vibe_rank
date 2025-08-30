@@ -16,6 +16,12 @@ extension MainTabView {
             return 
         }
         
+        // Check if current user has seen spotlight globally
+        if hasCurrentUserSeenSpotlight() {
+            print("ℹ️ Current user has already seen spotlight globally, skipping per-page spotlight")
+            return
+        }
+        
         print("🔄 Showing per-page spotlight for tab: \(tab)")
         let step = SpotlightScripts.pageStep(for: tab)
         overrideSpotlightStep = step
@@ -41,6 +47,9 @@ extension MainTabView {
         case .journey: hasSeenJourneyPageSpotlight = true
         case .profile: hasSeenProfilePageSpotlight = true
         }
+        
+        // Also mark that the current user has seen spotlight globally
+        markCurrentUserSpotlightSeen()
     }
 }
 

@@ -48,13 +48,20 @@ struct ProfileTabView: View {
             Task { await viewModel.refreshData() }
         }) {
             SettingsView(onResetSpotlight: {
-                // This will be connected to MainTabView's resetSpotlightForTesting method
-                // For now, we'll use UserDefaults to reset the spotlight state
+                // Reset all spotlight flags
                 UserDefaults.standard.set(false, forKey: "has_seen_main_spotlight")
                 UserDefaults.standard.set(false, forKey: "has_seen_spotlight_rating_page")
                 UserDefaults.standard.set(false, forKey: "has_seen_spotlight_trend_page")
                 UserDefaults.standard.set(false, forKey: "has_seen_spotlight_journey_page")
                 UserDefaults.standard.set(false, forKey: "has_seen_spotlight_profile_page")
+                
+                // Also reset user-specific spotlight state if available
+                if let userId = authViewModel.user?.id {
+                    let userSpotlightKey = "has_seen_spotlight_user_\(userId)"
+                    UserDefaults.standard.set(false, forKey: userSpotlightKey)
+                    print("🔄 Reset user-specific spotlight state for user: \(userId)")
+                }
+                
                 print("🔄 Spotlight state reset from settings")
             })
         }
