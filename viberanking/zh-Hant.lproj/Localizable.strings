@@ -14,6 +14,9 @@
 "tab.main.profile" = "個人";
 "tab.main.rating" = "評分";
 "tab.main.upload" = "上傳";
+"tab.vibe" = "Vibe";
+"tab.trend" = "趨勢";
+"tab.journey" = "旅程";
 
 // MARK: - Authentication
 "auth.title" = "數位頂尖社交評價平台";
@@ -73,6 +76,7 @@
 "upload.cancel" = "取消";
 "upload.photo_id" = "照片ID:";
 "upload.upload_time" = "上傳時間:";
+"upload.unavailable" = "無法上傳";
 
 // MARK: - Photo Rating
 "rating.title" = "照片評分";
@@ -252,6 +256,8 @@
 "permission.camera.message" = "請在設定中允許應用程式使用相機，以便拍攝照片上傳。";
 "permission.photo_library.title" = "需要照片權限";
 "permission.photo_library.message" = "請在設定中允許應用程式訪問照片，以便選擇照片上傳。";
+"permission.camera.unavailable" = "此裝置沒有相機可用";
+"permission.camera.unknown" = "相機權限狀態未知，請稍後再試";
 
 "report.unlock.congrats" = "🎉 恭喜！";
 "report.unlock.title" = "你的風格報告已解鎖";

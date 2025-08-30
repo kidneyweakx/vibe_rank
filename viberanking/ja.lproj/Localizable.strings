@@ -14,6 +14,9 @@
 "tab.main.profile" = "プロフィール";
 "tab.main.rating" = "評価";
 "tab.main.upload" = "アップロード";
+"tab.vibe" = "Vibe";
+"tab.trend" = "トレンド";
+"tab.journey" = "旅";
 
 // MARK: - Authentication
 "auth.title" = "デジタルプレミアムソーシャル評価プラットフォーム";
@@ -73,6 +76,7 @@
 "upload.cancel" = "キャンセル";
 "upload.photo_id" = "写真ID:";
 "upload.upload_time" = "アップロード時間:";
+"upload.unavailable" = "アップロードできません";
 
 // MARK: - Photo Rating
 "rating.title" = "写真評価";
@@ -252,6 +256,8 @@
 "permission.camera.message" = "アップロード用の写真を撮るために、設定でアプリにカメラの使用を許可してください。";
 "permission.photo_library.title" = "写真ライブラリの許可が必要です";
 "permission.photo_library.message" = "アップロードする写真を選択するために、設定でアプリに写真へのアクセスを許可してください。";
+"permission.camera.unavailable" = "このデバイスではカメラが使用できません";
+"permission.camera.unknown" = "カメラの権限状態が不明です。後でもう一度お試しください";
 
 "report.unlock.congrats" = "🎉 おめでとうございます！";
 "report.unlock.title" = "あなたのスタイルレポートがアンロックされました";

@@ -14,6 +14,9 @@
 "tab.main.profile" = "Profile";
 "tab.main.rating" = "Rating";
 "tab.main.upload" = "Upload";
+"tab.vibe" = "Vibe";
+"tab.trend" = "Trend";
+"tab.journey" = "Journey";
 
 // MARK: - Authentication
 "auth.title" = "Digital Premium Social Rating Platform";
@@ -73,6 +76,7 @@
 "upload.cancel" = "Cancel";
 "upload.photo_id" = "Photo ID:";
 "upload.upload_time" = "Upload Time:";
+"upload.unavailable" = "Unable to Upload";
 
 // MARK: - Photo Rating
 "rating.title" = "Photo Rating";
@@ -252,6 +256,8 @@
 "permission.camera.message" = "Please allow the app to use the camera in Settings to take photos for upload.";
 "permission.photo_library.title" = "Photo Library Permission Required";
 "permission.photo_library.message" = "Please allow the app to access photos in Settings to select photos for upload.";
+"permission.camera.unavailable" = "Camera not available on this device";
+"permission.camera.unknown" = "Unknown camera permission status, please try again later";
 
 "report.unlock.congrats" = "🎉 Congrats!";
 "report.unlock.title" = "Your Style Report is Unlocked";
