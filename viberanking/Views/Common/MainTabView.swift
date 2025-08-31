@@ -93,8 +93,9 @@ struct MainTabView: View {
                     SpotlightOverlay(
                         targetFrame: frame,
                         cornerRadius: override.cornerRadius,
-                        title: override.title,
-                        message: override.message,
+                        titleKey: override.titleKey,
+                        messageKey: override.messageKey,
+                        position: override.position,
                         onNext: {
                             markCurrentPageSpotlightSeen(for: selectedTab)
                             overrideSpotlightStep = nil
@@ -113,8 +114,9 @@ struct MainTabView: View {
                         SpotlightOverlay(
                             targetFrame: frame,
                             cornerRadius: step.cornerRadius,
-                            title: step.title,
-                            message: step.message,
+                            titleKey: step.titleKey,
+                            messageKey: step.messageKey,
+                            position: step.position,
                             onNext: {
                                 if currentSpotlightIndex < spotlightStepsModels.count - 1 {
                                     currentSpotlightIndex += 1
@@ -253,8 +255,9 @@ struct MainTabView: View {
             print("🔄 MainTabView onAppear - hasSeenMainSpotlight: \(hasSeenMainSpotlight)")
             print("🔄 Current user has seen spotlight: \(currentUserHasSeenSpotlight)")
             
-            // Only show spotlight if current user hasn't seen it before
-            if !hasSeenMainSpotlight && !currentUserHasSeenSpotlight {
+            // Show main spotlight if current user hasn't seen it before
+            // hasSeenMainSpotlight is global, but currentUserHasSeenSpotlight is user-specific
+            if !currentUserHasSeenSpotlight {
                 print("🔄 Showing main spotlight after delay...")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     print("🔄 Setting currentSpotlightIndex to 0 and showing spotlight")
@@ -262,7 +265,7 @@ struct MainTabView: View {
                     withAnimation { showSpotlight = true }
                 }
             } else {
-                print("ℹ️ User has already seen main spotlight or current user has seen spotlight")
+                print("ℹ️ Current user has already seen main spotlight")
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                 print("🔄 Checking per-page spotlight for tab: \(selectedTab)")

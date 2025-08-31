@@ -535,6 +535,20 @@
 "common.no_tag" = "No tag";
 "common.image_load_failed" = "Failed to load image";
 
+// MARK: - Spotlight
+"spotlight.vibe.title" = "Vibe";
+"spotlight.vibe.message" = "Swipe, judge, feel the vibe\n\n- ✅ \"V\" = Looks good\n- ❌ \"X\" = Not it\n- 🔥 \"Flame\" = Big vibe energy";
+"spotlight.trend.title" = "Trend";
+"spotlight.trend.message" = "See what's trending on the vibe leaderboard";
+"spotlight.plus.title" = "+";
+"spotlight.plus.message" = "Upload a photo to start your vibe challenge";
+"spotlight.journey.title" = "Journey";
+"spotlight.journey.message" = "Track your vibe growth over time and see your level-ups";
+"spotlight.profile.title" = "Profile";
+"spotlight.profile.message" = "Upload and keep a record of your vibe photos & profile";
+"spotlight.next" = "Next";
+"spotlight.skip" = "Skip";
+
 // MARK: - Upload Menu
 "upload.menu.title" = "Choose upload method";
 "upload.menu.camera" = "Camera";

@@ -454,6 +454,20 @@
 "common.no_tag" = "タグなし";
 "common.image_load_failed" = "画像の読み込みに失敗しました";
 
+// MARK: - Spotlight
+"spotlight.vibe.title" = "Vibe";
+"spotlight.vibe.message" = "スワイプ、評価、他の人の vibe を感じよう\n\n- ✅ 「V」= いいね\n- ❌ 「X」= イマイチ\n- 🔥 「炎」= すごい vibe";
+"spotlight.trend.title" = "トレンド";
+"spotlight.trend.message" = "今何の vibe が一番人気かチェック";
+"spotlight.plus.title" = "+";
+"spotlight.plus.message" = "写真をアップロードして vibe チャレンジを始めよう";
+"spotlight.journey.title" = "旅";
+"spotlight.journey.message" = "あなたの vibe の成長を追跡してレベルアップを見よう";
+"spotlight.profile.title" = "プロフィール";
+"spotlight.profile.message" = "vibe 写真とプロフィール情報をアップロードして記録しよう";
+"spotlight.next" = "次へ";
+"spotlight.skip" = "スキップ";
+
 // MARK: - Upload Menu
 "upload.menu.title" = "アップロード方法を選択";
 "upload.menu.camera" = "カメラ";

@@ -454,6 +454,20 @@
 "common.no_tag" = "無標籤";
 "common.image_load_failed" = "圖片加載失敗";
 
+// MARK: - Spotlight
+"spotlight.vibe.title" = "Vibe";
+"spotlight.vibe.message" = "滑動、評價、感受別人的 vibe\n\n- ✅ 「V」 = 可以哦\n- ❌ 「X」= 不太行\n- 🔥 「火焰」= 很有 vibe";
+"spotlight.trend.title" = "趨勢";
+"spotlight.trend.message" = "看看現在什麼 vibe 最火";
+"spotlight.plus.title" = "+";
+"spotlight.plus.message" = "上傳一張照片，開啟你的 vibe 挑戰";
+"spotlight.journey.title" = "旅程";
+"spotlight.journey.message" = "追蹤查看你的 vibe 成長曲線";
+"spotlight.profile.title" = "個人";
+"spotlight.profile.message" = "上傳並記錄你的 vibe 照片與個人資訊";
+"spotlight.next" = "下一步";
+"spotlight.skip" = "跳過";
+
 // MARK: - Upload Menu
 "upload.menu.title" = "選擇上傳方式";
 "upload.menu.camera" = "拍照";

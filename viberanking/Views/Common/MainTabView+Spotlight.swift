@@ -16,9 +16,10 @@ extension MainTabView {
             return 
         }
         
-        // Check if current user has seen spotlight globally
-        if hasCurrentUserSeenSpotlight() {
-            print("ℹ️ Current user has already seen spotlight globally, skipping per-page spotlight")
+        // Only skip per-page spotlight if user has seen ALL page spotlights
+        // This allows new users to see all per-page spotlights
+        if hasSeenAllPageSpotlights() {
+            print("ℹ️ User has seen all page spotlights, skipping per-page spotlight")
             return
         }
         
@@ -38,6 +39,14 @@ extension MainTabView {
         print("🔄 hasSeenPageSpotlight for \(tab): \(hasSeen)")
         return hasSeen
     }
+    
+    /// Check if user has seen all page spotlights
+    func hasSeenAllPageSpotlights() -> Bool {
+        return hasSeenRatingPageSpotlight && 
+               hasSeenTrendPageSpotlight && 
+               hasSeenJourneyPageSpotlight && 
+               hasSeenProfilePageSpotlight
+    }
 
     func markCurrentPageSpotlightSeen(for tab: TabItem) {
         print("🔄 Marking page spotlight as seen for tab: \(tab)")
@@ -48,8 +57,11 @@ extension MainTabView {
         case .profile: hasSeenProfilePageSpotlight = true
         }
         
-        // Also mark that the current user has seen spotlight globally
-        markCurrentUserSpotlightSeen()
+        // Only mark user as having seen spotlight globally after ALL page spotlights are completed
+        if hasSeenAllPageSpotlights() {
+            markCurrentUserSpotlightSeen()
+            print("🎉 All page spotlights completed! Marking user as having seen spotlight globally")
+        }
     }
 }
 
