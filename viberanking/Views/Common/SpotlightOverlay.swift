@@ -42,13 +42,17 @@ struct SpotlightOverlay: View {
     let position: SpotlightPosition
     let onNext: () -> Void
     let onSkip: () -> Void
+    
+    @State private var tooltipScale: CGFloat = 0.8
+    @State private var tooltipOpacity: Double = 0.0
+    @State private var tooltipOffset: CGFloat = 50
 
     var body: some View {
         ZStack {
-            // Modern dim background with blur effect
-            Color.black.opacity(0.4)
+            // Black transparent background with higher transparency to see text underneath
+            Color.black.opacity(0.8)
                 .ignoresSafeArea()
-                .background(.ultraThinMaterial)
+                // .background(.ultraThinMaterial)
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .frame(width: targetFrame.width + 16, height: targetFrame.height + 16)
@@ -57,11 +61,11 @@ struct SpotlightOverlay: View {
                 )
                 .compositingGroup()
 
-            // Enhanced highlight ring with gradient
+            // Enhanced highlight ring with gradient and stronger shadow
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .stroke(
                     LinearGradient(
-                        colors: [Color.white.opacity(0.9), Color.white.opacity(0.6)],
+                        colors: [Color.black.opacity(0.95), Color.black.opacity(0.8)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
@@ -69,9 +73,9 @@ struct SpotlightOverlay: View {
                 )
                 .frame(width: targetFrame.width + 20, height: targetFrame.height + 20)
                 .position(x: targetFrame.midX, y: targetFrame.midY)
-                .shadow(color: .white.opacity(0.3), radius: 8, x: 0, y: 0)
+                .shadow(color: .white.opacity(0.5), radius: 12, x: 0, y: 0)
 
-            // Modern tooltip content positioned in center
+            // Modern tooltip content positioned in center with initial animation
             VStack(spacing: 16) {
                 // Title with modern typography
                 Text(titleKey.localized)
@@ -82,7 +86,7 @@ struct SpotlightOverlay: View {
                 // Message with better formatting
                 Text(messageKey.localized)
                     .font(.system(size: 15, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(.white.opacity(0.95))
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
             }
@@ -92,8 +96,8 @@ struct SpotlightOverlay: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color.black.opacity(0.85),
-                                Color.black.opacity(0.75)
+                                Color.black.opacity(0.4),
+                                Color.black.opacity(0.3)
                             ],
                             startPoint: .top,
                             endPoint: .bottom
@@ -104,8 +108,8 @@ struct SpotlightOverlay: View {
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(0.2),
-                                        Color.white.opacity(0.1)
+                                        Color.white.opacity(0.3),
+                                        Color.white.opacity(0.2)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -113,10 +117,13 @@ struct SpotlightOverlay: View {
                                 lineWidth: 1
                             )
                     )
-                    .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
+                    .shadow(color: .black.opacity(0.4), radius: 25, x: 0, y: 15)
             )
             .frame(maxWidth: 320)
             .position(tooltipPosition(for: targetFrame, position: position))
+            .scaleEffect(tooltipScale)
+            .opacity(tooltipOpacity)
+            .offset(y: tooltipOffset)
 
             // Enhanced bottom controls with modern design
             VStack {
@@ -126,15 +133,15 @@ struct SpotlightOverlay: View {
                     Button(action: onSkip) {
                         Text("spotlight.skip".localized)
                             .font(.system(size: 16, weight: .semibold, design: .rounded))
-                            .foregroundColor(.white.opacity(0.8))
+                            .foregroundColor(.white.opacity(0.9))
                             .padding(.horizontal, 20)
                             .padding(.vertical, 12)
                             .background(
                                 Capsule()
-                                    .fill(Color.white.opacity(0.15))
+                                    .fill(Color.white.opacity(0.2))
                                     .overlay(
                                         Capsule()
-                                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                            .stroke(Color.white.opacity(0.3), lineWidth: 1)
                                     )
                             )
                     }
@@ -150,21 +157,29 @@ struct SpotlightOverlay: View {
                                 Capsule()
                                     .fill(
                                         LinearGradient(
-                                            colors: [Color.white, Color.white.opacity(0.9)],
+                                            colors: [Color.white, Color.white.opacity(0.95)],
                                             startPoint: .top,
                                             endPoint: .bottom
                                         )
                                     )
-                                    .shadow(color: .white.opacity(0.3), radius: 8, x: 0, y: 4)
+                                    .shadow(color: .white.opacity(0.4), radius: 10, x: 0, y: 5)
                             )
                     }
                 }
-                .padding(.bottom, 32)
+                .padding(.bottom, 140) // Increased padding to position above tabbar
             }
             .ignoresSafeArea()
         }
         .transition(.opacity.combined(with: .scale))
-        .animation(.easeInOut(duration: 0.3), value: targetFrame)
+        .animation(.easeInOut(duration: 0.4), value: targetFrame)
+        .onAppear {
+            // Initial carousel animation when spotlight appears
+            withAnimation(.easeOut(duration: 0.8).delay(0.2)) {
+                tooltipScale = 1.0
+                tooltipOpacity = 1.0
+                tooltipOffset = 0
+            }
+        }
     }
 
     // MARK: - Private Helpers
@@ -175,8 +190,8 @@ struct SpotlightOverlay: View {
         
         switch position {
         case .center:
-            // Center the tooltip in the screen
-            return CGPoint(x: screen.midX, y: screen.midY)
+            // Center the tooltip in the screen, slightly higher for better balance
+            return CGPoint(x: screen.midX, y: screen.midY - 40)
         case .above:
             // Place above target if there's room
             let preferredY = frame.minY - 80
