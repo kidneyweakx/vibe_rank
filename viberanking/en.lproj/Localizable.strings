@@ -525,6 +525,19 @@
 "home.recommended.subtitle" = "Top ranked users";
 "home.events.title" = "Events";
 "home.events.subtitle" = "Latest event submissions";
+"home.announcements.title" = "Announcements";
+"home.announcements.subtitle" = "Latest updates and news";
+"home.statistics.title" = "Platform Statistics";
+"home.statistics.subtitle" = "Community overview";
+"home.statistics.users" = "Users";
+"home.statistics.photos" = "Photos";
+"home.statistics.ratings" = "Ratings";
+"home.statistics.events" = "Events";
+"home.featured.title" = "Featured Users";
+"home.featured.subtitle" = "Rising stars and top performers";
+"home.trending_events.title" = "Trending Events";
+"home.trending_events.subtitle" = "Popular events right now";
+"home.event.active" = "Active";
 
 // MARK: - Common (extra)
 "common.event_photo" = "Event Photo";

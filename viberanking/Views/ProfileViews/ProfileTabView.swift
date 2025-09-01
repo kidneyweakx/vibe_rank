@@ -14,6 +14,8 @@ struct ProfileTabView: View {
     @State private var showingImagePicker = false
     @State private var showingQRCode = false
     @State private var showingSettings = false
+    @State private var isUploadingProfilePicture = false
+    @State private var uploadProgress: Double = 0.0
     
     var body: some View {
         NavigationStack {
@@ -76,9 +78,63 @@ struct ProfileTabView: View {
     }
     
     private func uploadProfileImage(_ image: UIImage) {
-        // Handle profile image upload
+        guard let userId = authViewModel.user?.id else { return }
+        
         Task {
-            // Upload logic here
+            await MainActor.run {
+                isUploadingProfilePicture = true
+                uploadProgress = 0.0
+            }
+            
+            do {
+                // Compress image to reduce upload size
+                guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+                    throw APIError.invalidResponse
+                }
+                
+                // Simulate progress updates
+                for progress in stride(from: 0.0, through: 0.9, by: 0.1) {
+                    await MainActor.run {
+                        uploadProgress = progress
+                    }
+                    try await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+                }
+                
+                // Upload the image
+                let response = try await UserAPI().uploadProfilePicture(userId: userId, imageData: imageData)
+                
+                await MainActor.run {
+                    // Update the user's profile image URL by creating a new User instance
+                    if let currentUser = authViewModel.user {
+                        let updatedUser = User(
+                            id: currentUser.id,
+                            name: currentUser.name,
+                            email: currentUser.email,
+                            profileImageURL: response.data.avatar,
+                            gender: currentUser.gender
+                        )
+                        // Copy over the mutable properties
+                        var newUser = updatedUser
+                        newUser.lastActivityAt = currentUser.lastActivityAt
+                        newUser.ratingProgress = currentUser.ratingProgress
+                        newUser.uploadedPhotos = currentUser.uploadedPhotos
+                        authViewModel.user = newUser
+                    }
+                    uploadProgress = 1.0
+                    isUploadingProfilePicture = false
+                }
+                
+                // Refresh profile data
+                await viewModel.refreshData()
+                
+            } catch {
+                await MainActor.run {
+                    isUploadingProfilePicture = false
+                    uploadProgress = 0.0
+                }
+                print("❌ ProfileTabView: Failed to upload profile picture: \(error)")
+                // TODO: Show error alert to user
+            }
         }
     }
 }
@@ -91,43 +147,95 @@ private extension ProfileTabView {
             // Top row: Avatar and basic info
             HStack(spacing: 16) {
                 Button(action: {
-                    showingImagePicker = true
+                    if !isUploadingProfilePicture {
+                        showingImagePicker = true
+                    }
                 }) {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.pink.opacity(0.8), Color.purple.opacity(0.6)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.pink.opacity(0.8), Color.purple.opacity(0.6)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
                             )
-                        )
-                        .frame(width: 80, height: 80)
-                        .overlay(
-                            Group {
-                                if let profileImageURL = authViewModel.user?.profileImageURL,
-                                   let url = URL(string: profileImageURL) {
-                                    AsyncImage(url: url) { image in
-                                        image
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                    } placeholder: {
+                            .frame(width: 80, height: 80)
+                            .overlay(
+                                Group {
+                                    if let profileImageURL = authViewModel.user?.profileImageURL,
+                                       let url = URL(string: profileImageURL) {
+                                        AsyncImage(url: url) { image in
+                                            image
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
+                                        } placeholder: {
+                                            Image(systemName: "person.fill")
+                                                .font(.system(size: 32))
+                                                .foregroundColor(.white)
+                                        }
+                                        .clipShape(Circle())
+                                    } else {
                                         Image(systemName: "person.fill")
                                             .font(.system(size: 32))
                                             .foregroundColor(.white)
                                     }
-                                    .clipShape(Circle())
-                                } else {
-                                    Image(systemName: "person.fill")
-                                        .font(.system(size: 32))
+                                }
+                            )
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 2)
+                            )
+                        
+                        // Upload progress overlay
+                        if isUploadingProfilePicture {
+                            Circle()
+                                .stroke(Color.white.opacity(0.3), lineWidth: 3)
+                                .frame(width: 80, height: 80)
+                            
+                            Circle()
+                                .trim(from: 0, to: uploadProgress)
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [Color.blue, Color.green],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                                )
+                                .frame(width: 80, height: 80)
+                                .rotationEffect(.degrees(-90))
+                                .animation(.easeInOut(duration: 0.3), value: uploadProgress)
+                            
+                            if uploadProgress < 1.0 {
+                                Image(systemName: "arrow.up.circle.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.white)
+                                    .background(Circle().fill(Color.blue))
+                            } else {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.white)
+                                    .background(Circle().fill(Color.green))
+                            }
+                        } else {
+                            // Camera icon overlay
+                            VStack {
+                                Spacer()
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "camera.fill")
+                                        .font(.system(size: 16))
                                         .foregroundColor(.white)
+                                        .padding(6)
+                                        .background(Circle().fill(Color.blue))
                                 }
                             }
-                        )
-                        .overlay(
-                            Circle()
-                                .stroke(Color.white.opacity(0.2), lineWidth: 2)
-                        )
+                            .frame(width: 80, height: 80)
+                        }
+                    }
                 }
+                .disabled(isUploadingProfilePicture)
                 
                 VStack(alignment: .leading, spacing: 8) {
                     Text(authViewModel.user?.name ?? "profile.unknown_user".localized)

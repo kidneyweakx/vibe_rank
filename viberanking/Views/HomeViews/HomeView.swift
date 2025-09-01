@@ -14,7 +14,11 @@ struct HomeView: View {
     @State var topUserGalleries: [TopUserGallery] = []
     @State var eventPhotos: [EventPhoto] = []
     @State var events: [EventItem] = []
+    @State var homeInfo: HomeInfoData?
+    @State var announcements: [Announcement] = []
+    @State var statistics: HomeStatistics?
     @State var isLoaded = false
+    @State var isLoading = false
     
     var body: some View {
         if #available(iOS 16.0, *) {
@@ -32,18 +36,44 @@ struct HomeView: View {
         }
         .navigationBarHidden(true)
         .preferredColorScheme(.dark)
-        .onAppear { if !isLoaded { loadData() } }
+        .onAppear { 
+            if !isLoaded { 
+                Task { await loadHomeInfo() }
+            } 
+        }
     }
 
     private var loadedContent: some View {
-                ScrollView {
+        ScrollView {
             LazyVStack(spacing: 32) {
-                recommendedSection
-                divider
-                eventSection
+                // Announcements section
+                if !announcements.isEmpty {
+                    announcementsSection
+                    divider
+                }
+                
+                // Statistics section
+                if let stats = statistics {
+                    statisticsSection(stats)
+                    divider
+                }
+                
+                // Featured users section (using topUserGalleries from API)
+                if !topUserGalleries.isEmpty {
+                    recommendedSection
+                    divider
+                }
+                
+                // Events section (using events from API)
+                if !events.isEmpty {
+                    eventSection
+                }
             }
             .padding(.horizontal, 20)
             .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 90) }
+        }
+        .refreshable {
+            await loadHomeInfo()
         }
     }
 

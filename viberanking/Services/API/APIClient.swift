@@ -13,8 +13,8 @@ class APIClient {
     static let shared = APIClient()
     
     private let session: URLSession
-    private let baseURL: String
-    private let accessToken = "vibe_api_2025_secure_token_8f9a2b3c4d5e6f7g8h9i0j1k2l3m4n5o"
+    let baseURL: String
+    let accessToken = "vibe_api_2025_secure_token_8f9a2b3c4d5e6f7g8h9i0j1k2l3m4n5o"
     
     private init() {
         self.session = URLSession.shared

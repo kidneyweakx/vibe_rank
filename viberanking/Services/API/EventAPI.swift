@@ -102,6 +102,12 @@ struct EventItem: Decodable, Identifiable {
     let linkUrl: String?
     let startsAt: String?
     let endsAt: String?
+    
+    // Additional properties for enhanced HomeView
+    let startDate: Date?
+    let endDate: Date?
+    let participantCount: Int
+    let isActive: Bool
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -119,6 +125,9 @@ struct EventItem: Decodable, Identifiable {
         case startAt
         case endAt
         case eventId
+        // Enhanced properties
+        case participantCount
+        case isActive
     }
 
     init(from decoder: Decoder) throws {
@@ -160,6 +169,45 @@ struct EventItem: Decodable, Identifiable {
         if let value = try? container.decodeIfPresent(String.self, forKey: .endsAt) { resolvedEnd = value }
         if resolvedEnd == nil, let value = try? container.decodeIfPresent(String.self, forKey: .endAt) { resolvedEnd = value }
         self.endsAt = resolvedEnd
+        
+        // Parse dates for enhanced properties
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+        
+        self.startDate = resolvedStart.flatMap { dateFormatter.date(from: $0) }
+        self.endDate = resolvedEnd.flatMap { dateFormatter.date(from: $0) }
+        
+        // Default values for enhanced properties
+        self.participantCount = (try? container.decodeIfPresent(Int.self, forKey: .participantCount)) ?? 0
+        self.isActive = (try? container.decodeIfPresent(Bool.self, forKey: .isActive)) ?? true
+    }
+    
+    // Custom initializer for creating EventItem instances programmatically
+    init(
+        id: String,
+        title: String,
+        description: String? = nil,
+        imageURL: String? = nil,
+        linkUrl: String? = nil,
+        startsAt: String? = nil,
+        endsAt: String? = nil,
+        startDate: Date? = nil,
+        endDate: Date? = nil,
+        participantCount: Int = 0,
+        isActive: Bool = true
+    ) {
+        self.id = id
+        self.title = title
+        self.description = description
+        self.imageURL = imageURL
+        self.linkUrl = linkUrl
+        self.startsAt = startsAt
+        self.endsAt = endsAt
+        self.startDate = startDate
+        self.endDate = endDate
+        self.participantCount = participantCount
+        self.isActive = isActive
     }
 }
 
