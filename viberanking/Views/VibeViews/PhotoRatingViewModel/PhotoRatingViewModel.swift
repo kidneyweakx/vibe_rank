@@ -78,38 +78,53 @@ class PhotoRatingViewModel: BaseViewModel {
     /// Load photos for rating
     func loadPhotosForRating(userId: String) async {
         currentUserId = userId
-        await performAsyncTask {
-            do {
-                // Fetch random photos for rating from API
-                let response = try await self.rateAPI.getRandomPhotos(userId: userId, limit: 20)
-                
-                // Build photos resolving signed URLs when needed
-                let built = try await self.buildPhotosResolvingURLs(from: response.data)
+        isLoading = true
+        
+        do {
+            // 在背景線程請求 API
+            let response = try await Task.detached(priority: .userInitiated) {
+                try await self.rateAPI.getRandomPhotos(userId: userId, limit: 20)
+            }.value
+            
+            let built = try await self.buildPhotosResolvingURLs(from: response.data)
+            
+            // 回到主線程更新 UI
+            await MainActor.run {
                 self.photos = built
-                // Map photoId to user name for display
-                var nameMap: [String: String] = [:]
-                for item in response.data { nameMap[item.id] = item.user.name }
-                self.photoUserNames = nameMap
-                
+                self.photoUserNames = Dictionary(uniqueKeysWithValues: response.data.map { ($0.id, $0.user.name) })
                 self.currentPhotoIndex = 0
-                await self.fetchTagsForCurrentPhoto()
+                self.isLoading = false
+            }
+            
+            await fetchTagsForCurrentPhoto()
+            Task.detached { await self.preloadImages() }
+            
+            print("✅ Successfully loaded \(built.count) photos for rating")
+            
+        } catch {
+            await MainActor.run {
+                self.photos = []
+                self.currentPhotoIndex = 0
+                self.isLoading = false
+            }
+            print("❌ API 錯誤: \(error)")
+            
+            // Fallback to sample photos for offline/demo resilience
+            do {
+                let samples = try await Task.detached(priority: .userInitiated) {
+                    try await self.samplePhotoService.getSamplePhotos()
+                }.value
                 
-                // Start preloading images
-                await self.preloadImages()
-                
-                print("✅ Successfully loaded \(self.photos.count) photos for rating")
-            } catch {
-                print("❌ Failed to load photos for rating: \(error)")
-                // Fallback to sample photos for offline/demo resilience
-                do {
-                    let samples = try await self.samplePhotoService.getSamplePhotos()
+                await MainActor.run {
                     self.photos = samples
                     self.currentPhotoIndex = 0
                     self.currentTags = []
-                    await self.preloadImages()
-                    print("🧪 Using sample photos fallback: count=\(samples.count)")
-                } catch {
-                    // Final fallback: empty state
+                }
+                
+                Task.detached { await self.preloadImages() }
+                print("🧪 Using sample photos fallback: count=\(samples.count)")
+            } catch {
+                await MainActor.run {
                     self.photos = []
                     self.currentPhotoIndex = 0
                 }
@@ -121,36 +136,44 @@ class PhotoRatingViewModel: BaseViewModel {
     func submitRating(type: RatingType, withAnimation: Bool = true) async {
         guard let photo = currentPhoto else { return }
         
-        await performAsyncTask {
-            // Submit rating through API
-            let response = try await self.rateAPI.ratePhoto(
-                raterId: self.currentUserId,
-                photoId: photo.id,
-                type: type
-            )
-            
-            if response.success {
-                // Show feedback animation
-                if withAnimation {
-                    self.lastRatingType = type
-                    self.showRatingFeedback = true
-                    
-                    // Provide haptic feedback
-                    #if canImport(UIKit)
-                    let impactFeedback = UIImpactFeedbackGenerator(style: type == .like ? .heavy : .medium)
-                    impactFeedback.impactOccurred()
-                    #endif
-                    
-                    // Hide feedback after delay
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.showRatingFeedback = false
-                    }
-                }
+        // Submit rating through API without blocking UI
+        Task.detached(priority: .background) {
+            do {
+                let response = try await self.rateAPI.ratePhoto(
+                    raterId: self.currentUserId,
+                    photoId: photo.id,
+                    type: type
+                )
                 
-                // Move to next photo
-                await self.moveToNextPhoto()
+                if response.success {
+                    print("✅ Rating submitted successfully: \(type)")
+                } else {
+                    print("❌ Rating failed: Unknown error")
+                }
+            } catch {
+                print("❌ Rating error: \(error.localizedDescription)")
             }
         }
+        
+        // Show feedback animation immediately (don't wait for API)
+        if withAnimation {
+            self.lastRatingType = type
+            self.showRatingFeedback = true
+            
+            // Provide haptic feedback
+            #if canImport(UIKit)
+            let impactFeedback = UIImpactFeedbackGenerator(style: type == .like ? .heavy : .medium)
+            impactFeedback.impactOccurred()
+            #endif
+            
+            // Hide feedback after delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.showRatingFeedback = false
+            }
+        }
+        
+        // Move to next photo immediately (don't wait for API)
+        await self.moveToNextPhoto()
     }
     
     /// Handle drag gesture
@@ -219,7 +242,11 @@ class PhotoRatingViewModel: BaseViewModel {
         guard !currentUserId.isEmpty else { return nil }
         
         do {
-            let response = try await rateAPI.getUserStats(userId: currentUserId)
+            // 在背景線程請求 API
+            let response = try await Task.detached(priority: .userInitiated) {
+                try await self.rateAPI.getUserStats(userId: self.currentUserId)
+            }.value
+            
             return response.success ? response.data : nil
         } catch {
             print("Failed to get user stats: \(error)")
@@ -279,24 +306,37 @@ private extension PhotoRatingViewModel {
     
     /// Load more photos when running low
     func loadMorePhotos() async {
-        await performAsyncTask {
-            do {
-                let response = try await self.rateAPI.getRandomPhotos(userId: self.currentUserId, limit: 10)
-                let newPhotos = try await self.buildPhotosResolvingURLs(from: response.data)
+        do {
+            // 在背景線程請求 API
+            let response = try await Task.detached(priority: .userInitiated) {
+                try await self.rateAPI.getRandomPhotos(userId: self.currentUserId, limit: 10)
+            }.value
+            
+            let newPhotos = try await self.buildPhotosResolvingURLs(from: response.data)
+            
+            // 回到主線程更新 UI
+            await MainActor.run {
                 self.photos.append(contentsOf: newPhotos)
                 // Extend name mapping for newly loaded items
-                for item in response.data { self.photoUserNames[item.id] = item.user.name }
-            } catch {
-                // Append a few sample photos as a soft fallback
-                do {
-                    let samples = try await self.samplePhotoService.getSamplePhotos()
-                    // take first 5 to avoid large append
-                    let slice = Array(samples.prefix(5))
-                    self.photos.append(contentsOf: slice)
-                    print("🧪 loadMorePhotos fallback appended sample count=\(slice.count)")
-                } catch {
-                    // ignore
+                for item in response.data { 
+                    self.photoUserNames[item.id] = item.user.name 
                 }
+            }
+        } catch {
+            // Append a few sample photos as a soft fallback
+            do {
+                let samples = try await Task.detached(priority: .userInitiated) {
+                    try await self.samplePhotoService.getSamplePhotos()
+                }.value
+                
+                // take first 5 to avoid large append
+                let slice = Array(samples.prefix(5))
+                await MainActor.run {
+                    self.photos.append(contentsOf: slice)
+                }
+                print("🧪 loadMorePhotos fallback appended sample count=\(slice.count)")
+            } catch {
+                // ignore
             }
         }
     }
@@ -322,16 +362,26 @@ private extension PhotoRatingViewModel {
             await MainActor.run { self.currentTags = [] }
             return
         }
+        
         do {
-            let response = try await tagsAPI.getTagsForPhoto(photoId: photo.id)
-            await MainActor.run { self.currentTags = response.data }
+            // 在背景線程請求 API
+            let response = try await Task.detached(priority: .userInitiated) {
+                try await self.tagsAPI.getTagsForPhoto(photoId: photo.id)
+            }.value
+            
+            // 回到主線程更新 UI
+            await MainActor.run { 
+                self.currentTags = response.data 
+            }
         } catch {
-            await MainActor.run { self.currentTags = [] }
+            await MainActor.run { 
+                self.currentTags = [] 
+            }
         }
     }
 
     /// Build `Photo` array using API-provided origin URLs when available
-    func buildPhotosResolvingURLs(from items: [RatingPhoto]) async throws -> [Photo] {
+    public func buildPhotosResolvingURLs(from items: [RatingPhoto]) async throws -> [Photo] {
         // Resolve signed URL in parallel for entries with key
         return try await withThrowingTaskGroup(of: Photo.self) { group in
             for ratingPhoto in items {

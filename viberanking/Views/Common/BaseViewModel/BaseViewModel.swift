@@ -80,6 +80,16 @@ class BaseViewModel: BaseViewModelProtocol {
         }
     }
     
+    // MARK: - Non-blocking Async Task Helper (for API calls that shouldn't block UI)
+    func performNonBlockingTask<T>(_ task: @escaping () async throws -> T) async -> T? {
+        do {
+            return try await task()
+        } catch {
+            handleError(error)
+            return nil
+        }
+    }
+    
     // MARK: - Retry Logic
     func retryTask<T>(
         maxAttempts: Int = AppConfiguration.Performance.maxRetryAttempts,

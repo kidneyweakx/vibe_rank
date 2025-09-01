@@ -54,6 +54,7 @@ struct PhotoCardView: View {
         .scaleEffect(1.0 - abs(cardOffset.width) / 1000) // Slight scale effect
         .rotationEffect(.degrees(Double(cardOffset.width) / 25.0))
         .zIndex(isTopCard ? 10 : Double(10 - index)) // Stack cards by z-index
+        .animation(.easeInOut(duration: 0.2).speed(1.0), value: cardOffset) // Add explicit animation
         .gesture(
             DragGesture()
                 .onChanged { value in
@@ -89,7 +90,7 @@ struct PhotoCardView: View {
                 .scaledToFill()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
-                .transition(.opacity.animation(.easeInOut(duration: 0.2)))
+                .transition(.opacity.animation(.easeInOut(duration: 0.2).speed(1.0)))
         case .failure:
             errorPlaceholder
         }
