@@ -71,35 +71,34 @@ struct RatingUserInfoOverlay: View {
                 Spacer()
             }
             
-            // Tags row
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    if tags.isEmpty {
-                        Text("common.no_tag".localized)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.8))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.25), lineWidth: 1))
-                    } else {
-                        ForEach(tags, id: \.id) { tag in
-                            TagChipView(tag: tag, isSelected: false, onTap: {})
-                        }
+            // Tags row - Fixed to prevent swipe interference
+            HStack(spacing: 8) {
+                if tags.isEmpty {
+                    Text("common.no_tag".localized)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white.opacity(0.8))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.25), lineWidth: 1))
+                } else {
+                    ForEach(tags, id: \.id) { tag in
+                        TagChipView(tag: tag, isSelected: false, onTap: {})
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.black.opacity(0.35))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                )
-                .padding(.horizontal, 20)
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.black.opacity(0.35))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            )
+            .padding(.horizontal, 20)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .allowsHitTesting(false) // Prevent tags from interfering with card swipe gestures
         }
     }
 }

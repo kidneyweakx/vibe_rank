@@ -77,7 +77,7 @@ struct RatingTabView: View {
                 
                 RatingActionButtons(
                     hasCurrentPhoto: viewModel.currentPhoto != nil,
-                    onRefresh: refreshPhoto,
+                    onRefresh: refreshPhoto, // Keep for compatibility but not used in UI
                     onVibe: { submitRating(type: .like, for: viewModel.currentPhotoIndex) },
                     onSkip: { skipPhoto(for: viewModel.currentPhotoIndex) }
                 )

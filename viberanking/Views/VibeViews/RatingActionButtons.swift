@@ -19,9 +19,9 @@ struct RatingActionButtons: View {
     
     var body: some View {
         HStack(spacing: 40) {
-            // REFRESH button (更換)
+            // SKIP button (X - 左滑)
             Button {
-                refreshPhoto()
+                skipPhoto()
             } label: {
                 Circle()
                     .fill(.white.opacity(0.12))
@@ -34,10 +34,11 @@ struct RatingActionButtons: View {
             }
             .disabled(!hasCurrentPhoto)
             .opacity(hasCurrentPhoto ? 1.0 : 0.3)
-            .scaleEffect(refreshButtonPressed ? 0.9 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: refreshButtonPressed)
+            .scaleEffect(skipButtonPressed ? 0.9 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: skipButtonPressed)
+            .buttonStyle(PlainButtonStyle()) // Prevent gesture conflicts
             
-            // VIBE button (火焰 - 中間主要按鈕)
+            // VIBE button (火焰 - 中間主要按鈕 - 右滑)
             Button {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                     likeButtonPressed = true
@@ -62,10 +63,11 @@ struct RatingActionButtons: View {
             .opacity(hasCurrentPhoto ? 1.0 : 0.3)
             .scaleEffect(likeButtonPressed ? 1.3 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.6), value: likeButtonPressed)
+            .buttonStyle(PlainButtonStyle()) // Prevent gesture conflicts
             
-            // FIX button (修正)
+            // LIKE button (勾勾 - 右滑)
             Button {
-                skipPhoto()
+                onVibe() // Same as vibe button - both are right swipe (like)
             } label: {
                 Circle()
                     .fill(.white.opacity(0.12))
@@ -80,6 +82,7 @@ struct RatingActionButtons: View {
             .opacity(hasCurrentPhoto ? 1.0 : 0.3)
             .scaleEffect(skipButtonPressed ? 0.9 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: skipButtonPressed)
+            .buttonStyle(PlainButtonStyle()) // Prevent gesture conflicts
         }
     }
     
