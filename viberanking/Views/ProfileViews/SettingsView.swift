@@ -409,14 +409,14 @@ struct SettingsTextField: View {
             
             TextField(placeholder, text: $text)
                 .font(.system(size: 16))
-                .foregroundColor(.white)
+                .foregroundColor(.black) // Changed to black for better visibility
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.black.opacity(0.4))
+                        .fill(Color.white.opacity(0.9)) // Lighter background for contrast
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
                         )
                 )
         }

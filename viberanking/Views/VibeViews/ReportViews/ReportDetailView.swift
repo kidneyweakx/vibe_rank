@@ -47,13 +47,13 @@ struct ReportDetailView: View {
                         
                         TextEditor(text: $reportText)
                             .font(.system(size: 16))
-                            .foregroundColor(.white)
-                            .background(Color.white.opacity(0.1))
+                            .foregroundColor(.black) // Changed to black for better visibility
+                            .background(Color.white.opacity(0.9)) // Lighter background for contrast
                             .cornerRadius(12)
                             .frame(height: 120)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
                             )
                     }
                     .padding(.horizontal, 24)
