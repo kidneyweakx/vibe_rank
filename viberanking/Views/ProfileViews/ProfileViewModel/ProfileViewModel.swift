@@ -13,7 +13,7 @@ import Combine
 class ProfileViewModel: BaseViewModel {
     
     // MARK: - Published Properties
-    @Published var userStats: UserStats?
+    @Published var journeyInfo: JourneyInfo?
     @Published var userPhotos: [Photo] = []
     @Published var recentRatings: [RecentRating] = []
     @Published var userPhotoInfos: [PhotoInfo] = []
@@ -28,11 +28,11 @@ class ProfileViewModel: BaseViewModel {
     func loadUserProfile(userId: String) async {
         currentUserId = userId
         await performAsyncTask {
-            // Load user stats
-            let statsResponse = try await self.rateAPI.getUserStats(userId: userId)
-            if statsResponse.success {
-                self.userStats = statsResponse.data
-                self.recentRatings = statsResponse.data.recentRatings
+            // Load journey info (includes user stats)
+            let journeyResponse = try await self.rateAPI.getJourneyInfo(userId: userId)
+            if journeyResponse.success {
+                self.journeyInfo = journeyResponse.data
+                self.recentRatings = journeyResponse.data.recentRatings
             }
             
             // Load user's uploaded photos
@@ -64,24 +64,24 @@ class ProfileViewModel: BaseViewModel {
     }
     
     var totalScore: String {
-        guard let stats = userStats else { return "0" }
-        return String(format: "%.0f", stats.totalScore)
+        guard let info = journeyInfo else { return "0" }
+        return String(format: "%.0f", info.totalScore)
     }
     
     var likeCount: String {
-        return String(userStats?.likeCount ?? 0)
+        return String(journeyInfo?.likeCount ?? 0)
     }
     
     var normalCount: String {
-        return String(userStats?.normalCount ?? 0)
+        return String(journeyInfo?.normalCount ?? 0)
     }
     
     var totalRatings: String {
-        return String(userStats?.totalRatings ?? 0)
+        return String(journeyInfo?.totalRatings ?? 0)
     }
     
     var overallRank: String {
-        guard let stats = userStats else { return "N/A" }
-        return "#\(stats.overallRank)"
+        guard let info = journeyInfo else { return "N/A" }
+        return "#\(info.overallRank)"
     }
 }

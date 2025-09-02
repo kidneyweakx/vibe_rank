@@ -20,20 +20,70 @@ struct RatingInfo: Codable {
     let createdAt: Date
 }
 
-struct UserStatsResponse: Codable {
+// MARK: - Journey Info Models
+
+struct JourneyInfoResponse: Codable {
     let success: Bool
-    let data: UserStats
+    let data: JourneyInfo
 }
 
-struct UserStats: Codable {
+struct JourneyInfo: Codable {
+    // User basic stats
     let userId: String
     let totalScore: Double
     let likeCount: Int
     let normalCount: Int
     let totalRatings: Int
+    
+    // Ranking info
     let overallRank: Int
     let genderRank: Int?
+    let totalUsers: Int
+    
+    // Gender attraction scores (real data)
+    let femaleAttraction: Double
+    let maleAttraction: Double
+    
+    // Recent ratings for chart
     let recentRatings: [RecentRating]
+    
+    // Pre-calculated 7-day trend
+    let weeklyTrend: [DailyScore]
+    
+    // Extended features
+    let achievements: [Achievement]
+    let nextMilestone: Milestone?
+    let levelProgress: LevelProgress
+}
+
+struct DailyScore: Codable {
+    let date: String // "2024-01-15"
+    let score: Double? // Optional to handle null values from API
+    let ratingCount: Int
+}
+
+struct Achievement: Codable {
+    let id: String
+    let title: String
+    let description: String
+    let icon: String
+    let unlockedAt: Date?
+    let progress: Double // 0.0-1.0
+}
+
+struct Milestone: Codable {
+    let title: String
+    let description: String
+    let targetValue: Int
+    let currentValue: Int
+    let reward: String
+}
+
+struct LevelProgress: Codable {
+    let currentLevel: Int // 1-10
+    let currentScore: Double
+    let nextLevelThreshold: Double
+    let progressPercentage: Double
 }
 
 struct RecentRating: Codable {
@@ -41,30 +91,6 @@ struct RecentRating: Codable {
     let photoUrl: String
     let type: String
     let createdAt: Date
-}
-
-struct RankingsResponse: Codable {
-    let success: Bool
-    let data: RankingsData
-}
-
-struct RankingsData: Codable {
-    let overall: [UserRanking]
-    let male: [UserRanking]
-    let female: [UserRanking]
-    let totalUsers: Int
-}
-
-struct UserRanking: Codable {
-    let userId: String
-    let name: String
-    let avatar: String?
-    let gender: String?
-    let totalScore: Double
-    let likeCount: Int
-    let normalCount: Int
-    let totalRatings: Int
-    let rank: Int
 }
 
 struct RandomPhotosResponse: Codable {
@@ -113,21 +139,12 @@ class RateAPI {
         )
     }
     
-    /// Get user statistics and ranking
-    func getUserStats(userId: String) async throws -> UserStatsResponse {
+    /// Get comprehensive journey info
+    func getJourneyInfo(userId: String) async throws -> JourneyInfoResponse {
         return try await apiClient.performRequest(
-            endpoint: "/api/rate/user/\(userId)/stats",
+            endpoint: "/api/info/journeyInfo/\(userId)",
             method: .GET,
-            responseType: UserStatsResponse.self
-        )
-    }
-    
-    /// Get rankings
-    func getRankings(limit: Int = 50) async throws -> RankingsResponse {
-        return try await apiClient.performRequest(
-            endpoint: "/api/rate/rankings?limit=\(limit)",
-            method: .GET,
-            responseType: RankingsResponse.self
+            responseType: JourneyInfoResponse.self
         )
     }
     

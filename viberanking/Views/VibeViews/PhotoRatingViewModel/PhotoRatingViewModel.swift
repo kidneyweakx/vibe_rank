@@ -237,14 +237,14 @@ class PhotoRatingViewModel: BaseViewModel {
         await moveToNextPhoto()
     }
     
-    /// Get user stats for journey/profile
-    func getUserStats() async -> UserStats? {
+    /// Get journey info for journey/profile
+    func getJourneyInfo() async -> JourneyInfo? {
         guard !currentUserId.isEmpty else { return nil }
         
         do {
-            // 在背景線程請求 API
+            // Request API in background thread
             let response = try await Task.detached(priority: .userInitiated) {
-                try await self.rateAPI.getUserStats(userId: self.currentUserId)
+                try await self.rateAPI.getJourneyInfo(userId: self.currentUserId)
             }.value
             
             return response.success ? response.data : nil

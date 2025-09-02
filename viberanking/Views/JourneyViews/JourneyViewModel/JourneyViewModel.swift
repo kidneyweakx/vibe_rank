@@ -13,8 +13,7 @@ import Combine
 class JourneyViewModel: BaseViewModel {
     
     // MARK: - Published Properties
-    @Published var userStats: UserStats?
-    @Published var rankings: RankingsData?
+    @Published var journeyInfo: JourneyInfo?
     @Published var chartData: [ChartDataPoint] = []
     
     // MARK: - Private Properties
@@ -26,17 +25,14 @@ class JourneyViewModel: BaseViewModel {
     func loadUserJourney(userId: String) async {
         currentUserId = userId
         await performAsyncTask {
-            // Load user stats
-            let statsResponse = try await self.rateAPI.getUserStats(userId: userId)
-            if statsResponse.success {
-                self.userStats = statsResponse.data
-                self.generateChartData()
-            }
-            
-            // Load rankings
-            let rankingsResponse = try await self.rateAPI.getRankings(limit: 50)
-            if rankingsResponse.success {
-                self.rankings = rankingsResponse.data
+            // Single API call for all journey data
+            let journeyResponse = try await self.rateAPI.getJourneyInfo(userId: userId)
+            if journeyResponse.success {
+                self.journeyInfo = journeyResponse.data
+                // Use pre-calculated weekly trend from API
+                self.chartData = journeyResponse.data.weeklyTrend.enumerated().map { index, dailyScore in
+                    ChartDataPoint(day: index, score: dailyScore.score ?? 0.0)
+                }
             }
         }
     }
@@ -49,68 +45,33 @@ class JourneyViewModel: BaseViewModel {
     // MARK: - Computed Properties
     
     var overallPerformance: Double {
-        return userStats?.totalScore ?? 0.0
+        return journeyInfo?.totalScore ?? 0.0
     }
     
     var femaleAttraction: Double {
-        // This would come from gender-specific stats in a real implementation
-        return (userStats?.totalScore ?? 0.0) * 0.9
+        return journeyInfo?.femaleAttraction ?? 0.0
     }
     
     var maleAttraction: Double {
-        // This would come from gender-specific stats in a real implementation
-        return (userStats?.totalScore ?? 0.0) * 0.85
+        return journeyInfo?.maleAttraction ?? 0.0
     }
     
-    // MARK: - Journey Level Mapping
     var journeyLevel: JourneyLevel {
-        let score = userStats?.totalScore ?? 0
+        let score = journeyInfo?.totalScore ?? 0
         return JourneyLevel(score: score)
     }
     
     var currentRankPercentage: String {
-        guard let stats = userStats, let rankings = rankings else { return "N/A" }
-        
-        let percentage = (Double(rankings.totalUsers - stats.overallRank) / Double(rankings.totalUsers)) * 100
+        guard let info = journeyInfo else { return "N/A" }
+        let percentage = (Double(info.totalUsers - info.overallRank) / Double(info.totalUsers)) * 100
         return "前 \(Int(percentage))%"
     }
     
     var totalUsers: String {
-        return rankings?.totalUsers.formatted() ?? "0"
+        return journeyInfo?.totalUsers.formatted() ?? "0"
     }
     
-    // MARK: - Private Methods
-    
-    private func generateChartData() {
-        guard let stats = userStats else { return }
 
-        // Build last 7 days trend from API-provided recent ratings
-        // Map rating types to scores
-        let ratings = stats.recentRatings
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-
-        var dailyScores: [Int: [Double]] = [:] // dayOffset -> [scores]
-
-        for rating in ratings {
-            let dayStart = calendar.startOfDay(for: rating.createdAt)
-            guard let diff = calendar.dateComponents([.day], from: dayStart, to: today).day else { continue }
-            // Only include last 7 days
-            guard diff >= 0 && diff < 7 else { continue }
-            let score = (rating.type == RatingType.like.rawValue) ? RatingType.like.score * 100 : RatingType.normal.score * 100
-            dailyScores[diff, default: []].append(score)
-        }
-
-        var data: [ChartDataPoint] = []
-        // 6..0 so the chart shows oldest-to-newest when reversed below
-        for offset in (0..<7).reversed() {
-            let scores = dailyScores[offset] ?? []
-            let average = scores.isEmpty ? 0 : (scores.reduce(0, +) / Double(scores.count))
-            data.append(ChartDataPoint(day: 6 - offset, score: max(0, min(100, average))))
-        }
-
-        self.chartData = data
-    }
 }
 
 // MARK: - Chart Data Model

@@ -296,14 +296,14 @@ struct JourneyTabView: View {
                 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text("❤️ 獲得: \(viewModel.userStats?.likeCount ?? 0)")
+                        Text("❤️ 獲得: \(viewModel.journeyInfo?.likeCount ?? 0)")
                             .foregroundColor(.white)
                         Spacer()
-                        Text("🔄 獲得: \(viewModel.userStats?.normalCount ?? 0)")
+                        Text("🔄 獲得: \(viewModel.journeyInfo?.normalCount ?? 0)")
                             .foregroundColor(.white)
                     }
                     
-                    Text("總評分: \(viewModel.userStats?.totalRatings ?? 0)")
+                    Text("總評分: \(viewModel.journeyInfo?.totalRatings ?? 0)")
                         .font(.caption)
                         .foregroundColor(.gray)
                 }
