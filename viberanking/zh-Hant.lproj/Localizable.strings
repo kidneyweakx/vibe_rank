@@ -468,11 +468,14 @@
 "spotlight.next" = "下一步";
 "spotlight.skip" = "跳過";
 
-// MARK: - Home Empty State
 "home.empty_state.title" = "歡迎來到 VibeRanking";
 "home.empty_state.subtitle" = "目前沒有內容，請下拉刷新或稍後再試。";
 
 // MARK: - Journey Levels
+// MARK: - Journey Trend
+"journey.trend.title" = "風格趨勢";
+"journey.trend.range_7d" = "過去7天";
+"journey.trend.overall_up" = "整體趨勢向上";
 "journey.level.background.title" = "背景板 👤";
 "journey.level.background.subtitle" = "還想當路人嗎？升級才能進鏡頭。";
 "journey.level.invisible.title" = "隱形人 👻";
