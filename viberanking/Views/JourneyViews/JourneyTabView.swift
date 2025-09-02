@@ -124,8 +124,7 @@ struct JourneyTabView: View {
     
     private var achievementBadge: some View {
         VStack(spacing: 12) {
-            let score = viewModel.overallPerformance
-            let (title, subtitle, color, icon) = getAchievementInfo(score: score)
+            let level = viewModel.journeyLevel
             
             HStack(spacing: 16) {
                 // 徽章圖標
@@ -133,31 +132,31 @@ struct JourneyTabView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [color.opacity(0.8), color.opacity(0.4)],
+                                colors: [level.color.opacity(0.8), level.color.opacity(0.4)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                         .frame(width: 60, height: 60)
                     
-                    Image(systemName: icon)
+                    Image(systemName: level.icon)
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.white)
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
+                    Text(level.titleLocalized)
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                     
-                    Text(subtitle)
+                    Text(level.subtitleLocalized)
                         .font(.subheadline)
                         .foregroundColor(.gray)
                     
-                    Text("綜合評分: \(Int(score))")
+                    Text("綜合評分: \(Int(viewModel.overallPerformance))")
                         .font(.caption)
-                        .foregroundColor(color)
+                        .foregroundColor(level.color)
                 }
                 
                 Spacer()
@@ -168,29 +167,14 @@ struct JourneyTabView: View {
                     .fill(Color.gray.opacity(0.1))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(color.opacity(0.3), lineWidth: 1)
+                            .stroke(level.color.opacity(0.3), lineWidth: 1)
                     )
             )
         }
         .padding(.horizontal, 20)
     }
     
-    private func getAchievementInfo(score: Double) -> (String, String, Color, String) {
-        switch score {
-        case 0..<50:
-            return ("路人之軀", "繼續努力，你會變得更好", .gray, "person.fill")
-        case 50..<60:
-            return ("小有魅力", "已經開始展現個人風格", .blue, "star.fill")
-        case 60..<70:
-            return ("魅力四射", "你的風格很有吸引力", .purple, "sparkles")
-        case 70..<80:
-            return ("風格達人", "你的品味令人印象深刻", .orange, "crown.fill")
-        case 80..<90:
-            return ("時尚偶像", "你是真正的風格標杆", .pink, "flame.fill")
-        default:
-            return ("傳奇風範", "你已達到風格的巔峰", .yellow, "trophy.fill")
-        }
-    }
+    
     
     private var simplifiedChartView: some View {
         VStack(spacing: 16) {

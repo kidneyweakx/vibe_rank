@@ -468,6 +468,28 @@
 "spotlight.next" = "下一步";
 "spotlight.skip" = "跳過";
 
+// MARK: - Journey Levels
+"journey.level.background.title" = "背景板 👤";
+"journey.level.background.subtitle" = "還想當路人嗎？升級才能進鏡頭。";
+"journey.level.invisible.title" = "隱形人 👻";
+"journey.level.invisible.subtitle" = "存在感快要解鎖，再努力就能被看見。";
+"journey.level.awkward.title" = "有點小怪怪🐢";
+"journey.level.awkward.subtitle" = "別再小怪怪，下一級開始有 vibe。";
+"journey.level.basic.title" = "新手教學區🍼";
+"journey.level.basic.subtitle" = "新手村快畢業了，走出來才是真的挑戰。";
+"journey.level.wannabe.title" = "剛出新手區🎒";
+"journey.level.wannabe.subtitle" = "想好看不夠，證明自己真的能。";
+"journey.level.certified_cutie.title" = "官方認證小可愛蛋💕";
+"journey.level.certified_cutie.subtitle" = "小可愛只能當前菜，下一級算你型";
+"journey.level.fresh_fit.title" = "新鮮有型✨";
+"journey.level.fresh_fit.subtitle" = "有型了，但還差個 buff";
+"journey.level.flex_on_me.title" = "你閃到我了😎";
+"journey.level.flex_on_me.subtitle" = "很亮沒錯，差一步就是鏡頭主角了";
+"journey.level.camera_magnet.title" = "哇！出場自帶鏡頭 📸";
+"journey.level.camera_magnet.subtitle" = "鏡頭都追著你跑，最後一步才是真正的天花板";
+"journey.level.aura.title" = "您到了 Vibe 天花板 👑";
+"journey.level.aura.subtitle" = "You hit the vibe ceiling. Nothing higher—legend status unlocked.";
+
 // MARK: - Upload Menu
 "upload.menu.title" = "選擇上傳方式";
 "upload.menu.camera" = "拍照";

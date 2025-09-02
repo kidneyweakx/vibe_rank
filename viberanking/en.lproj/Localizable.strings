@@ -562,6 +562,28 @@
 "spotlight.next" = "Next";
 "spotlight.skip" = "Skip";
 
+// MARK: - Journey Levels
+"journey.level.background.title" = "Background Character \U0001F464";
+"journey.level.background.subtitle" = "Still an extra? Level up if you want screen time.";
+"journey.level.invisible.title" = "Invisible Mode \U0001F47B";
+"journey.level.invisible.subtitle" = "No one sees you yet. Push harder to get noticed.";
+"journey.level.awkward.title" = "Awkward \U0001F422";
+"journey.level.awkward.subtitle" = "Stop being weird—next level is where the vibe starts.";
+"journey.level.basic.title" = "Basic Package \U0001F37D\uFE0F";
+"journey.level.basic.subtitle" = "Tutorial phase almost over. Step out if you want the real game.";
+"journey.level.wannabe.title" = "Wannabe \U0001F392";
+"journey.level.wannabe.subtitle" = "Wanting isn’t enough. Prove you can actually pull it off.";
+"journey.level.certified_cutie.title" = "Certified Cutie \U0001F495";
+"journey.level.certified_cutie.subtitle" = "Cute is appetizer only. Next level is where style begins.";
+"journey.level.fresh_fit.title" = "Fresh Fit ✨";
+"journey.level.fresh_fit.subtitle" = "Looking good, but style alone won’t cut it. Buff unlocks next.";
+"journey.level.flex_on_me.title" = "Flex on me \U0001F60E";
+"journey.level.flex_on_me.subtitle" = "You’re shining, but not the star yet. Camera’s waiting.";
+"journey.level.camera_magnet.title" = "Camera Magnet \U0001F4F8";
+"journey.level.camera_magnet.subtitle" = "The lens follows you, but Aura is the final boss.";
+"journey.level.aura.title" = "Aura \U0001F451";
+"journey.level.aura.subtitle" = "You hit the vibe ceiling. Nothing higher—legend status unlocked.";
+
 // MARK: - Upload Menu
 "upload.menu.title" = "Choose upload method";
 "upload.menu.camera" = "Camera";
