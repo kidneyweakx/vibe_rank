@@ -83,18 +83,32 @@ class JourneyViewModel: BaseViewModel {
     
     private func generateChartData() {
         guard let stats = userStats else { return }
-        
-        // Generate sample chart data based on user stats
-        // In a real app, this would come from historical data
-        let baseScore = stats.totalScore
-        var data: [ChartDataPoint] = []
-        
-        for i in 0..<30 {
-            let variation = Double.random(in: -10...10)
-            let score = max(0, min(100, baseScore + variation))
-            data.append(ChartDataPoint(day: i, score: score))
+
+        // Build last 7 days trend from API-provided recent ratings
+        // Map rating types to scores
+        let ratings = stats.recentRatings
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        var dailyScores: [Int: [Double]] = [:] // dayOffset -> [scores]
+
+        for rating in ratings {
+            let dayStart = calendar.startOfDay(for: rating.createdAt)
+            guard let diff = calendar.dateComponents([.day], from: dayStart, to: today).day else { continue }
+            // Only include last 7 days
+            guard diff >= 0 && diff < 7 else { continue }
+            let score = (rating.type == RatingType.like.rawValue) ? RatingType.like.score * 100 : RatingType.normal.score * 100
+            dailyScores[diff, default: []].append(score)
         }
-        
+
+        var data: [ChartDataPoint] = []
+        // 6..0 so the chart shows oldest-to-newest when reversed below
+        for offset in (0..<7).reversed() {
+            let scores = dailyScores[offset] ?? []
+            let average = scores.isEmpty ? 0 : (scores.reduce(0, +) / Double(scores.count))
+            data.append(ChartDataPoint(day: 6 - offset, score: max(0, min(100, average))))
+        }
+
         self.chartData = data
     }
 }

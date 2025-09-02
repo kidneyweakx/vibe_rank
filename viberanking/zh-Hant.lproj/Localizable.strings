@@ -511,6 +511,9 @@
 "profile.add_photo" = "新增照片";
 "profile.scan_to_view" = "掃描查看個人檔案";
 "profile.share_qr_code" = "分享 QR Code";
+
+// MARK: - Journey
+"journey.loading_data" = "載入風格數據...";
 "profile.title" = "個人檔案";
 "profile.settings.title" = "設定";
 "profile.guest.name" = "訪客用戶";

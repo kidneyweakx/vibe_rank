@@ -44,7 +44,6 @@ struct JourneyTabView: View {
                         }
                         .padding(.horizontal, 20)
                         
-                        // 成就徽章
                         achievementBadge
                         
                         // 圖表
@@ -69,7 +68,7 @@ struct JourneyTabView: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         .scaleEffect(1.2)
                     
-                    Text("載入風格數據...")
+                    Text("journey.loading_data".localized)
                         .foregroundColor(.white.opacity(0.7))
                         .padding(.top, 16)
                 }
@@ -111,14 +110,8 @@ struct JourneyTabView: View {
                 }
             }
         } else {
-            print("🔄 JourneyTabView: No user found, loading with mock data")
-            // Load with mock data if no user
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                print("✅ JourneyTabView: Mock data loaded")
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    isLoaded = true
-                }
-            }
+            print("🔄 JourneyTabView: No user found, showing empty state")
+            withAnimation(.easeInOut(duration: 0.3)) { isLoaded = true }
         }
     }
     
@@ -194,18 +187,16 @@ struct JourneyTabView: View {
             VStack(spacing: 12) {
                 // 圖表區域
                 HStack(alignment: .bottom, spacing: 8) {
-                    ForEach(0..<7, id: \.self) { index in
-                        let height = getBarHeight(for: index)
-                        let color = getBarColor(for: index)
-                        
+                    ForEach(Array(viewModel.chartData.enumerated()), id: \.offset) { (index, point) in
+                        let height = max(0.08, CGFloat(point.score / 100.0))
+                        let color = getBarColorForScore(point.score)
+
                         VStack(spacing: 4) {
-                            // 數值標籤
-                            Text("\(Int(height * 100))")
+                            Text("\(Int(point.score))")
                                 .font(.caption2)
                                 .foregroundColor(.white.opacity(0.8))
-                                .opacity(height > 0.1 ? 1 : 0)
-                            
-                            // 柱狀圖
+                                .opacity(point.score > 10 ? 1 : 0)
+
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(
                                     LinearGradient(
@@ -214,10 +205,9 @@ struct JourneyTabView: View {
                                         endPoint: .bottom
                                     )
                                 )
-                                .frame(width: 32, height: max(8, height * 120))
-                                .animation(.easeInOut(duration: 0.6).delay(Double(index) * 0.1), value: height)
-                            
-                            // 日期標籤
+                                .frame(width: 32, height: height * 120)
+                                .animation(.easeInOut(duration: 0.6).delay(Double(index) * 0.08), value: point.score)
+
                             Text("W\(index + 1)")
                                 .font(.caption2)
                                 .foregroundColor(.gray)
@@ -258,22 +248,12 @@ struct JourneyTabView: View {
         }
     }
     
-    private func getBarHeight(for index: Int) -> CGFloat {
-        let mockData: [CGFloat] = [0.3, 0.5, 0.4, 0.7, 0.6, 0.8, 0.75]
-        return mockData[index]
-    }
-    
-    private func getBarColor(for index: Int) -> Color {
-        let height = getBarHeight(for: index)
-        switch height {
-        case 0.0..<0.3:
-            return .red
-        case 0.3..<0.5:
-            return .orange
-        case 0.5..<0.7:
-            return .yellow
-        default:
-            return .green
+    private func getBarColorForScore(_ score: Double) -> Color {
+        switch score {
+        case 0..<30: return .red
+        case 30..<50: return .orange
+        case 50..<70: return .yellow
+        default: return .green
         }
     }
     

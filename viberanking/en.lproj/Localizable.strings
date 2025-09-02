@@ -605,3 +605,6 @@
 "profile.add_photo" = "Add Photo";
 "profile.scan_to_view" = "Scan to view profile";
 "profile.share_qr_code" = "Share QR Code";
+
+// MARK: - Journey
+"journey.loading_data" = "Loading style data...";
