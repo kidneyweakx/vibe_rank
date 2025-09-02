@@ -148,6 +148,10 @@ struct ImagePreviewView: View {
         .task { await loadAllTags() }
         .onAppear {
             print("🎯 ImagePreviewView 顯示 - 圖片尺寸: \(image.size)")
+            // Auto present crop view on appear to ensure user crops before upload
+            if !showingCropView {
+                showingCropView = true
+            }
         }
         .sheet(isPresented: $showingCropView) {
             ImageCropView(image: croppedImage ?? image) { croppedResult in

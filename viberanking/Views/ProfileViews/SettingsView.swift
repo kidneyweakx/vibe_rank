@@ -46,16 +46,24 @@ struct SettingsView: View {
                                         Group {
                                             if let profileImageURL = authViewModel.user?.profileImageURL,
                                                let url = URL(string: profileImageURL) {
-                                                AsyncImage(url: url) { image in
-                                                    image
-                                                        .resizable()
-                                                        .aspectRatio(contentMode: .fill)
-                                                } placeholder: {
-                                                    Image(systemName: "person.fill")
-                                                        .font(.system(size: 40))
-                                                        .foregroundColor(.white)
+                                                AsyncImage(url: url) { phase in
+                                                    switch phase {
+                                                    case .empty:
+                                                        ProgressView().tint(.white)
+                                                    case .success(let image):
+                                                        image
+                                                            .resizable()
+                                                            .scaledToFill()
+                                                            .frame(width: 100, height: 100)
+                                                            .clipShape(Circle())
+                                                    case .failure:
+                                                        Image(systemName: "person.fill")
+                                                            .font(.system(size: 40))
+                                                            .foregroundColor(.white)
+                                                    @unknown default:
+                                                        Color.clear
+                                                    }
                                                 }
-                                                .clipShape(Circle())
                                             } else {
                                                 Image(systemName: "person.fill")
                                                     .font(.system(size: 40))
@@ -339,15 +347,22 @@ struct SettingsView: View {
     }
     
     private func uploadProfileImage(_ image: UIImage) {
-        // Upload profile image and persist avatar URL
+        // Upload profile image using /api/user/profilePicture
         Task {
             guard let userId = authViewModel.user?.id else { return }
-            let uploadService = PhotoUploadService()
             do {
-                let photo = try await uploadService.uploadPhoto(image, for: userId)
-                let url = photo.imageURL.bestAvailableURL
-                pendingAvatarURL = url
+                // Compress image to reduce upload size
+                guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+                    throw APIError.invalidResponse
+                }
+                
+                // Upload the image using /api/user/profilePicture
+                let response = try await UserAPI().uploadProfilePicture(userId: userId, imageData: imageData)
+                await MainActor.run {
+                    pendingAvatarURL = response.data.avatar
+                }
             } catch {
+                print("❌ SettingsView: Failed to upload profile picture: \(error)")
                 // ignore for now
             }
         }

@@ -16,6 +16,10 @@ struct ProfileTabView: View {
     @State private var showingSettings = false
     @State private var isUploadingProfilePicture = false
     @State private var uploadProgress: Double = 0.0
+    @State private var showingUploadMenu = false
+    @State private var showingPhotoPicker = false
+    @State private var showingImagePreview = false
+    @State private var selectedImage: UIImage?
     
     var body: some View {
         NavigationStack {
@@ -35,11 +39,7 @@ struct ProfileTabView: View {
             }
             .navigationBarHidden(true)
         }
-        .sheet(isPresented: $showingImagePicker) {
-            ImagePicker(sourceType: .photoLibrary) { image in
-                uploadProfileImage(image)
-            }
-        }
+        // NOTE: removed duplicate sheet for showingImagePicker (photoLibrary)
         .sheet(isPresented: $showingQRCode) {
             QRCodeShareView(
                 userId: authViewModel.user?.id ?? "",
@@ -75,10 +75,73 @@ struct ProfileTabView: View {
         .refreshable {
             await viewModel.refreshData()
         }
+        .onChange(of: selectedImage) { newImage in
+            if let image = newImage {
+                print("🔄 ProfileTabView: selectedImage changed to size: \(image.size)")
+            } else {
+                print("🔄 ProfileTabView: selectedImage cleared")
+            }
+        }
+        .onChange(of: showingImagePreview) { isShowing in
+            print("🔄 ProfileTabView: showingImagePreview changed to: \(isShowing)")
+            if isShowing {
+                print("🔄 ProfileTabView: Current selectedImage is nil: \(selectedImage == nil)")
+            }
+        }
+        .sheet(isPresented: $showingUploadMenu) {
+            UploadMenuView(
+                onCameraSelected: {
+                    showingImagePicker = true
+                },
+                onPhotoLibrarySelected: {
+                    showingPhotoPicker = true
+                }
+            )
+            .presentationDetents([.height(200)])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showingImagePicker) {
+            ImagePicker(sourceType: .camera) { image in
+                selectedImage = image
+                showingImagePreview = true
+            }
+        }
+        .sheet(isPresented: $showingPhotoPicker) {
+            PhotoPickerView { image in
+                print("📸 ProfileTabView: PhotoPickerView returned image with size: \(image.size)")
+                selectedImage = image
+                print("📸 ProfileTabView: selectedImage set, current value: \(selectedImage?.size ?? CGSize.zero)")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    print("📸 ProfileTabView: Setting showingImagePreview = true")
+                    showingImagePreview = true
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $showingImagePreview) {
+            Group {
+                if let image = selectedImage {
+                    ImagePreviewView(image: image) {
+                        selectedImage = nil
+                    }
+                } else {
+                    Text("common.image_load_failed".localized)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.black)
+                }
+            }
+        }
     }
     
     private func uploadProfileImage(_ image: UIImage) {
-        guard let userId = authViewModel.user?.id else { return }
+        guard let userId = authViewModel.user?.id else { 
+            print("❌ ProfileTabView: No user ID available for upload")
+            return 
+        }
+        
+        print("📸 ProfileTabView: Starting profile picture upload")
+        print("  - User ID: \(userId)")
+        print("  - Image Size: \(image.size)")
         
         Task {
             await MainActor.run {
@@ -89,8 +152,12 @@ struct ProfileTabView: View {
             do {
                 // Compress image to reduce upload size
                 guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+                    print("❌ ProfileTabView: Failed to compress image to JPEG")
                     throw APIError.invalidResponse
                 }
+                
+                print("📸 ProfileTabView: Image compressed successfully")
+                print("  - Compressed size: \(imageData.count) bytes")
                 
                 // Simulate progress updates
                 for progress in stride(from: 0.0, through: 0.9, by: 0.1) {
@@ -100,8 +167,13 @@ struct ProfileTabView: View {
                     try await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
                 }
                 
-                // Upload the image
+                print("📸 ProfileTabView: Calling UserAPI.uploadProfilePicture")
+                // Upload the image using /api/user/profilePicture
                 let response = try await UserAPI().uploadProfilePicture(userId: userId, imageData: imageData)
+                
+                print("✅ ProfileTabView: Upload successful!")
+                print("  - Response success: \(response.success)")
+                print("  - Avatar URL: \(response.data.avatar)")
                 
                 await MainActor.run {
                     // Update the user's profile image URL by creating a new User instance
@@ -119,12 +191,15 @@ struct ProfileTabView: View {
                         newUser.ratingProgress = currentUser.ratingProgress
                         newUser.uploadedPhotos = currentUser.uploadedPhotos
                         authViewModel.user = newUser
+                        
+                        print("✅ ProfileTabView: User profile updated with new avatar URL")
                     }
                     uploadProgress = 1.0
                     isUploadingProfilePicture = false
                 }
                 
                 // Refresh profile data
+                print("🔄 ProfileTabView: Refreshing profile data")
                 await viewModel.refreshData()
                 
             } catch {
@@ -132,7 +207,14 @@ struct ProfileTabView: View {
                     isUploadingProfilePicture = false
                     uploadProgress = 0.0
                 }
-                print("❌ ProfileTabView: Failed to upload profile picture: \(error)")
+                print("❌ ProfileTabView: Failed to upload profile picture")
+                print("  - Error: \(error)")
+                print("  - Error Type: \(type(of: error))")
+                
+                if let apiError = error as? APIError {
+                    print("  - API Error: \(apiError)")
+                }
+                
                 // TODO: Show error alert to user
             }
         }
@@ -165,16 +247,24 @@ private extension ProfileTabView {
                                 Group {
                                     if let profileImageURL = authViewModel.user?.profileImageURL,
                                        let url = URL(string: profileImageURL) {
-                                        AsyncImage(url: url) { image in
-                                            image
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                        } placeholder: {
-                                            Image(systemName: "person.fill")
-                                                .font(.system(size: 32))
-                                                .foregroundColor(.white)
+                                        AsyncImage(url: url) { phase in
+                                            switch phase {
+                                            case .empty:
+                                                ProgressView().tint(.white)
+                                            case .success(let image):
+                                                image
+                                                    .resizable()
+                                                    .scaledToFill()
+                                                    .frame(width: 80, height: 80)
+                                                    .clipShape(Circle())
+                                            case .failure:
+                                                Image(systemName: "person.fill")
+                                                    .font(.system(size: 32))
+                                                    .foregroundColor(.white)
+                                            @unknown default:
+                                                Color.clear
+                                            }
                                         }
-                                        .clipShape(Circle())
                                     } else {
                                         Image(systemName: "person.fill")
                                             .font(.system(size: 32))
@@ -218,20 +308,6 @@ private extension ProfileTabView {
                                     .foregroundColor(.white)
                                     .background(Circle().fill(Color.green))
                             }
-                        } else {
-                            // Camera icon overlay
-                            VStack {
-                                Spacer()
-                                HStack {
-                                    Spacer()
-                                    Image(systemName: "camera.fill")
-                                        .font(.system(size: 16))
-                                        .foregroundColor(.white)
-                                        .padding(6)
-                                        .background(Circle().fill(Color.blue))
-                                }
-                            }
-                            .frame(width: 80, height: 80)
                         }
                     }
                 }
@@ -311,7 +387,9 @@ private extension ProfileTabView {
         ScrollView {
             LazyVStack(spacing: 24) {
                 ForEach(getRecentWeeks(), id: \.weekNumber) { week in
-                    WeeklyPhotoSection(week: week)
+                    WeeklyPhotoSection(week: week, onPhotoTap: {
+                        showingUploadMenu = true
+                    })
                 }
             }
             .padding(.horizontal, 16)
@@ -330,6 +408,11 @@ private extension ProfileTabView {
             let dayStart = calendar.startOfDay(for: info.uploadedAt)
             photosByDay[dayStart, default: []].append(info)
         }
+        
+        print("📸 ProfileTabView: Building weekly photo grid")
+        print("  - Total photos: \(viewModel.userPhotoInfos.count)")
+        print("  - Photos by day: \(photosByDay.count) days")
+        
         var resultWeeks: [WeekData] = []
         
         for i in 0..<5 {
@@ -343,17 +426,20 @@ private extension ProfileTabView {
                 let dayNumber = calendar.component(.day, from: dayDate)
                 let monthName = DateFormatter().shortMonthSymbols[calendar.component(.month, from: dayDate) - 1]
                 let weekdayName = DateFormatter().shortWeekdaySymbols[calendar.component(.weekday, from: dayDate) - 1]
-                let firstURL = list.first?.urls.thumbnailURL
-                let urlString: String? = {
-                    if let firstURL, !firstURL.isEmpty { return firstURL }
-                    return nil
-                }()
+                let urls: [String] = list
+                    .map { $0.urls.bestAvailableURL }  // 使用最佳可用URL而不是縮略圖
+                    .filter { !$0.isEmpty }
+                
+                if !urls.isEmpty {
+                    print("📸 Day \(dayNumber): \(urls.count) photos")
+                }
+                
                 days.append(DayData(
                     date: dayDate,
                     dayNumber: dayNumber,
                     monthName: monthName,
                     weekdayName: weekdayName,
-                    photoURL: urlString
+                    photoURLs: urls
                 ))
             }
             resultWeeks.append(WeekData(weekNumber: weekNumber, days: days))
@@ -375,13 +461,14 @@ struct DayData {
     let dayNumber: Int
     let monthName: String
     let weekdayName: String
-    let photoURL: String?
-    var hasPhoto: Bool { photoURL != nil }
+    let photoURLs: [String]
+    var hasPhoto: Bool { !photoURLs.isEmpty }
 }
 
 // MARK: - Supporting Views
 struct WeeklyPhotoSection: View {
     let week: WeekData
+    let onPhotoTap: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -403,8 +490,12 @@ struct WeeklyPhotoSection: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(Array(week.days.enumerated()), id: \.offset) { index, day in
-                        DayPhotoCard(day: day)
+                    ForEach(Array(week.days.enumerated()), id: \.offset) { _, day in
+                        // 顯示所有照片，如果沒有照片則顯示一個空槽位
+                        let totalSlots = max(1, day.photoURLs.count)
+                        ForEach(0..<totalSlots, id: \.self) { slot in
+                            DayPhotoCard(day: day, slotIndex: slot, onTap: onPhotoTap)
+                        }
                     }
                 }
                 .padding(.horizontal, 4)
@@ -415,33 +506,40 @@ struct WeeklyPhotoSection: View {
 
 struct DayPhotoCard: View {
     let day: DayData
+    let slotIndex: Int
+    let onTap: () -> Void
     @State private var isPressed = false
     
     var body: some View {
-        Button(action: {
-            // Handle photo tap - could open photo viewer or add photo
-        }) {
+        Button(action: onTap) {
             VStack(spacing: 8) {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.gray.opacity(0.1))
                     .frame(width: 120, height: 160)
                     .overlay(
                         Group {
-                            if let urlString = day.photoURL, let url = URL(string: urlString) {
+                            if slotIndex < day.photoURLs.count, let urlString = day.photoURLs[safe: slotIndex], let url = URL(string: urlString) {
                                 AsyncImage(url: url) { phase in
                                     switch phase {
                                     case .empty:
                                         ProgressView().tint(.white)
+                                            .frame(width: 120, height: 160)
                                     case .success(let image):
-                                        image.resizable().scaledToFill()
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 120, height: 160)
+                                            .clipped()
                                     case .failure:
-                                        Image(systemName: "photo").foregroundColor(.gray)
+                                        Image(systemName: "photo")
+                                            .foregroundColor(.gray)
+                                            .frame(width: 120, height: 160)
                                     @unknown default:
                                         Color.clear
                                     }
                                 }
-                                .clipped()
                             } else {
+                                // 空槽位 - 顯示添加照片的提示
                                 VStack(spacing: 8) {
                                     Image(systemName: "plus.circle.dashed")
                                         .font(.system(size: 32))
@@ -450,6 +548,7 @@ struct DayPhotoCard: View {
                                         .font(.system(size: 12, weight: .medium))
                                         .foregroundColor(.gray.opacity(0.7))
                                 }
+                                .frame(width: 120, height: 160)
                             }
                         }
                     )

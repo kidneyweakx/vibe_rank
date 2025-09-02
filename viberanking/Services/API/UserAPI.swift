@@ -14,6 +14,27 @@ struct UserProfileResponse: Codable {
     let data: UserProfile
 }
 
+struct ProfilePictureUploadResponse: Codable {
+    let success: Bool
+    let data: ProfilePictureData
+}
+
+struct ProfilePictureData: Codable {
+    let photoId: String
+    let urls: ProfilePictureURLs
+    let uploadedAt: Date
+    let avatarUrl: String  // 後端實際返回的字段名
+    
+    // 提供一個計算屬性來保持向後兼容
+    var avatar: String {
+        return avatarUrl
+    }
+}
+
+struct ProfilePictureURLs: Codable {
+    let original: String
+}
+
 struct UserProfile: Codable {
     let id: String
     let email: String
@@ -183,7 +204,7 @@ class UserAPI {
     }
     
     /// Upload profile picture
-    func uploadProfilePicture(userId: String, imageData: Data) async throws -> UserProfileResponse {
+    func uploadProfilePicture(userId: String, imageData: Data) async throws -> ProfilePictureUploadResponse {
         // Create multipart form data
         let boundary = "Boundary-\(UUID().uuidString)"
         var body = Data()
@@ -210,13 +231,34 @@ class UserAPI {
         request.setValue(apiClient.accessToken, forHTTPHeaderField: "X-Access-Token")
         request.httpBody = body
         
+        print("📤 ProfilePicture Upload Request:")
+        print("  - URL: \(url)")
+        print("  - Method: POST")
+        print("  - Content-Type: multipart/form-data; boundary=\(boundary)")
+        print("  - UserID: \(userId)")
+        print("  - ImageData Size: \(imageData.count) bytes")
+        
         let (data, response) = try await URLSession.shared.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse else {
+            print("❌ Invalid HTTP response")
             throw APIError.invalidResponse
         }
         
+        print("📥 ProfilePicture Upload Response:")
+        print("  - Status Code: \(httpResponse.statusCode)")
+        print("  - Headers: \(httpResponse.allHeaderFields)")
+        print("  - Response Data Size: \(data.count) bytes")
+        
+        // Log raw response data
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("  - Raw Response: \(responseString)")
+        } else {
+            print("  - Raw Response: (Unable to convert to string)")
+        }
+        
         guard httpResponse.statusCode == 200 else {
+            print("❌ Server error with status code: \(httpResponse.statusCode)")
             throw APIError.serverError(httpResponse.statusCode)
         }
         
@@ -226,6 +268,47 @@ class UserAPI {
         dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
         decoder.dateDecodingStrategy = .formatted(dateFormatter)
         
-        return try decoder.decode(UserProfileResponse.self, from: data)
+        do {
+            let result = try decoder.decode(ProfilePictureUploadResponse.self, from: data)
+            print("✅ Successfully decoded ProfilePictureUploadResponse:")
+            print("  - Success: \(result.success)")
+            print("  - Avatar URL: \(result.data.avatar)")
+            return result
+        } catch {
+            print("❌ Failed to decode ProfilePictureUploadResponse:")
+            print("  - Error: \(error)")
+            print("  - Error Type: \(type(of: error))")
+            
+            if let decodingError = error as? DecodingError {
+                switch decodingError {
+                case .keyNotFound(let key, let context):
+                    print("  - Missing Key: \(key)")
+                    print("  - Context: \(context)")
+                    print("  - Coding Path: \(context.codingPath)")
+                case .typeMismatch(let type, let context):
+                    print("  - Type Mismatch: Expected \(type)")
+                    print("  - Context: \(context)")
+                case .valueNotFound(let type, let context):
+                    print("  - Value Not Found: \(type)")
+                    print("  - Context: \(context)")
+                case .dataCorrupted(let context):
+                    print("  - Data Corrupted: \(context)")
+                @unknown default:
+                    print("  - Unknown decoding error")
+                }
+            }
+            
+            // Try to decode as generic JSON to see what we actually got
+            do {
+                if let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    print("  - Actual JSON Structure:")
+                    print("    \(jsonObject)")
+                }
+            } catch {
+                print("  - Could not parse as JSON: \(error)")
+            }
+            
+            throw error
+        }
     }
 }
