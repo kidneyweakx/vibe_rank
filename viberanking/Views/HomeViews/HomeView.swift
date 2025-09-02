@@ -32,60 +32,89 @@ struct HomeView: View {
     private var mainContent: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            if isLoaded { loadedContent } else { loadingContent }
+            loadedContent
         }
         .navigationBarHidden(true)
         .preferredColorScheme(.dark)
         .onAppear { 
-            if !isLoaded { 
-                Task { await loadHomeInfo() }
-            } 
+            Task { await loadHomeInfo() }
         }
     }
 
     private var loadedContent: some View {
-        ScrollView {
-            LazyVStack(spacing: 32) {
-                // Announcements section
-                if !announcements.isEmpty {
-                    announcementsSection
-                    divider
+        ZStack {
+            ScrollView {
+                LazyVStack(spacing: 32) {
+                    // Announcements section
+                    if !announcements.isEmpty {
+                        announcementsSection
+                        divider
+                    }
+                    
+                    // Statistics section
+                    if let stats = statistics {
+                        statisticsSection(stats)
+                        divider
+                    }
+                    
+                    // Featured users section (using topUserGalleries from API)
+                    if !topUserGalleries.isEmpty {
+                        recommendedSection
+                        divider
+                    }
+                    
+                    // Events section (using events from API)
+                    if !events.isEmpty {
+                        eventSection
+                    }
+                    
+                    // Empty state when no data
+                    if topUserGalleries.isEmpty && events.isEmpty && announcements.isEmpty {
+                        emptyStateView
+                    }
                 }
-                
-                // Statistics section
-                if let stats = statistics {
-                    statisticsSection(stats)
-                    divider
-                }
-                
-                // Featured users section (using topUserGalleries from API)
-                if !topUserGalleries.isEmpty {
-                    recommendedSection
-                    divider
-                }
-                
-                // Events section (using events from API)
-                if !events.isEmpty {
-                    eventSection
+                .padding(.horizontal, 20)
+                .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 90) }
+            }
+            .refreshable {
+                await loadHomeInfo()
+            }
+            
+            // Loading indicator overlay
+            if isLoading {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .scaleEffect(0.8)
+                            .padding(.trailing, 20)
+                            .padding(.bottom, 100)
+                    }
                 }
             }
-            .padding(.horizontal, 20)
-            .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 90) }
-        }
-        .refreshable {
-            await loadHomeInfo()
         }
     }
 
-    private var loadingContent: some View {
-        VStack {
-            ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                .scaleEffect(1.2)
-            Text("common.loading".localized)
+    private var emptyStateView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "house.fill")
+                .font(.system(size: 50))
+                .foregroundColor(.white.opacity(0.3))
+            
+            Text("home.empty_state.title".localized)
+                .font(.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(.white)
+            
+            Text("home.empty_state.subtitle".localized)
+                .font(.body)
                 .foregroundColor(.white.opacity(0.7))
-                .padding(.top, 16)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
         }
+        .padding(.vertical, 60)
     }
 }
 

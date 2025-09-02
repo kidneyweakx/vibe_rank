@@ -63,28 +63,23 @@ extension HomeView {
             }
         } catch {
             print("❌ HomeView: Failed to load home info: \(error)")
-            // Fallback to original data loading methods
-            await loadFallbackData()
+            // Show empty state instead of fallback data
+            self.topUserGalleries = []
+            self.events = []
+            self.eventPhotos = []
+            self.homeInfo = nil
+            self.announcements = []
+            self.statistics = nil
+            
+            withAnimation(.easeInOut(duration: 0.25)) { 
+                self.isLoaded = true 
+            }
         }
         
         isLoading = false
     }
     
-    @MainActor
-    func loadFallbackData() async {
-        print("🔄 HomeView: Loading fallback data...")
-        // Use random users as fallback since main API failed
-        self.topUserGalleries = generateRandomUsers()
-        self.events = []
-        self.eventPhotos = []
-        self.homeInfo = nil
-        self.announcements = []
-        self.statistics = nil
-        
-        withAnimation(.easeInOut(duration: 0.25)) { 
-            self.isLoaded = true 
-        }
-    }
+
 
     func fetchEvents() async -> [EventItem] {
         do {
@@ -96,26 +91,7 @@ extension HomeView {
         }
     }
 
-    // @TODO: delete or replace random users
-    func generateRandomUsers() -> [TopUserGallery] {
-        let names = ["Alex Chen", "Sarah Kim", "Mike Johnson", "Emma Liu", "David Park"]
-        let sampleImages = [
-            "https://picsum.photos/400/600?random=1",
-            "https://picsum.photos/400/600?random=2",
-            "https://picsum.photos/400/600?random=3",
-            "https://picsum.photos/400/600?random=4",
-            "https://picsum.photos/400/600?random=5"
-        ]
-        return names.enumerated().map { index, name in
-            TopUserGallery(
-                userId: "random_\(index)",
-                name: name,
-                rank: index + 1,
-                avatarURL: "https://picsum.photos/100/100?random=\(index + 10)",
-                photoURLs: Array(sampleImages.shuffled().prefix(3))
-            )
-        }
-    }
+
 }
 
 

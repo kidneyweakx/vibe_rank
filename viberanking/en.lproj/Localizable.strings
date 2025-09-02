@@ -562,6 +562,10 @@
 "spotlight.next" = "Next";
 "spotlight.skip" = "Skip";
 
+// MARK: - Home Empty State
+"home.empty_state.title" = "Welcome to VibeRanking";
+"home.empty_state.subtitle" = "No content available at the moment. Pull to refresh or check back later.";
+
 // MARK: - Journey Levels
 "journey.level.background.title" = "Background Character \U0001F464";
 "journey.level.background.subtitle" = "Still an extra? Level up if you want screen time.";
