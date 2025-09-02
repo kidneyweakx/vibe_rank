@@ -62,7 +62,21 @@ extension HomeView {
                 self.isLoaded = true 
             }
         } catch {
-            print("❌ HomeView: Failed to load home info: \(error)")
+            // Handle different types of errors
+            if let urlError = error as? URLError {
+                switch urlError.code {
+                case .cancelled:
+                    print("ℹ️ HomeView: Request was cancelled (likely due to navigation or rapid requests)")
+                    return // Don't show error state for cancelled requests
+                case .notConnectedToInternet, .networkConnectionLost:
+                    print("❌ HomeView: Network error: \(error)")
+                default:
+                    print("❌ HomeView: URL error: \(error)")
+                }
+            } else {
+                print("❌ HomeView: Failed to load home info: \(error)")
+            }
+            
             // Show empty state instead of fallback data
             self.topUserGalleries = []
             self.events = []
