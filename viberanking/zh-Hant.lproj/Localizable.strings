@@ -21,8 +21,8 @@
 // MARK: - Authentication
 "auth.title" = "數位頂尖社交評價平台";
 "auth.subtitle" = "登入以開始評分和獲取個人風格分析";
-"auth.sign_in_google" = "使用 Google 登入";
-"auth.sign_in_apple" = "使用 Apple 登入";
+"auth.sign_in_google" = "Google 登入";
+"auth.sign_in_apple" = "Apple 登入";
 "auth.continue_guest" = "以訪客模式繼續";
 "auth.signing_in" = "登入中...";
 "auth.login_failed" = "登入失敗，請檢查網路連接並重試";

@@ -37,9 +37,7 @@ struct OnboardingStepVibeSelection: View {
                     Text("onb.vibe.title.zh".localized(table: "Onboarding"))
                         .font(.system(size: 22, weight: .semibold))
                         .foregroundColor(.white)
-                    Text("onb.vibe.title.en".localized(table: "Onboarding"))
-                        .font(.system(size: 15))
-                        .foregroundColor(.white.opacity(0.75))
+                    // Show single language only per request
 
                     VStack(spacing: 12) {
                         ForEach(0..<zhOptions.count, id: \.self) { index in
@@ -48,9 +46,7 @@ struct OnboardingStepVibeSelection: View {
                                     Text("onb.vibe.option.zh.\(index + 1)".localized(table: "Onboarding"))
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundColor(.white)
-                                    Text("onb.vibe.option.en.\(index + 1)".localized(table: "Onboarding"))
-                                        .font(.system(size: 13))
-                                        .foregroundColor(.white.opacity(0.7))
+                                    // English subtitle removed to keep one language
                                 }
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .leading)

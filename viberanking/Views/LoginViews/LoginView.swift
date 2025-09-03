@@ -106,7 +106,7 @@ struct ModernAuthButtonsView: View {
                     viewModel.signInAsGuest()
                 }
             }) {
-                Text("訪客模式")
+                Text("auth.continue_guest".localized)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.white.opacity(0.7))
                     .underline()
@@ -210,7 +210,7 @@ struct ModernGoogleSignInButton: View {
                 ModernGoogleLogoView()
                     .frame(width: 24, height: 24)
                 
-                Text("Google 登入")
+                Text("auth.sign_in_google".localized)
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
                 
@@ -256,7 +256,7 @@ struct ModernAppleSignInButton: View {
                     .font(.system(size: 20, weight: .medium))
                     .foregroundColor(.white)
                 
-                Text("Apple 登入")
+                Text("auth.sign_in_apple".localized)
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
                 
