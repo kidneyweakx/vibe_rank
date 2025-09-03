@@ -258,7 +258,10 @@ private extension ProfileTabView {
                             .frame(width: 80, height: 80)
                             .overlay(
                                 Group {
-                                    if let profileImageURL = authViewModel.user?.profileImageURL,
+                                    // 優先使用 ProfileViewModel 中的 userBasicInfo，如果沒有則使用 authViewModel
+                                    let profileImageURL = viewModel.userBasicInfo?.avatar ?? authViewModel.user?.profileImageURL
+                                    
+                                    if let profileImageURL = profileImageURL,
                                        let url = URL(string: profileImageURL) {
                                         AsyncImage(url: url) { phase in
                                             switch phase {
@@ -289,6 +292,14 @@ private extension ProfileTabView {
                                 Circle()
                                     .stroke(Color.white.opacity(0.2), lineWidth: 2)
                             )
+                            .onAppear {
+                                // Debug avatar display logic
+                                let profileImageURL = viewModel.userBasicInfo?.avatar ?? authViewModel.user?.profileImageURL
+                                print("🖼️ ProfileTabView: Avatar display logic")
+                                print("   - ProfileViewModel userBasicInfo.avatar: \(viewModel.userBasicInfo?.avatar ?? "nil")")
+                                print("   - AuthViewModel user.profileImageURL: \(authViewModel.user?.profileImageURL ?? "nil")")
+                                print("   - Final profileImageURL: \(profileImageURL ?? "nil")")
+                            }
                         
                         // Upload progress overlay
                         if isUploadingProfilePicture {

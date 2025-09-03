@@ -10,6 +10,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var profileViewModel = ProfileViewModel()
     @State private var showingLogoutAlert = false
     @State private var showingImagePicker = false
     @State private var showTerms = false
@@ -44,7 +45,9 @@ struct SettingsView: View {
                                     .frame(width: 100, height: 100)
                                     .overlay(
                                         Group {
-                                            if let profileImageURL = authViewModel.user?.profileImageURL,
+                                            // 優先使用 ProfileViewModel 中的 userBasicInfo，如果沒有則使用 authViewModel
+                                            let profileImageURL = profileViewModel.userBasicInfo?.avatar ?? authViewModel.user?.profileImageURL
+                                            if let profileImageURL = profileImageURL,
                                                let url = URL(string: profileImageURL) {
                                                 AsyncImage(url: url) { phase in
                                                     switch phase {
@@ -279,6 +282,12 @@ struct SettingsView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .task {
+            // Load profile data when view appears
+            if let userId = authViewModel.user?.id {
+                await profileViewModel.loadUserProfile(userId: userId)
+            }
+        }
         .sheet(isPresented: $showTerms) {
             TermsOfServiceView()
         }

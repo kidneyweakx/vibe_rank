@@ -36,7 +36,7 @@ struct JourneyTabView: View {
                     LazyVStack(spacing: 24) {
                         // 標題
                         HStack {
-                            Text("風格歷程")
+                            Text("journey.title".localized)
                                 .font(.largeTitle)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
@@ -137,7 +137,7 @@ struct JourneyTabView: View {
             HStack {
                 Image(systemName: "brain.head.profile")
                     .foregroundColor(.purple)
-                Text("AI 改進方案")
+                Text("journey.ai_improvement.title".localized)
                     .font(.headline)
                     .foregroundColor(.white)
                 Spacer()
@@ -147,7 +147,7 @@ struct JourneyTabView: View {
             }
             
             VStack(alignment: .leading, spacing: 12) {
-                Text("個人化風格建議")
+                Text("journey.ai_improvement.personalized_suggestions".localized)
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(.white)
@@ -156,7 +156,7 @@ struct JourneyTabView: View {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
-                        Text("專業風格分析")
+                        Text("journey.ai_improvement.professional_analysis".localized)
                             .font(.caption)
                             .foregroundColor(.gray)
                     }
@@ -164,7 +164,7 @@ struct JourneyTabView: View {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
-                        Text("個人化穿搭建議")
+                        Text("journey.ai_improvement.outfit_suggestions".localized)
                             .font(.caption)
                             .foregroundColor(.gray)
                     }
@@ -172,7 +172,7 @@ struct JourneyTabView: View {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
-                        Text("色彩搭配推薦")
+                        Text("journey.ai_improvement.color_recommendations".localized)
                             .font(.caption)
                             .foregroundColor(.gray)
                     }
@@ -180,7 +180,7 @@ struct JourneyTabView: View {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
-                        Text("風格趨勢預測")
+                        Text("journey.ai_improvement.trend_prediction".localized)
                             .font(.caption)
                             .foregroundColor(.gray)
                     }
@@ -191,7 +191,7 @@ struct JourneyTabView: View {
                 }) {
                     HStack {
                         Image(systemName: "sparkles")
-                        Text("解鎖 AI 建議 - $10.00")
+                        Text("journey.ai_improvement.unlock_button".localized)
                             .fontWeight(.semibold)
                         Spacer()
                         Image(systemName: "arrow.right")

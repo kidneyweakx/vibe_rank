@@ -64,7 +64,7 @@ class JourneyViewModel: BaseViewModel {
     var currentRankPercentage: String {
         guard let info = journeyInfo else { return "N/A" }
         let percentage = (Double(info.totalUsers - info.overallRank) / Double(info.totalUsers)) * 100
-        return "前 \(Int(percentage))%"
+        return String(format: "journey.stats.top_percentage".localized, Int(percentage))
     }
     
     var totalUsers: String {

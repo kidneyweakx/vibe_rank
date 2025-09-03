@@ -521,6 +521,47 @@
 
 // MARK: - Journey
 "journey.loading_data" = "載入風格數據...";
+"journey.title" = "風格歷程";
+"journey.ai_improvement.title" = "AI 改進方案";
+"journey.ai_improvement.personalized_suggestions" = "個人化風格建議";
+"journey.ai_improvement.professional_analysis" = "專業風格分析";
+"journey.ai_improvement.outfit_suggestions" = "個人化穿搭建議";
+"journey.ai_improvement.color_recommendations" = "色彩搭配推薦";
+"journey.ai_improvement.trend_prediction" = "風格趨勢預測";
+"journey.ai_improvement.unlock_button" = "解鎖 AI 建議 - $10.00";
+
+// MARK: - Journey Stats
+"journey.stats.overall_performance" = "整體表現";
+"journey.stats.female_attraction" = "女性吸引力";
+"journey.stats.male_attraction" = "男性吸引力";
+"journey.stats.current_percentage" = "目前趴數";
+"journey.stats.your_ranking" = "你的排名";
+"journey.stats.total_users" = "總用戶";
+"journey.stats.top_percentage" = "前 %d%%";
+
+// MARK: - Paywall
+"paywall.title" = "解鎖 AI 風格建議";
+"paywall.subtitle" = "讓 AI 為你量身打造專屬風格方案";
+"paywall.feature.professional_analysis.title" = "專業風格分析";
+"paywall.feature.professional_analysis.description" = "深度分析你的風格特點和潛力";
+"paywall.feature.outfit_suggestions.title" = "個人化穿搭建議";
+"paywall.feature.outfit_suggestions.description" = "根據你的體型和喜好推薦搭配";
+"paywall.feature.color_recommendations.title" = "色彩搭配推薦";
+"paywall.feature.color_recommendations.description" = "找到最適合你的顏色組合";
+"paywall.feature.trend_prediction.title" = "風格趨勢預測";
+"paywall.feature.trend_prediction.description" = "掌握最新時尚趨勢和發展方向";
+"paywall.choose_plan" = "選擇方案";
+"paywall.ai_style_suggestions" = "AI 風格建議";
+"paywall.one_time_purchase" = "一次性購買";
+"paywall.feature.complete_report" = "完整風格分析報告";
+"paywall.feature.personalized_plan" = "個人化建議方案";
+"paywall.feature.permanent_access" = "永久訪問權限";
+"paywall.unlock_now" = "立即解鎖 - $10.00";
+"paywall.terms_agreement" = "購買即表示同意我們的服務條款";
+"paywall.privacy_policy" = "隱私政策";
+"paywall.terms_of_service" = "服務條款";
+"paywall.restore_purchase" = "恢復購買";
+"paywall.close" = "關閉";
 "profile.title" = "個人檔案";
 "profile.settings.title" = "設定";
 "profile.guest.name" = "訪客用戶";

@@ -17,7 +17,7 @@ struct JourneyStatCards: View {
     var body: some View {
         VStack(spacing: 16) {
             StatCards(
-                title: "整體表現",
+                title: "journey.stats.overall_performance".localized,
                 value: String(format: "%.0f%%", max(0, min(100, overallPerformance))),
                 color: .cyan,
                 icon: "chart.line.uptrend.xyaxis"
@@ -25,13 +25,13 @@ struct JourneyStatCards: View {
 
             HStack(spacing: 16) {
                 StatCards(
-                    title: "女性吸引力",
+                    title: "journey.stats.female_attraction".localized,
                     value: String(format: "%.1f", max(0, min(10, femaleAttraction / 10))),
                     color: .pink,
                     icon: "heart.fill"
                 )
                 StatCards(
-                    title: "男性吸引力",
+                    title: "journey.stats.male_attraction".localized,
                     value: String(format: "%.1f", max(0, min(10, maleAttraction / 10))),
                     color: .blue,
                     icon: "star.fill"
@@ -43,7 +43,7 @@ struct JourneyStatCards: View {
                 HStack {
                     Image(systemName: "trophy.fill")
                         .foregroundColor(.yellow)
-                    Text("目前趴數")
+                    Text("journey.stats.current_percentage".localized)
                         .font(.headline)
                         .foregroundColor(.white)
                     Spacer()
@@ -51,7 +51,7 @@ struct JourneyStatCards: View {
 
                 HStack {
                     VStack(alignment: .leading) {
-                        Text("你的排名")
+                        Text("journey.stats.your_ranking".localized)
                             .font(.caption)
                             .foregroundColor(.gray)
                         Text(currentRankPercentage)
@@ -63,7 +63,7 @@ struct JourneyStatCards: View {
                     Spacer()
 
                     VStack(alignment: .trailing) {
-                        Text("總用戶")
+                        Text("journey.stats.total_users".localized)
                             .font(.caption)
                             .foregroundColor(.gray)
                         Text(totalUsers)

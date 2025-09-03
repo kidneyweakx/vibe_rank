@@ -17,6 +17,7 @@ class ProfileViewModel: BaseViewModel {
     @Published var userPhotos: [Photo] = []
     @Published var recentRatings: [RecentRating] = []
     @Published var userPhotoInfos: [PhotoInfo] = []
+    @Published var userBasicInfo: UserBasicInfo? // 添加用戶基本信息
     
     // MARK: - Private Properties
     private let profileInfoAPI = ProfileInfoAPI()
@@ -24,6 +25,7 @@ class ProfileViewModel: BaseViewModel {
     private let fileAPI = FileAPI() // Fallback
     private var currentUserId: String = ""
     private var isLoadingProfile = false
+    private var lastLoadTime: Date = Date.distantPast
     
     // MARK: - Public Methods
     
@@ -35,8 +37,15 @@ class ProfileViewModel: BaseViewModel {
         }
         
         // Check if we already have data for this user
-        if currentUserId == userId && journeyInfo != nil && !userPhotoInfos.isEmpty {
+        if currentUserId == userId && journeyInfo != nil {
             print("✅ ProfileViewModel: Already have data for userId: \(userId), skipping load")
+            return
+        }
+        
+        // Prevent too frequent calls (minimum 2 seconds between calls)
+        let now = Date()
+        if now.timeIntervalSince(lastLoadTime) < 2.0 {
+            print("⚠️ ProfileViewModel: Too frequent calls, skipping (last call was \(now.timeIntervalSince(lastLoadTime))s ago)")
             return
         }
         
@@ -77,6 +86,13 @@ class ProfileViewModel: BaseViewModel {
                     print("   - Photos Count: \(data.photos.photos.count)")
                     print("   - Total Photos: \(data.photos.totalCount)")
                     print("   - Has More Photos: \(data.photos.hasMore)")
+                    
+                    // Update user basic info
+                    print("🔄 ProfileViewModel: Updating user basic info...")
+                    self.userBasicInfo = data.user
+                    print("   ✅ User basic info updated")
+                    print("   - User Name: \(data.user.name)")
+                    print("   - User Avatar: \(data.user.avatar ?? "None")")
                     
                     // Update journey info
                     print("🔄 ProfileViewModel: Updating journey info...")
@@ -165,8 +181,9 @@ class ProfileViewModel: BaseViewModel {
             await self.loadUserProfileFallback(userId: userId)
         }
         
-        // Reset loading flag
+        // Reset loading flag and update last load time
         isLoadingProfile = false
+        lastLoadTime = Date()
     }
     
     private func loadUserProfileFallback(userId: String) async {
