@@ -16,8 +16,13 @@ struct ProfileTabView: View {
     @State private var showingSettings = false
     @State private var isUploadingProfilePicture = false
     @State private var uploadProgress: Double = 0.0
+    @State private var showingActionSheet = false
     @State private var showingUploadMenu = false
     @State private var showingPhotoPicker = false
+    @State private var showingRegularImagePicker = false
+    @State private var showingRegularPhotoPicker = false
+    @State private var showingRegularImagePreview = false
+    @State private var selectedRegularImage: UIImage?
     
     var body: some View {
         NavigationStack {
@@ -74,13 +79,27 @@ struct ProfileTabView: View {
             await viewModel.refreshData()
         }
 
+        .actionSheet(isPresented: $showingActionSheet) {
+            ActionSheet(
+                title: Text("profile.edit_profile".localized),
+                buttons: [
+                    .default(Text("upload.take_photo".localized)) {
+                        showingImagePicker = true
+                    },
+                    .default(Text("upload.menu.library".localized)) {
+                        showingPhotoPicker = true
+                    },
+                    .cancel(Text("common.cancel".localized))
+                ]
+            )
+        }
         .sheet(isPresented: $showingUploadMenu) {
             UploadMenuView(
                 onCameraSelected: {
-                    showingImagePicker = true
+                    showingRegularImagePicker = true
                 },
                 onPhotoLibrarySelected: {
-                    showingPhotoPicker = true
+                    showingRegularPhotoPicker = true
                 }
             )
             .presentationDetents([.height(200)])
@@ -95,6 +114,32 @@ struct ProfileTabView: View {
             PhotoPickerView { image in
                 print("📸 ProfileTabView: PhotoPickerView returned image with size: \(image.size)")
                 uploadProfileImage(image)
+            }
+        }
+        .sheet(isPresented: $showingRegularImagePicker) {
+            ImagePicker(sourceType: .camera) { image in
+                selectedRegularImage = image
+                showingRegularImagePreview = true
+            }
+        }
+        .sheet(isPresented: $showingRegularPhotoPicker) {
+            PhotoPickerView { image in
+                selectedRegularImage = image
+                showingRegularImagePreview = true
+            }
+        }
+        .fullScreenCover(isPresented: $showingRegularImagePreview) {
+            Group {
+                if let image = selectedRegularImage {
+                    ImagePreviewView(image: image) {
+                        selectedRegularImage = nil
+                    }
+                } else {
+                    Text("common.image_load_failed".localized)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.black)
+                }
             }
         }
 
@@ -197,7 +242,8 @@ private extension ProfileTabView {
             HStack(spacing: 16) {
                 Button(action: {
                     if !isUploadingProfilePicture {
-                        showingUploadMenu = true
+                        // Show action sheet for camera/photo library selection
+                        showingActionSheet = true
                     }
                 }) {
                     ZStack {
@@ -355,6 +401,7 @@ private extension ProfileTabView {
             LazyVStack(spacing: 24) {
                 ForEach(getRecentWeeks(), id: \.weekNumber) { week in
                     WeeklyPhotoSection(week: week, onPhotoTap: {
+                        // This should trigger the regular photo upload flow (like + button)
                         showingUploadMenu = true
                     })
                 }

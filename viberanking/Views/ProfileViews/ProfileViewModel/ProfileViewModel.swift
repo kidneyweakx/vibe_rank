@@ -19,8 +19,9 @@ class ProfileViewModel: BaseViewModel {
     @Published var userPhotoInfos: [PhotoInfo] = []
     
     // MARK: - Private Properties
-    private let rateAPI = RateAPI()
-    private let fileAPI = FileAPI()
+    private let profileInfoAPI = ProfileInfoAPI()
+    private let rateAPI = RateAPI() // Fallback
+    private let fileAPI = FileAPI() // Fallback
     private var currentUserId: String = ""
     
     // MARK: - Public Methods
@@ -28,26 +29,59 @@ class ProfileViewModel: BaseViewModel {
     func loadUserProfile(userId: String) async {
         currentUserId = userId
         await performAsyncTask {
-            // Load journey info (includes user stats)
+            do {
+                // Try new consolidated API first
+                let profileResponse = try await self.profileInfoAPI.getProfileInfo(userId: userId, photoLimit: 60)
+                if profileResponse.success {
+                    let data = profileResponse.data
+                    
+                    // Update journey info
+                    self.journeyInfo = data.journey
+                    self.recentRatings = data.journey.recentRatings
+                    
+                    // Update user photos
+                    self.userPhotoInfos = data.photos.photos
+                    self.userPhotos = data.photos.photos.map { info in
+                        Photo(id: info.id, userId: info.userId, imageURL: info.urls)
+                    }
+                    print("✅ ProfileViewModel: Successfully loaded profile using consolidated API")
+                    return
+                }
+            } catch {
+                print("⚠️ ProfileViewModel: Consolidated API failed, falling back to separate APIs: \(error)")
+            }
+            
+            // Fallback to existing separate API calls
+            await self.loadUserProfileFallback(userId: userId)
+        }
+    }
+    
+    private func loadUserProfileFallback(userId: String) async {
+        // Load journey info (includes user stats)
+        do {
             let journeyResponse = try await self.rateAPI.getJourneyInfo(userId: userId)
             if journeyResponse.success {
                 self.journeyInfo = journeyResponse.data
                 self.recentRatings = journeyResponse.data.recentRatings
             }
-            
-            // Load user's uploaded photos
-            do {
-                let photosResponse = try await self.fileAPI.getUserPhotos(userId: userId, page: nil, limit: 60)
-                let infos = photosResponse.data.photos
-                self.userPhotoInfos = infos
-                // Build lightweight Photo models for any other consumers
-                self.userPhotos = infos.map { info in
-                    Photo(id: info.id, userId: info.userId, imageURL: info.urls)
-                }
-            } catch {
-                self.userPhotoInfos = []
-                self.userPhotos = []
+        } catch {
+            print("❌ ProfileViewModel: Failed to load journey info: \(error)")
+        }
+        
+        // Load user's uploaded photos
+        do {
+            let photosResponse = try await self.fileAPI.getUserPhotos(userId: userId, page: nil, limit: 60)
+            let infos = photosResponse.data.photos
+            self.userPhotoInfos = infos
+            // Build lightweight Photo models for any other consumers
+            self.userPhotos = infos.map { info in
+                Photo(id: info.id, userId: info.userId, imageURL: info.urls)
             }
+            print("✅ ProfileViewModel: Successfully loaded profile using fallback APIs")
+        } catch {
+            self.userPhotoInfos = []
+            self.userPhotos = []
+            print("❌ ProfileViewModel: Failed to load user photos: \(error)")
         }
     }
     
