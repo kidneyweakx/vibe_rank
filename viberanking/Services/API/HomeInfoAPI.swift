@@ -30,7 +30,7 @@ struct TopUser: Codable {
     let userId: String
     let name: String
     let avatar: String?
-    let gender: String
+    let gender: String?
     let totalScore: Double
     let likeCount: Int
     let normalCount: Int

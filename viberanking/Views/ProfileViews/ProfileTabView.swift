@@ -18,8 +18,6 @@ struct ProfileTabView: View {
     @State private var uploadProgress: Double = 0.0
     @State private var showingUploadMenu = false
     @State private var showingPhotoPicker = false
-    @State private var showingImagePreview = false
-    @State private var selectedImage: UIImage?
     
     var body: some View {
         NavigationStack {
@@ -75,19 +73,7 @@ struct ProfileTabView: View {
         .refreshable {
             await viewModel.refreshData()
         }
-        .onChange(of: selectedImage) { newImage in
-            if let image = newImage {
-                print("🔄 ProfileTabView: selectedImage changed to size: \(image.size)")
-            } else {
-                print("🔄 ProfileTabView: selectedImage cleared")
-            }
-        }
-        .onChange(of: showingImagePreview) { isShowing in
-            print("🔄 ProfileTabView: showingImagePreview changed to: \(isShowing)")
-            if isShowing {
-                print("🔄 ProfileTabView: Current selectedImage is nil: \(selectedImage == nil)")
-            }
-        }
+
         .sheet(isPresented: $showingUploadMenu) {
             UploadMenuView(
                 onCameraSelected: {
@@ -102,35 +88,16 @@ struct ProfileTabView: View {
         }
         .sheet(isPresented: $showingImagePicker) {
             ImagePicker(sourceType: .camera) { image in
-                selectedImage = image
-                showingImagePreview = true
+                uploadProfileImage(image)
             }
         }
         .sheet(isPresented: $showingPhotoPicker) {
             PhotoPickerView { image in
                 print("📸 ProfileTabView: PhotoPickerView returned image with size: \(image.size)")
-                selectedImage = image
-                print("📸 ProfileTabView: selectedImage set, current value: \(selectedImage?.size ?? CGSize.zero)")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    print("📸 ProfileTabView: Setting showingImagePreview = true")
-                    showingImagePreview = true
-                }
+                uploadProfileImage(image)
             }
         }
-        .fullScreenCover(isPresented: $showingImagePreview) {
-            Group {
-                if let image = selectedImage {
-                    ImagePreviewView(image: image) {
-                        selectedImage = nil
-                    }
-                } else {
-                    Text("common.image_load_failed".localized)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color.black)
-                }
-            }
-        }
+
     }
     
     private func uploadProfileImage(_ image: UIImage) {
@@ -230,7 +197,7 @@ private extension ProfileTabView {
             HStack(spacing: 16) {
                 Button(action: {
                     if !isUploadingProfilePicture {
-                        showingImagePicker = true
+                        showingUploadMenu = true
                     }
                 }) {
                     ZStack {
