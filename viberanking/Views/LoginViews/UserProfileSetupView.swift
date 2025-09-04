@@ -200,7 +200,7 @@ struct UserProfileSetupView: View {
         
         Task {
             do {
-                let email = initialUserData.authProvider == "guest" ? "guest@example.com" : initialUserData.email
+                let email = initialUserData.authProvider == "guest" ? "guest\(String(initialUserData.providerUserID.suffix(8)))@example.com" : initialUserData.email
                 let profileData = UserProfileData(
                     customUserID: customUserID,
                     displayName: displayName,

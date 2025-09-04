@@ -342,7 +342,7 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
         let guestUser = User(
             id: guestId,
             name: "Guest_\(String(guestId.suffix(8)))", // Use last 8 chars of guest ID for better identification
-            email: "guest@example.com"
+            email: "guest\(String(guestId.suffix(8)))@example.com"
         )
         
         currentUser = guestUser
