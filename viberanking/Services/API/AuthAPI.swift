@@ -115,6 +115,19 @@ class AuthAPI {
             responseType: AuthResponse.self
         )
     }
+
+    // MARK: - Onboarding (Consolidated)
+    
+    /// Complete onboarding with consolidated payload per OpenAPI (/api/onboarding/complete)
+    func completeOnboarding(_ payload: OnboardingCompletePayload) async throws -> AuthResponse {
+        let body = payload.toDictionary()
+        return try await apiClient.performRequest(
+            endpoint: "/api/onboarding/complete",
+            method: .POST,
+            body: body,
+            responseType: AuthResponse.self
+        )
+    }
     
     // MARK: - Sign Out
     

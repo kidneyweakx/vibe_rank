@@ -404,6 +404,25 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
         }
     }
     
+    /// Complete onboarding with consolidated payload
+    func completeOnboarding(_ payload: OnboardingCompletePayload) async throws -> User {
+        do {
+            let response = try await authAPI.completeOnboarding(payload)
+            let user = User(
+                id: response.user.id,
+                name: response.user.name,
+                email: response.user.email,
+                profileImageURL: response.user.avatar
+            )
+            currentUser = user
+            saveUserToKeychain(user)
+            pendingUserData = nil
+            return user
+        } catch let apiError as APIError {
+            throw convertAPIErrorToAppError(apiError)
+        }
+    }
+    
     // MARK: - Auto Login Check
     
     /// 檢查已保存的認證狀態並嘗試自動登入

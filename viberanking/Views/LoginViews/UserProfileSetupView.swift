@@ -20,6 +20,7 @@ struct UserProfileSetupView: View {
     @State private var showingError: Bool = false
     
     let initialUserData: InitialUserData
+    var onboardingAnswers: OnboardingAnswers? = nil
     
     var body: some View {
         NavigationView {
@@ -201,16 +202,46 @@ struct UserProfileSetupView: View {
         Task {
             do {
                 let email = initialUserData.authProvider == "guest" ? "guest\(String(initialUserData.providerUserID.suffix(8)))@example.com" : initialUserData.email
-                let profileData = UserProfileData(
-                    customUserID: customUserID,
-                    displayName: displayName,
-                    email: email,
-                    profileImageURL: initialUserData.profileImageURL,
-                    authProvider: initialUserData.authProvider,
-                    providerUserID: initialUserData.providerUserID
-                )
-                
-                try await authViewModel.completeProfileSetup(profileData)
+                if let answers = onboardingAnswers {
+                    let payload = OnboardingCompletePayload(
+                        account: .init(
+                            customUserID: customUserID,
+                            displayName: displayName,
+                            avatarUrl: initialUserData.profileImageURL
+                        ),
+                        auth: .init(
+                            provider: initialUserData.authProvider,
+                            providerUserID: initialUserData.providerUserID,
+                            email: email
+                        ),
+                        demographics: .init(
+                            gender: nil,
+                            ageRange: answers.ageRange
+                        ),
+                        questionnaire: .init(
+                            vibeLevel: answers.vibeLevel,
+                            timeInvestmentHours: answers.timeInvestmentHours,
+                            notificationsEnabled: answers.notificationsEnabled
+                        ),
+                        consent: nil,
+                        client: .init(
+                            locale: Locale.current.identifier,
+                            timezone: TimeZone.current.identifier,
+                            appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+                        )
+                    )
+                    try await authViewModel.completeOnboarding(payload)
+                } else {
+                    let profileData = UserProfileData(
+                        customUserID: customUserID,
+                        displayName: displayName,
+                        email: email,
+                        profileImageURL: initialUserData.profileImageURL,
+                        authProvider: initialUserData.authProvider,
+                        providerUserID: initialUserData.providerUserID
+                    )
+                    try await authViewModel.completeProfileSetup(profileData)
+                }
                 
                 // Profile setup completed successfully
                 // The AuthenticationViewModel will handle the navigation

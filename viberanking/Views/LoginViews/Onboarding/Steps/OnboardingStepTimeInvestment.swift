@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct OnboardingStepTimeInvestment: View {
-    let next: () -> Void
+    let next: (Int) -> Void
     let back: () -> Void
 
     @State private var hoursPerWeek: Double = 5
@@ -49,7 +49,7 @@ struct OnboardingStepTimeInvestment: View {
                         .background(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.25)))
                 }
 
-                Button(action: next) {
+                Button(action: { next(Int(hoursPerWeek)) }) {
                     Text("common.next".localized(table: "Onboarding"))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -100,7 +100,7 @@ private struct TimePieChartView: View {
 }
 
 #Preview {
-    OnboardingStepTimeInvestment(next: {}, back: {})
+    OnboardingStepTimeInvestment(next: { _ in }, back: {})
 }
 
 

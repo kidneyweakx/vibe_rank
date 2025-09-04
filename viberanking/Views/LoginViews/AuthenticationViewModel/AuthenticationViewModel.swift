@@ -453,6 +453,28 @@ class AuthenticationViewModel: ObservableObject {
         isLoading = false
     }
     
+    /// Complete onboarding with consolidated API
+    func completeOnboarding(_ payload: OnboardingCompletePayload) async throws {
+        isLoading = true
+        errorMessage = nil
+        do {
+            let user = try await authenticationService.completeOnboarding(payload)
+            self.user = user
+            self.isAuthenticated = true
+            self.needsProfileSetup = false
+            self.authState = .signedIn
+            self.initialUserData = nil
+            resetSpotlightState()
+            logAuthenticationEvent(provider: "onboarding_complete", success: true)
+        } catch {
+            self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
+            self.authState = .error(self.errorMessage ?? "Unknown error")
+            logAuthenticationEvent(provider: "onboarding_complete", success: false)
+            throw error
+        }
+        isLoading = false
+    }
+    
     /// Log authentication events to analytics
     private func logAuthenticationEvent(provider: String, success: Bool) {
         // In a real app, this would use Firebase Analytics

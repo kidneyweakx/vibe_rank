@@ -16,6 +16,7 @@ struct OnboardingSetupView: View {
 
     @State private var currentStepIndex: Int = 0
     @State private var showProfileSetup: Bool = false
+    @State private var answers = OnboardingAnswers()
 
     private let totalSteps: Int = 7
 
@@ -36,16 +37,16 @@ struct OnboardingSetupView: View {
                 OnboardingStepValue(next: goNext, back: goBack)
                     .tag(1)
 
-                OnboardingStepAge(selectAge: { _ in goNext() }, back: goBack)
+                OnboardingStepAge(selectAge: { range in answers.ageRange = range; goNext() }, back: goBack)
                     .tag(2)
 
-                OnboardingStepGender(selectGender: { _ in goNext() }, back: goBack)
+                OnboardingStepGender(selectGender: { gender in answers.gender = gender; goNext() }, back: goBack)
                     .tag(3)
 
-                OnboardingStepVibeSelection(next: goNext, back: goBack)
+                OnboardingStepVibeSelection(next: { goNext() }, back: goBack, onSelect: { idx in answers.vibeLevel = idx })
                     .tag(4)
 
-                OnboardingStepTimeInvestment(next: goNext, back: goBack)
+                OnboardingStepTimeInvestment(next: { hours in answers.timeInvestmentHours = hours; goNext() }, back: goBack)
                     .tag(5)
 
                 OnboardingStepNotifications(complete: completeOnboarding, back: goBack)
@@ -57,7 +58,7 @@ struct OnboardingSetupView: View {
         .animation(.easeInOut, value: currentStepIndex)
         .preferredColorScheme(.dark)
         .fullScreenCover(isPresented: $showProfileSetup) {
-            UserProfileSetupView(initialUserData: initialUserData)
+            UserProfileSetupView(initialUserData: initialUserData, onboardingAnswers: answers)
                 .environmentObject(authViewModel)
         }
     }

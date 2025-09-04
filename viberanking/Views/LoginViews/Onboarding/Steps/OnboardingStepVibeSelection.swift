@@ -10,6 +10,7 @@ import SwiftUI
 struct OnboardingStepVibeSelection: View {
     let next: () -> Void
     let back: () -> Void
+    let onSelect: (Int) -> Void
 
 
     @State private var selectedIndex: Int? = nil
@@ -24,7 +25,7 @@ struct OnboardingStepVibeSelection: View {
 
                     VStack(spacing: 12) {
                         ForEach(0..<5, id: \.self) { index in
-                            Button(action: { selectedIndex = index }) {
+                            Button(action: { selectedIndex = index; onSelect(index) }) {
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text("onb.vibe.option.\(index + 1)".localized(table: "Onboarding"))
                                         .font(.system(size: 16, weight: .medium))
@@ -57,7 +58,9 @@ struct OnboardingStepVibeSelection: View {
                         .background(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.25)))
                 }
 
-                Button(action: next) {
+                Button(action: {
+                    next()
+                }) {
                     Text("common.next".localized(table: "Onboarding"))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -74,7 +77,7 @@ struct OnboardingStepVibeSelection: View {
 }
 
 #Preview {
-    OnboardingStepVibeSelection(next: {}, back: {})
+    OnboardingStepVibeSelection(next: {}, back: {}, onSelect: { _ in })
 }
 
 

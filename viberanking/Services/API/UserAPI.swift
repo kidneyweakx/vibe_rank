@@ -162,20 +162,27 @@ class UserAPI {
         )
     }
     
-    /// Update user profile
-    func updateUserProfile(userId: String, name: String?, gender: String?, avatar: String?) async throws -> UserProfileResponse {
+    /// Update user profile (supports extended fields per OpenAPI)
+    func updateUserProfile(
+        userId: String,
+        name: String? = nil,
+        gender: String? = nil,
+        avatar: String? = nil,
+        bio: String? = nil,
+        location: String? = nil,
+        language: String? = nil,
+        timezone: String? = nil,
+        notificationsEnabled: Bool? = nil
+    ) async throws -> UserProfileResponse {
         var body: [String: Any] = [:]
-        
-        if let name = name {
-            body["name"] = name
-        }
-        if let gender = gender {
-            body["gender"] = gender
-        }
-        if let avatar = avatar {
-            body["avatar"] = avatar
-        }
-        
+        if let name = name { body["name"] = name }
+        if let gender = gender { body["gender"] = gender }
+        if let avatar = avatar { body["avatar"] = avatar }
+        if let bio = bio { body["bio"] = bio }
+        if let location = location { body["location"] = location }
+        if let language = language { body["language"] = language }
+        if let timezone = timezone { body["timezone"] = timezone }
+        if let notificationsEnabled = notificationsEnabled { body["notificationsEnabled"] = notificationsEnabled }
         return try await apiClient.performRequest(
             endpoint: "/api/user/profile/\(userId)",
             method: .PUT,
