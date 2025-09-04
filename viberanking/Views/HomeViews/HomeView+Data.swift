@@ -23,74 +23,113 @@ extension HomeView {
     func loadHomeInfo() async {
         guard !isLoading else { return }
         isLoading = true
+        defer { isLoading = false }
+
+        let maxAttempts = 3
+        var attempt = 0
+        var lastError: Error? = nil
         
-        do {
-            let response = try await HomeInfoAPI().getHomeInfo()
-            self.homeInfo = response.data
-            self.announcements = [] // No announcements in current API response
-            self.statistics = nil // No statistics in current API response
-            
-            // Convert top users to top user galleries for compatibility
-            self.topUserGalleries = response.data.topUsers.overall.prefix(5).map { user in
-                TopUserGallery(
-                    userId: user.userId,
-                    name: user.name,
-                    rank: user.rank,
-                    avatarURL: user.avatar,
-                    photoURLs: user.avatar != nil ? [user.avatar!] : []
-                )
+        while attempt < maxAttempts {
+            if Task.isCancelled { 
+                print("ℹ️ HomeView: load cancelled before request start (attempt: \(attempt + 1))")
+                return
             }
-            
-            // Convert recent events to event items for compatibility
-            self.events = response.data.recentEvents.map { event in
-                EventItem(
-                    id: event.id,
-                    title: event.title,
-                    description: event.description,
-                    imageURL: event.imageUrl,
-                    linkUrl: event.url,
-                    startsAt: event.startsAt,
-                    endsAt: event.endsAt,
-                    startDate: nil, // Will be parsed from startsAt string
-                    endDate: nil,   // Will be parsed from endsAt string
-                    participantCount: 0, // Not available in current API
-                    isActive: true // Assume active for now
-                )
-            }
-            
-            withAnimation(.easeInOut(duration: 0.25)) { 
-                self.isLoaded = true 
-            }
-        } catch {
-            // Handle different types of errors
-            if let urlError = error as? URLError {
-                switch urlError.code {
-                case .cancelled:
-                    print("ℹ️ HomeView: Request was cancelled (likely due to navigation or rapid requests)")
-                    return // Don't show error state for cancelled requests
-                case .notConnectedToInternet, .networkConnectionLost:
-                    print("❌ HomeView: Network error: \(error)")
-                default:
-                    print("❌ HomeView: URL error: \(error)")
+            attempt += 1
+            do {
+                let response = try await HomeInfoAPI().getHomeInfo()
+                if Task.isCancelled { return }
+
+                self.homeInfo = response.data
+                self.announcements = []
+                self.statistics = nil
+                
+                // Convert top users to top user galleries for compatibility
+                self.topUserGalleries = response.data.topUsers.overall.prefix(5).map { user in
+                    TopUserGallery(
+                        userId: user.userId,
+                        name: user.name,
+                        rank: user.rank,
+                        avatarURL: user.avatar,
+                        photoURLs: user.avatar != nil ? [user.avatar!] : []
+                    )
                 }
-            } else {
-                print("❌ HomeView: Failed to load home info: \(error)")
-            }
-            
-            // Show empty state instead of fallback data
-            self.topUserGalleries = []
-            self.events = []
-            self.eventPhotos = []
-            self.homeInfo = nil
-            self.announcements = []
-            self.statistics = nil
-            
-            withAnimation(.easeInOut(duration: 0.25)) { 
-                self.isLoaded = true 
+                
+                // Convert recent events to event items for compatibility
+                self.events = response.data.recentEvents.map { event in
+                    EventItem(
+                        id: event.id,
+                        title: event.title,
+                        description: event.description,
+                        imageURL: event.imageUrl,
+                        linkUrl: event.url,
+                        startsAt: event.startsAt,
+                        endsAt: event.endsAt,
+                        startDate: nil,
+                        endDate: nil,
+                        participantCount: 0,
+                        isActive: true
+                    )
+                }
+                
+                withAnimation(.easeInOut(duration: 0.25)) { 
+                    self.isLoaded = true 
+                }
+                return
+            } catch is CancellationError {
+                print("ℹ️ HomeView: Request cancelled during attempt \(attempt)")
+                return
+            } catch {
+                lastError = error
+                if let apiError = error as? APIError {
+                    switch apiError {
+                    case .serverError(let code) where code == 429 || (500...599).contains(code):
+                        // retryable
+                        break
+                    default:
+                        // non-retryable
+                        attempt = maxAttempts
+                    }
+                } else if let urlError = error as? URLError {
+                    switch urlError.code {
+                    case .timedOut, .cannotFindHost, .cannotConnectToHost, .networkConnectionLost, .notConnectedToInternet:
+                        break // retryable
+                    case .cancelled:
+                        print("ℹ️ HomeView: Request was cancelled (likely due to navigation or rapid requests)")
+                        return
+                    default:
+                        attempt = maxAttempts // non-retryable
+                    }
+                } else {
+                    // Unknown error, do not hammer the server
+                    attempt = maxAttempts
+                }
+
+                if attempt < maxAttempts {
+                    // Exponential backoff with jitter
+                    let baseDelay: Double = 0.25
+                    let delay = baseDelay * pow(2.0, Double(attempt - 1))
+                    let jitter = Double.random(in: 0...0.15)
+                    let sleepNs = UInt64((delay + jitter) * 1_000_000_000)
+                    print("🔁 HomeView: retrying in \(String(format: "%.2f", delay + jitter))s (attempt \(attempt + 1)/\(maxAttempts)) due to: \(error)")
+                    try? await Task.sleep(nanoseconds: sleepNs)
+                    continue
+                }
             }
         }
-        
-        isLoading = false
+
+        // Final failure: show empty state but keep UI responsive
+        if let lastError = lastError {
+            print("❌ HomeView: Failed to load home info after retries: \(lastError)")
+        }
+        self.topUserGalleries = []
+        self.events = []
+        self.eventPhotos = []
+        self.homeInfo = nil
+        self.announcements = []
+        self.statistics = nil
+        withAnimation(.easeInOut(duration: 0.25)) { 
+            self.isLoaded = true 
+        }
     }
     
 

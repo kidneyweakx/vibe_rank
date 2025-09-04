@@ -19,6 +19,7 @@ struct HomeView: View {
     @State var statistics: HomeStatistics?
     @State var isLoaded = false
     @State var isLoading = false
+    @State private var loadTask: Task<Void, Never>? = nil
     
     var body: some View {
         if #available(iOS 16.0, *) {
@@ -32,12 +33,30 @@ struct HomeView: View {
     private var mainContent: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            loadedContent
+            if isLoaded {
+                loadedContent
+            } else {
+                // Initial full-screen loading (align with JourneyTabView)
+                VStack {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(1.2)
+                    Text("home.loading_data".localized)
+                        .foregroundColor(.white.opacity(0.7))
+                        .padding(.top, 12)
+                }
+            }
         }
         .navigationBarHidden(true)
         .preferredColorScheme(.dark)
-        .onAppear { 
-            Task { await loadHomeInfo() }
+        .onAppear { loadDataIfNeeded() }
+        .onDisappear { loadTask?.cancel(); loadTask = nil }
+        .onChange(of: authViewModel.user?.id) { _ in
+            // Reload when user changes/available
+            isLoaded = false
+            loadTask?.cancel()
+            loadTask = nil
+            loadDataIfNeeded()
         }
     }
 
@@ -123,6 +142,26 @@ struct HomeView: View {
     HomeView()
         .environmentObject(ThemeManager())
         .environmentObject(AuthenticationViewModel())
+}
+
+// MARK: - Lifecycle helpers
+extension HomeView {
+    private func loadDataIfNeeded() {
+        // Only start when user is ready (align with JourneyTabView behavior)
+        guard authViewModel.user?.id != nil else {
+            // Wait for auth then onChange will trigger
+            return
+        }
+        guard !isLoading, !isLoaded else { return }
+
+        // Debounce slightly to avoid rapid-fire loads when navigating quickly
+        loadTask?.cancel()
+        loadTask = Task {
+            try? await Task.sleep(nanoseconds: 150_000_000)
+            if Task.isCancelled { return }
+            await loadHomeInfo()
+        }
+    }
 }
 
 
