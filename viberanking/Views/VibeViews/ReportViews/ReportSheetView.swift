@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ReportSheetView: View {
+    let photoId: String?
     @Environment(\.dismiss) private var dismiss
     @State private var selectedReportType: ReportType?
     @State private var showReportDetail = false
@@ -43,6 +44,8 @@ struct ReportSheetView: View {
                                 ) {
                                     selectedReportType = reportType
                                     showReportDetail = true
+                                    print("🔘 ReportSheetView: Report type selected: \(reportType.title)")
+                                    print("   - photoId: \(photoId ?? "nil")")
                                 }
                             }
                         }
@@ -54,26 +57,32 @@ struct ReportSheetView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(.white)
-                    }
+            .navigationBarItems(leading: 
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.white)
                 }
-            }
+            )
         }
         .sheet(isPresented: $showReportDetail) {
             if let selectedType = selectedReportType {
-                ReportDetailView(reportType: selectedType)
+                ReportDetailView(reportType: selectedType, photoId: photoId)
+                    .onAppear {
+                        print("🔘 ReportSheetView: Opening ReportDetailView")
+                        print("   - reportType: \(selectedType.title)")
+                        print("   - photoId: \(photoId ?? "nil")")
+                    }
             }
+        }
+        .onAppear {
+            print("🔘 ReportSheetView: Appeared with photoId: \(photoId ?? "nil")")
         }
     }
 }
 
 #Preview {
-    ReportSheetView()
+    ReportSheetView(photoId: "demo-photo")
 }

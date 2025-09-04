@@ -9,10 +9,14 @@ import SwiftUI
 
 struct ReportDetailView: View {
     let reportType: ReportType
+    let photoId: String?
     @Environment(\.dismiss) private var dismiss
     @State private var reportText = ""
     @State private var isSubmitting = false
     @State private var showSuccess = false
+    @State private var showError: String?
+    @StateObject private var authService = AuthenticationService()
+    private let fileAPI = FileAPI()
     
     var body: some View {
         NavigationView {
@@ -62,6 +66,7 @@ struct ReportDetailView: View {
                     
                     // Submit Button
                     Button {
+                        print("🔘 ReportDetailView: Submit button tapped!")
                         submitReport()
                     } label: {
                         HStack {
@@ -82,24 +87,28 @@ struct ReportDetailView: View {
                                 .fill(.white)
                         )
                     }
-                    .disabled(isSubmitting)
+                    .disabled(isSubmitting || photoId == nil)
+                    .onAppear {
+                        print("🔘 ReportDetailView: Submit button appeared")
+                        print("   - isSubmitting: \(isSubmitting)")
+                        print("   - photoId: \(photoId ?? "nil")")
+                        print("   - button disabled: \(isSubmitting || photoId == nil)")
+                    }
                     .padding(.horizontal, 24)
                     .padding(.bottom, 32)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(.white)
-                    }
+            .navigationBarItems(leading: 
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.white)
                 }
-            }
+            )
         }
         .alert("Report Submitted", isPresented: $showSuccess) {
             Button("OK") {
@@ -108,25 +117,76 @@ struct ReportDetailView: View {
         } message: {
             Text("Thank you for your report. We will review it and take appropriate action.")
         }
+        .alert(isPresented: .constant(showError != nil)) {
+            Alert(title: Text("Report Failed"), message: Text(showError ?? "Unknown error"), dismissButton: .default(Text("OK"), action: { showError = nil }))
+        }
+        .onAppear {
+            print("🔘 ReportDetailView: View appeared")
+            print("   - reportType: \(reportType.title)")
+            print("   - photoId: \(photoId ?? "nil")")
+            print("   - currentUser: \(authService.currentUser?.id ?? "nil")")
+        }
     }
     
     private func submitReport() {
+        print("🚨 ReportDetailView: submitReport() called")
+        print("🚨 ReportDetailView: photoId = \(photoId ?? "nil")")
+        print("🚨 ReportDetailView: reportType = \(reportType.title)")
+        print("🚨 ReportDetailView: reportText = '\(reportText)'")
+        print("🚨 ReportDetailView: isSubmitting = \(isSubmitting)")
+        print("🚨 ReportDetailView: currentUser = \(authService.currentUser?.id ?? "nil")")
+        
+        guard let photoId = photoId else { 
+            print("❌ ReportDetailView: No photoId, cannot submit report")
+            showError = "No photo ID available for reporting"
+            return 
+        }
+        
+        print("✅ ReportDetailView: Starting report submission...")
         isSubmitting = true
         
-        // Simulate API call
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            isSubmitting = false
-            showSuccess = true
-            
-            // Log report for debugging
-            print("📝 Report submitted: \(reportType.title)")
-            if !reportText.isEmpty {
-                print("📝 Additional details: \(reportText)")
+        Task {
+            do {
+                // Get current user ID if authenticated, otherwise submit as anonymous
+                let reporterId: String? = authService.currentUser?.id
+                let reason = reasonForReport()
+                
+                print("📝 ReportDetailView: Submitting report with:")
+                print("   - photoId: \(photoId)")
+                print("   - reporterId: \(reporterId ?? "nil (anonymous)")")
+                print("   - reason: \(reason)")
+                
+                try await fileAPI.submitReport(photoId: photoId, reporterId: reporterId, reason: reason)
+                
+                print("✅ ReportDetailView: Report submitted successfully")
+                await MainActor.run {
+                    isSubmitting = false
+                    showSuccess = true
+                }
+            } catch {
+                print("❌ ReportDetailView: Report submission failed: \(error)")
+                print("❌ ReportDetailView: Error type: \(type(of: error))")
+                if let apiError = error as? APIError {
+                    print("❌ ReportDetailView: APIError details: \(apiError)")
+                }
+                await MainActor.run {
+                    isSubmitting = false
+                    showError = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                }
             }
         }
+    }
+
+    private func reasonForReport() -> String {
+        let base = reportType.title
+        if reportText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return base
+        }
+        return "\(base) — \(reportText)"
     }
 }
 
 #Preview {
-    ReportDetailView(reportType: .fakeProfile)
+    ReportDetailView(reportType: .fakeProfile, photoId: "demo-photo")
 }
+

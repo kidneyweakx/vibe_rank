@@ -90,6 +90,20 @@ struct JourneyTabView: View {
         .onAppear {
             loadDataIfNeeded()
         }
+        .onChange(of: authViewModel.user?.id) { newUserId in
+            // When user becomes available or changes, (re)load journey data
+            guard let userId = newUserId else { return }
+            print("🔁 JourneyTabView: User changed, reloading data for: \(userId)")
+            isLoaded = false
+            Task {
+                await viewModel.loadUserJourney(userId: userId)
+                await MainActor.run {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        isLoaded = true
+                    }
+                }
+            }
+        }
     }
     
     private func loadDataIfNeeded() {
@@ -119,8 +133,8 @@ struct JourneyTabView: View {
                 }
             }
         } else {
-            print("🔄 JourneyTabView: No user found, showing empty state")
-            withAnimation(.easeInOut(duration: 0.3)) { isLoaded = true }
+            // Keep loading until user becomes available to avoid showing N/A placeholders
+            print("⏳ JourneyTabView: No user yet, waiting for authentication...")
         }
     }
     

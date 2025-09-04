@@ -57,7 +57,7 @@ struct RatingTabView: View {
                     Spacer()
                     
                     // Report button
-                    ReportButton()
+                    ReportButton(photoId: viewModel.currentPhoto?.id)
                         .padding(.trailing, 20)
                 }
                 .padding(.top, 60)

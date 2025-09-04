@@ -112,6 +112,37 @@ class FileAPI {
             responseType: APIResponse<Bool>.self
         )
     }
+
+    // MARK: - Reports
+
+    /// Submit a report for a specific photo
+    /// - Parameters:
+    ///   - photoId: The ID of the photo being reported
+    ///   - reporterId: Optional reporter user ID (nil for anonymous)
+    ///   - reason: The reason string describing the report
+    func submitReport(photoId: String, reporterId: String?, reason: String) async throws {
+        print("📡 FileAPI: submitReport called")
+        print("   - photoId: \(photoId)")
+        print("   - reporterId: \(reporterId ?? "nil")")
+        print("   - reason: \(reason)")
+        
+        var body: [String: Any] = [
+            "photoId": photoId,
+            "reason": reason
+        ]
+        if let reporterId = reporterId { body["reporterId"] = reporterId }
+        
+        print("📡 FileAPI: Making API request to /api/file/report")
+        print("📡 FileAPI: Request body: \(body)")
+        
+        try await apiClient.performRequest(
+            endpoint: "/api/file/report",
+            method: .POST,
+            body: body
+        )
+        
+        print("✅ FileAPI: Report submission completed successfully")
+    }
 }
 
 // MARK: - Private helpers

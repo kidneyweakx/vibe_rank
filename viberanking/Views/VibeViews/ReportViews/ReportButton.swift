@@ -8,10 +8,15 @@
 import SwiftUI
 
 struct ReportButton: View {
+    /// Optional photo id to report. If nil, the sheet opens but submission will be disabled.
+    var photoId: String? = nil
+
     @State private var showReportSheet = false
     
     var body: some View {
         Button {
+            print("🔘 ReportButton: Button tapped")
+            print("   - photoId: \(photoId ?? "nil")")
             showReportSheet = true
         } label: {
             Image(systemName: "exclamationmark.triangle")
@@ -19,7 +24,10 @@ struct ReportButton: View {
                 .foregroundColor(.white.opacity(0.8))
         }
         .sheet(isPresented: $showReportSheet) {
-            ReportSheetView()
+            ReportSheetView(photoId: photoId)
+        }
+        .onAppear {
+            print("🔘 ReportButton: Appeared with photoId: \(photoId ?? "nil")")
         }
     }
 }
