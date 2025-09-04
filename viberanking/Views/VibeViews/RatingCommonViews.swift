@@ -31,26 +31,72 @@ struct RatingEmptyStateView: View {
     let onReload: () -> Void
     
     var body: some View {
-        VStack(spacing: AppTheme.Spacing.lg) {
-            Text("📷")
-                .font(.system(size: 60))
-            
-            Text("rating.no_photos".localized)
-                .font(AppTheme.Typography.title2)
-                .foregroundColor(.white)
-            
-            Text("rating.try_later".localized)
-                .font(AppTheme.Typography.body)
-                .foregroundColor(.white.opacity(0.7))
-            
-            Button("rating.reload".localized) {
-                onReload()
+        VStack(spacing: 24) {
+            // Modern icon with gradient background
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [.purple.opacity(0.3), .pink.opacity(0.3)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 100, height: 100)
+                
+                Image(systemName: "photo.stack")
+                    .font(.system(size: 40, weight: .medium))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.white, .white.opacity(0.8)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
             }
-            .foregroundColor(.white)
-            .padding()
-            .background(.ultraThinMaterial)
-            .cornerRadius(12)
+            
+            VStack(spacing: 12) {
+                Text("rating.no_photos".localized)
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                
+                Text("rating.try_later".localized)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.white.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+            }
+            
+            Button(action: onReload) {
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 16, weight: .medium))
+                    Text("rating.reload".localized)
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(
+                            LinearGradient(
+                                colors: [.purple, .pink],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                )
+            }
+            .scaleEffect(1.0)
+            .animation(.easeInOut(duration: 0.1), value: false)
         }
+        .padding(.horizontal, 40)
     }
 }
 

@@ -32,7 +32,7 @@ class PhotoRatingViewModel: BaseViewModel {
     private var cancellables = Set<AnyCancellable>()
     private let r2UrlBuilder = R2PhotoURLBuilder()
     private let r2ImageService = R2ImageService.shared
-    private let samplePhotoService = SamplePhotoService()
+    // Removed SamplePhotoService fallback
     private var currentUserId: String = ""
     
     // Preloading configuration
@@ -106,29 +106,9 @@ class PhotoRatingViewModel: BaseViewModel {
                 self.photos = []
                 self.currentPhotoIndex = 0
                 self.isLoading = false
+                self.currentTags = []
             }
             print("❌ API 錯誤: \(error)")
-            
-            // Fallback to sample photos for offline/demo resilience
-            do {
-                let samples = try await Task.detached(priority: .userInitiated) {
-                    try await self.samplePhotoService.getSamplePhotos()
-                }.value
-                
-                await MainActor.run {
-                    self.photos = samples
-                    self.currentPhotoIndex = 0
-                    self.currentTags = []
-                }
-                
-                Task.detached { await self.preloadImages() }
-                print("🧪 Using sample photos fallback: count=\(samples.count)")
-            } catch {
-                await MainActor.run {
-                    self.photos = []
-                    self.currentPhotoIndex = 0
-                }
-            }
         }
     }
     
@@ -323,21 +303,7 @@ private extension PhotoRatingViewModel {
                 }
             }
         } catch {
-            // Append a few sample photos as a soft fallback
-            do {
-                let samples = try await Task.detached(priority: .userInitiated) {
-                    try await self.samplePhotoService.getSamplePhotos()
-                }.value
-                
-                // take first 5 to avoid large append
-                let slice = Array(samples.prefix(5))
-                await MainActor.run {
-                    self.photos.append(contentsOf: slice)
-                }
-                print("🧪 loadMorePhotos fallback appended sample count=\(slice.count)")
-            } catch {
-                // ignore
-            }
+            // Keep as-is on failure; no sample fallback
         }
     }
     

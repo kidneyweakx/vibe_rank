@@ -59,9 +59,6 @@ class UserProfileService: ObservableObject {
                 print("✅ Existing user profile loaded: \(existingUser.name)")
                 currentUser = existingUser
                 
-                // Try to update last activity
-                try? await userRepository.updateLastActivity(userId: existingUser.id)
-                
             } else {
                 // No existing profile. Do not set error or throw.
                 // Defer to Authentication flow (ViewModel) to present profile setup.

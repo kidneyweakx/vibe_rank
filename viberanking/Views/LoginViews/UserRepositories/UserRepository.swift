@@ -191,19 +191,7 @@ class UserRepository: UserRepositoryProtocol {
         return false
     }
     
-    func updateLastActivity(userId: String) async throws {
-        print("🔄 Updating last activity for user via API: \(userId)")
-        try validateUserId(userId)
-        
-        do {
-            try await apiClient.performRequest(
-                endpoint: "/users/\(userId)/last-activity",
-                method: .PUT
-            )
-        } catch {
-            throw AppError.apiError(error)
-        }
-    }
+    // Removed updateLastActivity API call as endpoint doesn't exist in backend
 }
 
 // MARK: - Codable Helper

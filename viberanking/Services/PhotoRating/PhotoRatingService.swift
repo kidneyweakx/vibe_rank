@@ -23,8 +23,7 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
     private var lastFetchTime: Date?
     private let cacheExpirationTime: TimeInterval = 300 // 5 minutes
     
-    // Sample photo service for fallback
-    private let samplePhotoService = SamplePhotoService()
+    // Removed sample photo fallback
     
     // MARK: - PhotoRatingServiceProtocol Implementation
     
@@ -47,17 +46,8 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
                 responseType: [Photo].self
             )
             
-            // If no real photos available, use sample photos
-            if photos.isEmpty {
-                print("📸 No real photos found, using sample photos for rating")
-                let samplePhotos = try await samplePhotoService.getSamplePhotos()
-                
-                // Update cache with sample photos
-                photosCache = samplePhotos
-                lastFetchTime = Date()
-                
-                return samplePhotos.filter { $0.userId != userId }
-            }
+            // If no real photos available, return empty and let UI show warning
+            if photos.isEmpty { return [] }
             
             // Update cache with real photos
             photosCache = photos
@@ -66,17 +56,9 @@ class PhotoRatingService: ObservableObject, PhotoRatingServiceProtocol {
             return photos
             
         } catch {
-            // If API fails, try to use sample photos as fallback
-            print("⚠️ API error, falling back to sample photos: \(error.localizedDescription)")
-            
-            do {
-                let samplePhotos = try await samplePhotoService.getSamplePhotos()
-                return samplePhotos.filter { $0.userId != userId }
-            } catch {
-                let appError = AppError.apiError(error)
-                self.error = appError
-                throw appError
-            }
+            let appError = AppError.apiError(error)
+            self.error = appError
+            throw appError
         }
     }
     
