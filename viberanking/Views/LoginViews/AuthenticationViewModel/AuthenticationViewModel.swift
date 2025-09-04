@@ -99,7 +99,13 @@ class AuthenticationViewModel: ObservableObject {
             .sink { [weak self] user in
                 self?.user = user
                 self?.isAuthenticated = user != nil
-                self?.authState = user != nil ? .signedIn : .signedOut
+                
+                // Don't override onboarding state - only set signedIn if not in onboarding flow
+                if user != nil && self?.authState != .needsProfileSetup {
+                    self?.authState = .signedIn
+                } else if user == nil {
+                    self?.authState = .signedOut
+                }
             }
             .store(in: &cancellables)
         

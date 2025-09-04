@@ -15,12 +15,9 @@ struct OnboardingStepValue: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
-                    // Simple placeholder charts
-                    HStack(spacing: 16) {
-                        GrowthChartView(title: "onb.value.chart.growth".localized(table: "Onboarding"))
-                        SpendChartView(title: "onb.value.chart.spend".localized(table: "Onboarding"))
-                    }
-                    .frame(height: 160)
+                    // Combined chart showing both growth and spending trends
+                    CombinedChartView()
+                        .frame(height: 200)
 
                     Group {
                         Text("onb.value.p1".localized(table: "Onboarding"))
@@ -60,65 +57,78 @@ struct OnboardingStepValue: View {
     }
 }
 
-private struct GrowthChartView: View {
-    let title: String
-    @State private var points: [CGFloat] = [0.1, 0.15, 0.2, 0.23, 0.26, 0.32, 0.4]
+private struct CombinedChartView: View {
+    @State private var growthPoints: [CGFloat] = [0.1, 0.15, 0.2, 0.23, 0.26, 0.32, 0.4]
+    @State private var spendPoints: [CGFloat] = [0.8, 0.7, 0.6, 0.52, 0.45, 0.38, 0.3]
 
     var body: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .bottomLeading) {
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.blue.opacity(0.12))
+        VStack(spacing: 16) {
+            // Chart container
+            GeometryReader { proxy in
+                ZStack(alignment: .bottomLeading) {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.white.opacity(0.05))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        )
 
-                Path { path in
-                    let w = proxy.size.width
-                    let h = proxy.size.height
-                    let step = w / CGFloat(max(points.count - 1, 1))
-                    path.move(to: CGPoint(x: 0, y: h * (1 - points.first!)))
-                    for (index, value) in points.enumerated() {
-                        let x = CGFloat(index) * step
-                        let y = h * (1 - value)
-                        path.addLine(to: CGPoint(x: x, y: y))
+                    // Growth line
+                    Path { path in
+                        let w = proxy.size.width - 32
+                        let h = proxy.size.height - 40
+                        let step = w / CGFloat(max(growthPoints.count - 1, 1))
+                        path.move(to: CGPoint(x: 16, y: 20 + h * (1 - growthPoints.first!)))
+                        for (index, value) in growthPoints.enumerated() {
+                            let x = 16 + CGFloat(index) * step
+                            let y = 20 + h * (1 - value)
+                            path.addLine(to: CGPoint(x: x, y: y))
+                        }
                     }
-                }
-                .stroke(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing), style: StrokeStyle(lineWidth: 3, lineJoin: .round))
+                    .stroke(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing), style: StrokeStyle(lineWidth: 3, lineJoin: .round))
 
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(8)
-            }
-        }
-    }
-}
-
-private struct SpendChartView: View {
-    let title: String
-    @State private var points: [CGFloat] = [0.8, 0.7, 0.6, 0.52, 0.45, 0.38, 0.3]
-
-    var body: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .bottomLeading) {
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.green.opacity(0.12))
-
-                Path { path in
-                    let w = proxy.size.width
-                    let h = proxy.size.height
-                    let step = w / CGFloat(max(points.count - 1, 1))
-                    path.move(to: CGPoint(x: 0, y: h * (1 - points.first!)))
-                    for (index, value) in points.enumerated() {
-                        let x = CGFloat(index) * step
-                        let y = h * (1 - value)
-                        path.addLine(to: CGPoint(x: x, y: y))
+                    // Spending line
+                    Path { path in
+                        let w = proxy.size.width - 32
+                        let h = proxy.size.height - 40
+                        let step = w / CGFloat(max(spendPoints.count - 1, 1))
+                        path.move(to: CGPoint(x: 16, y: 20 + h * (1 - spendPoints.first!)))
+                        for (index, value) in spendPoints.enumerated() {
+                            let x = 16 + CGFloat(index) * step
+                            let y = 20 + h * (1 - value)
+                            path.addLine(to: CGPoint(x: x, y: y))
+                        }
                     }
-                }
-                .stroke(LinearGradient(gradient: Gradient(colors: [.green, .mint]), startPoint: .leading, endPoint: .trailing), style: StrokeStyle(lineWidth: 3, lineJoin: .round))
+                    .stroke(LinearGradient(gradient: Gradient(colors: [.green, .mint]), startPoint: .leading, endPoint: .trailing), style: StrokeStyle(lineWidth: 3, lineJoin: .round))
 
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(8)
+                    // Legend
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 8) {
+                            Circle()
+                                .fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing))
+                                .frame(width: 12, height: 12)
+                            Text("onb.value.chart.growth".localized(table: "Onboarding"))
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                        
+                        HStack(spacing: 8) {
+                            Circle()
+                                .fill(LinearGradient(gradient: Gradient(colors: [.green, .mint]), startPoint: .leading, endPoint: .trailing))
+                                .frame(width: 12, height: 12)
+                            Text("onb.value.chart.spend".localized(table: "Onboarding"))
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                    }
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.black.opacity(0.6))
+                    )
+                    .padding(.top, 8)
+                    .padding(.leading, 8)
+                }
             }
         }
     }

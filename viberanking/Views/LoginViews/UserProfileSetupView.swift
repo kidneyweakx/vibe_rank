@@ -15,7 +15,6 @@ struct UserProfileSetupView: View {
     
     @State private var displayName: String = ""
     @State private var customUserID: String = ""
-    @State private var selectedGender: Gender = .other
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     @State private var showingError: Bool = false
@@ -127,22 +126,6 @@ struct UserProfileSetupView: View {
                     .foregroundColor(.white.opacity(0.6))
             }
             
-            // Gender Selection
-            VStack(alignment: .leading, spacing: 12) {
-                Text("性別")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                
-                HStack(spacing: 12) {
-                    ForEach(Gender.allCases, id: \.self) { gender in
-                        GenderSelectionButton(
-                            gender: gender,
-                            isSelected: selectedGender == gender,
-                            action: { selectedGender = gender }
-                        )
-                    }
-                }
-            }
         }
         .padding(24)
         .background(
@@ -192,7 +175,13 @@ struct UserProfileSetupView: View {
     
     private func setupInitialData() {
         displayName = initialUserData.name
-        customUserID = generateSuggestedUserID(from: initialUserData.name)
+        // For guest users, use a better default name and generate ID from guest ID
+        if initialUserData.authProvider == "guest" {
+            displayName = "Guest_\(String(initialUserData.providerUserID.suffix(8)))"
+            customUserID = generateSuggestedUserID(from: "guest")
+        } else {
+            customUserID = generateSuggestedUserID(from: initialUserData.name)
+        }
     }
     
     private func generateSuggestedUserID(from name: String) -> String {
@@ -211,11 +200,10 @@ struct UserProfileSetupView: View {
         
         Task {
             do {
-                let email = initialUserData.authProvider == "guest" ? "" : initialUserData.email
+                let email = initialUserData.authProvider == "guest" ? "guest@example.com" : initialUserData.email
                 let profileData = UserProfileData(
                     customUserID: customUserID,
                     displayName: displayName,
-                    gender: selectedGender,
                     email: email,
                     profileImageURL: initialUserData.profileImageURL,
                     authProvider: initialUserData.authProvider,
@@ -237,69 +225,6 @@ struct UserProfileSetupView: View {
     }
 }
 
-// MARK: - Gender Selection Button
-
-struct GenderSelectionButton: View {
-    let gender: Gender
-    let isSelected: Bool
-    let action: () -> Void
-    @Environment(\.colorScheme) private var colorScheme
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
-                Image(systemName: genderIcon)
-                    .font(.system(size: 24))
-                    .foregroundColor(isSelected ? .white : .secondary)
-                
-                Text(gender.displayName)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(isSelected ? .white : .secondary)
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 80)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(
-                        isSelected 
-                            ? LinearGradient(
-                                gradient: Gradient(colors: [Color.blue, Color.purple]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                            : LinearGradient(
-                                gradient: Gradient(colors: [
-                                    colorScheme == .dark ? Color(hex: "3A3A3A") : Color(hex: "F0F0F0")
-                                ]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(
-                        isSelected ? Color.clear : Color.gray.opacity(0.3),
-                        lineWidth: 1
-                    )
-            )
-        }
-        .preferredColorScheme(.dark)
-        .buttonStyle(PlainButtonStyle())
-    }
-    
-    private var genderIcon: String {
-        switch gender {
-        case .male:
-            return "person.fill"
-        case .female:
-            return "person.fill"
-        case .other:
-            return "person.2.fill"
-        }
-    }
-}
 
 // MARK: - Custom Text Field Style
 
@@ -334,7 +259,6 @@ struct InitialUserData {
 struct UserProfileData {
     let customUserID: String
     let displayName: String
-    let gender: Gender
     let email: String
     let profileImageURL: String?
     let authProvider: String

@@ -338,9 +338,10 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
     
     func signInAsGuest() async -> User {
         print("👤 開始訪客登入...")
+        let guestId = "guest_\(UUID().uuidString)"
         let guestUser = User(
-            id: "guest_\(UUID().uuidString)",
-            name: "訪客用戶",
+            id: guestId,
+            name: "Guest_\(String(guestId.suffix(8)))", // Use last 8 chars of guest ID for better identification
             email: "guest@example.com"
         )
         
@@ -379,7 +380,7 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
                     let updateResponse = try await userAPI.updateUserProfile(
                         userId: profileData.customUserID,
                         name: profileData.displayName,
-                        gender: profileData.gender.rawValue,
+                        gender: nil,
                         avatar: profileData.profileImageURL
                     )
                     // Map minimal response to our User model

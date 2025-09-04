@@ -17,28 +17,22 @@
 
 "onb.gender.title" = "Select your gender";
 
-"onb.vibe.title.zh" = "你會怎麼形容你現在的 vibe？";
-"onb.vibe.title.en" = "How would you describe your current vibe?";
-"onb.vibe.option.en.1" = "Attractive enough to make people jealous";
-"onb.vibe.option.en.2" = "I’m okay, still figuring out how to optimize";
-"onb.vibe.option.en.3" = "Pretty average, nothing special";
-"onb.vibe.option.en.4" = "Usually not that confident";
-"onb.vibe.option.en.5" = "Totally clueless about my vibe";
-"onb.vibe.option.zh.1" = "帥/美到別人會嫉妒";
-"onb.vibe.option.zh.2" = "我還行，但正在摸索怎麼變更好";
-"onb.vibe.option.zh.3" = "普普通通，沒什麼特點";
-"onb.vibe.option.zh.4" = "常常缺乏自信";
-"onb.vibe.option.zh.5" = "完全不知道怎麼打理自己";
+"onb.vibe.title" = "How would you describe your current vibe?";
+"onb.vibe.option.1" = "Attractive enough to make people jealous";
+"onb.vibe.option.2" = "I'm okay, still figuring out how to optimize";
+"onb.vibe.option.3" = "Pretty average, nothing special";
+"onb.vibe.option.4" = "Usually not that confident";
+"onb.vibe.option.5" = "Totally clueless about my vibe";
 
 "onb.time.title.en" = "How much time do you spend each month working on your vibe / getting ready?";
 "onb.time.subtitle.en" = "Slide: %d hours/week\n(0 = almost none, 30 = nearly every day putting in effort)";
 "onb.time.title.zh" = "一週花多少時間在「提升 vibe / 打扮」？";
 "onb.time.subtitle.zh" = "差不多 %d 小時";
 
-"onb.notif.title.en" = "Turn on notifications, don’t miss your wins";
-"onb.notif.item.en.1" = "📈 Daily rank: Today your vibe outperformed 80% of women";
-"onb.notif.item.en.2" = "🔄 Weekly recap: See how much you’ve grown compared to last week";
-"onb.notif.item.en.3" = "✨ Personal insights to level up faster";
+"onb.notif.title" = "Turn on notifications, don't miss your wins";
+"onb.notif.item.1" = "Daily rank: Today your vibe outperformed 80% of women";
+"onb.notif.item.2" = "Weekly recap: See how much you've grown compared to last week";
+"onb.notif.item.3" = "Personal insights to level up faster";
 "onb.notif.title.zh" = "開啟通知，別錯過每一次勝出";
 "onb.notif.item.zh.1" = "📈 每日排名：今天你的 vibe 打敗了 80% 的女生";
 "onb.notif.item.zh.2" = "🔄 每週回顧：看到自己比上週又成長了多少";

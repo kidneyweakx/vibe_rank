@@ -98,7 +98,7 @@ class AuthAPI {
         let body: [String: Any] = [
             "customUserID": profileData.customUserID,
             "displayName": profileData.displayName,
-            "gender": profileData.gender.rawValue,
+            "gender": NSNull(),
             "email": profileData.email,
             "profileImageURL": profileData.profileImageURL as Any,
             "authProvider": profileData.authProvider,

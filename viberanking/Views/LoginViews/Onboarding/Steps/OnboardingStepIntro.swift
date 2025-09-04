@@ -19,7 +19,7 @@ struct OnboardingStepIntro: View {
                         .foregroundColor(.white)
                         .multilineTextAlignment(.leading)
 
-                    Text("onb.intro.subheadline".localized(table: "Onboarding"))
+                    MarkdownText(text: "onb.intro.subheadline".localized(table: "Onboarding"))
                         .font(.system(size: 18))
                         .foregroundColor(.white.opacity(0.85))
                         .fixedSize(horizontal: false, vertical: true)
@@ -55,6 +55,37 @@ struct OnboardingStepIntro: View {
 }
 
 // i18n: All strings come from Onboarding.strings per locale.
+
+// MARK: - MarkdownText View
+
+struct MarkdownText: View {
+    let text: String
+    @State private var attributedString: AttributedString = AttributedString()
+    
+    var body: some View {
+        Text(attributedString)
+            .onAppear {
+                parseMarkdown()
+            }
+    }
+    
+    private func parseMarkdown() {
+        var result = AttributedString(text)
+        
+        // Find and replace **text** with bold formatting
+        while let range = result.range(of: "\\*\\*(.*?)\\*\\*", options: .regularExpression) {
+            let boldText = String(result[range].characters)
+            let cleanText = boldText.replacingOccurrences(of: "**", with: "")
+            
+            var boldAttributedString = AttributedString(cleanText)
+            boldAttributedString.font = .system(size: 18, weight: .bold)
+            
+            result.replaceSubrange(range, with: boldAttributedString)
+        }
+        
+        attributedString = result
+    }
+}
 
 #Preview {
     OnboardingStepIntro(next: {})

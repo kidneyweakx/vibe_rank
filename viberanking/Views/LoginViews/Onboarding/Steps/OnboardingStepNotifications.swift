@@ -15,22 +15,22 @@ struct OnboardingStepNotifications: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("onb.notif.title.en".localized(table: "Onboarding"))
+                    Text("onb.notif.title".localized(table: "Onboarding"))
                         .font(.system(size: 24, weight: .semibold))
                         .foregroundColor(.white)
 
                     VStack(alignment: .leading, spacing: 16) {
                         NotificationItemView(
-                            text: "onb.notif.item.en.1".localized(table: "Onboarding"),
-                            icon: "📈"
+                            text: "onb.notif.item.1".localized(table: "Onboarding"),
+                            icon: "chart.line.uptrend.xyaxis"
                         )
                         NotificationItemView(
-                            text: "onb.notif.item.en.2".localized(table: "Onboarding"),
-                            icon: "🔄"
+                            text: "onb.notif.item.2".localized(table: "Onboarding"),
+                            icon: "arrow.clockwise"
                         )
                         NotificationItemView(
-                            text: "onb.notif.item.en.3".localized(table: "Onboarding"),
-                            icon: "✨"
+                            text: "onb.notif.item.3".localized(table: "Onboarding"),
+                            icon: "sparkles"
                         )
                     }
                 }
@@ -67,8 +67,10 @@ private struct NotificationItemView: View {
     
     var body: some View {
         HStack(spacing: 16) {
-            Text(icon)
-                .font(.system(size: 24))
+            Image(systemName: icon)
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(.blue)
+                .frame(width: 24, height: 24)
             
             Text(text)
                 .font(.system(size: 16))
