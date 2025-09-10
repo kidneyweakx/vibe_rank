@@ -41,17 +41,17 @@ struct UserProfileSetupView: View {
                 .padding(.top, 20)
             }
             .background(backgroundGradient)
-            .navigationTitle("設定個人資料")
+            .navigationTitle("profile_setup.title".localized(table: "ProfileSetup"))
             .navigationBarTitleDisplayMode(.large)
             .navigationBarBackButtonHidden(true)
         }
         .onAppear {
             setupInitialData()
         }
-        .alert("設定失敗", isPresented: $showingError) {
-            Button("確定") { }
+        .alert("profile_setup.error_title".localized(table: "ProfileSetup"), isPresented: $showingError) {
+            Button("common.ok".localized) { }
         } message: {
-            Text(errorMessage ?? "未知錯誤")
+            Text(errorMessage ?? "profile_setup.unknown_error".localized(table: "ProfileSetup"))
         }
         .overlay {
             if isLoading {
@@ -82,12 +82,12 @@ struct UserProfileSetupView: View {
             )
             
             VStack(spacing: 8) {
-                Text("歡迎加入 VibeRanking!")
+                Text("profile_setup.welcome_title".localized(table: "ProfileSetup"))
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                 
-                Text("請完成您的個人資料設定")
+                Text("profile_setup.welcome_subtitle".localized(table: "ProfileSetup"))
                     .font(.subheadline)
                     .foregroundColor(.white.opacity(0.6))
                     .multilineTextAlignment(.center)
@@ -101,11 +101,11 @@ struct UserProfileSetupView: View {
         VStack(spacing: 24) {
             // Display Name Field
             VStack(alignment: .leading, spacing: 8) {
-                Text("顯示名稱")
+                Text("profile_setup.display_name".localized(table: "ProfileSetup"))
                     .font(.headline)
                     .foregroundColor(.white)
                 
-                TextField("輸入您的顯示名稱", text: $displayName)
+                TextField("profile_setup.display_name_placeholder".localized(table: "ProfileSetup"), text: $displayName)
                     .textFieldStyle(CustomTextFieldStyle())
                     .autocapitalization(.words)
                     .disableAutocorrection(true)
@@ -113,16 +113,16 @@ struct UserProfileSetupView: View {
             
             // Custom User ID Field
             VStack(alignment: .leading, spacing: 8) {
-                Text("用戶 ID")
+                Text("profile_setup.user_id".localized(table: "ProfileSetup"))
                     .font(.headline)
                     .foregroundColor(.white)
                 
-                TextField("輸入您的用戶 ID", text: $customUserID)
+                TextField("profile_setup.user_id_placeholder".localized(table: "ProfileSetup"), text: $customUserID)
                     .textFieldStyle(CustomTextFieldStyle())
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
                 
-                Text("用戶 ID 將用於識別您的帳戶，設定後無法更改")
+                Text("profile_setup.user_id_hint".localized(table: "ProfileSetup"))
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.6))
             }
@@ -141,7 +141,7 @@ struct UserProfileSetupView: View {
     private var continueButton: some View {
         Button(action: completeProfileSetup) {
             HStack {
-                Text("完成設定")
+                Text("profile_setup.continue".localized(table: "ProfileSetup"))
                     .font(.system(size: 18, weight: .semibold))
                 
                 Image(systemName: "arrow.right")
@@ -309,7 +309,7 @@ struct ProfileSetupLoadingOverlay: View {
                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     .scaleEffect(1.2)
                 
-                Text("設定中...")
+                Text("profile_setup.processing".localized(table: "ProfileSetup"))
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.white)
             }

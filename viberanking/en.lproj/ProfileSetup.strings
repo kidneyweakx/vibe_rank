@@ -1,0 +1,14 @@
+/* Profile Setup (English) */
+"profile_setup.title" = "Profile Setup";
+"profile_setup.error_title" = "Setup Failed";
+"profile_setup.unknown_error" = "Unknown error";
+"profile_setup.welcome_title" = "Welcome to VibeRanking!";
+"profile_setup.welcome_subtitle" = "Please complete your profile setup";
+"profile_setup.display_name" = "Display Name";
+"profile_setup.display_name_placeholder" = "Enter your display name";
+"profile_setup.user_id" = "User ID";
+"profile_setup.user_id_placeholder" = "Enter your user ID";
+"profile_setup.user_id_hint" = "User ID identifies your account and cannot be changed";
+"profile_setup.continue" = "Complete Setup";
+"profile_setup.processing" = "Setting up...";
+
