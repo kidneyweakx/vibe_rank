@@ -1,0 +1,7 @@
+/* Permission prompts (English) */
+"NSCameraUsageDescription" = "We use the camera so you can take a new photo to upload for community ratings and to generate your personal style analysis report. Example: Tap ‘Take New Photo’ in Upload to capture and submit a photo.";
+"NSUserTrackingUsageDescription" = "We use your data to provide personalized content and measure performance. We ask for permission to track activity across apps and websites to support these features.";
+"NSPhotoLibraryUsageDescription" = "We need access to your photo library to select photos for upload.";
+"NSPhotoLibraryAddUsageDescription" = "We need permission to save photos to your library when exporting or saving results.";
+
+
