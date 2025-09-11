@@ -29,14 +29,8 @@ struct PhotoCardView: View {
             ZStack {
                 // Show cached image first if available
                 if let cachedImage = cachedImage {
-                    Image(uiImage: cachedImage)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .clipped()
-                        .transition(.opacity.animation(.easeInOut(duration: 0.2)))
+                    imageView(image: cachedImage)
                 } else {
-                    // Load image with optimized strategy
                     optimizedImageLoader(urlString: urlString)
                 }
             }
@@ -85,15 +79,37 @@ struct PhotoCardView: View {
                     startImageLoad(urlString: urlString)
                 }
         case .success(let image):
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFill()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipped()
-                .transition(.opacity.animation(.easeInOut(duration: 0.2).speed(1.0)))
+            imageView(image: image)
         case .failure:
             errorPlaceholder
         }
+    }
+
+    /// Centralized image rendering with optional blur based on safety setting
+    @ViewBuilder
+    private func imageView(image: UIImage) -> some View {
+        let blurEnabled = UserDefaults.standard.bool(forKey: "safety_blur_enabled")
+        Image(uiImage: image)
+            .resizable()
+            .scaledToFill()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+            .if(blurEnabled) { view in
+                view.blur(radius: 10)
+                    .overlay(
+                        VStack(spacing: 8) {
+                            Image(systemName: "eye.slash.fill").font(.system(size: 22)).foregroundColor(.white)
+                            Text("Sensitive content hidden").font(.system(size: 14, weight: .medium)).foregroundColor(.white)
+                            Text("Tap and hold to reveal").font(.system(size: 12)).foregroundColor(.white.opacity(0.8))
+                        }
+                        .padding(12)
+                    )
+                    .gesture(LongPressGesture(minimumDuration: 0.4).onChanged { _ in
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        UserDefaults.standard.set(false, forKey: "safety_blur_enabled")
+                    })
+            }
+            .transition(.opacity.animation(.easeInOut(duration: 0.2).speed(1.0)))
     }
     
     // MARK: - Private Views

@@ -104,6 +104,7 @@ struct RatingEmptyStateView: View {
 struct RatingUserInfoOverlay: View {
     let userName: String
     let tags: [Tag]
+    @State private var showBlockConfirm = false
     
     var body: some View {
         VStack(spacing: 10) {
@@ -115,6 +116,16 @@ struct RatingUserInfoOverlay: View {
                     .lineLimit(1)
                     .padding(.horizontal, 20)
                 Spacer()
+                Menu {
+                    Button(role: .destructive) { showBlockConfirm = true } label: {
+                        Label("Block User", systemImage: "hand.raised.fill")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .font(.system(size: 18))
+                        .foregroundColor(.white.opacity(0.9))
+                        .padding(.trailing, 20)
+                }
             }
             
             // Tags row - Fixed to prevent swipe interference
@@ -145,6 +156,14 @@ struct RatingUserInfoOverlay: View {
             .padding(.horizontal, 20)
             .frame(maxWidth: .infinity, alignment: .leading)
             .allowsHitTesting(false) // Prevent tags from interfering with card swipe gestures
+        }
+        .alert("Block User", isPresented: $showBlockConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Block", role: .destructive) {
+                NotificationCenter.default.post(name: .requestBlockCurrentUser, object: nil)
+            }
+        } message: {
+            Text("You will no longer see content from this user.")
         }
     }
 }

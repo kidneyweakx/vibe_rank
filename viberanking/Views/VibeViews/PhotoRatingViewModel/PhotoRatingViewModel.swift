@@ -86,7 +86,10 @@ class PhotoRatingViewModel: BaseViewModel {
                 try await self.rateAPI.getRandomPhotos(userId: userId, limit: 20)
             }.value
             
-            let built = try await self.buildPhotosResolvingURLs(from: response.data)
+            var built = try await self.buildPhotosResolvingURLs(from: response.data)
+            // Filter out blocked users
+            let blocked = UserBlocklist.shared.blockedUserIds
+            built.removeAll { blocked.contains($0.userId) }
             
             // 回到主線程更新 UI
             await MainActor.run {

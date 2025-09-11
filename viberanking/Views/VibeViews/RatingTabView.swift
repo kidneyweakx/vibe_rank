@@ -90,6 +90,18 @@ struct RatingTabView: View {
             if let userId = authViewModel.user?.id {
                 await viewModel.loadPhotosForRating(userId: userId)
             }
+            // Show first-run safety agreement once
+            if !UserDefaults.standard.bool(forKey: "safety_agreement_accepted") {
+                await MainActor.run {
+                    showSafetyAgreement()
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .requestBlockCurrentUser)) { _ in
+            if let userId = viewModel.currentPhoto?.userId {
+                UserBlocklist.shared.add(userId)
+                Task { await viewModel.refreshPhotos() }
+            }
         }
         .onChange(of: viewModel.currentPhotoIndex) { _ in
             // Preload next images for better performance
@@ -101,6 +113,22 @@ struct RatingTabView: View {
 
 // MARK: - View Components
 private extension RatingTabView {
+    func showSafetyAgreement() {
+        let title = "Community Safety"
+        let message = "By continuing, you agree to our no-tolerance policy for objectionable content and abusive behavior. You can blur sensitive content in Settings and report any violations."
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            UserDefaults.standard.set(true, forKey: "safety_agreement_accepted")
+            if UserDefaults.standard.object(forKey: "safety_blur_enabled") == nil {
+                UserDefaults.standard.set(true, forKey: "safety_blur_enabled")
+            }
+        })
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = scene.windows.first,
+           let root = window.rootViewController {
+            root.present(alert, animated: true)
+        }
+    }
     
     var cardStackView: some View {
         GeometryReader { proxy in

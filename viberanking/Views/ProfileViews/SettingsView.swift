@@ -169,6 +169,14 @@ struct SettingsView: View {
                                 )
                                 
                                 SettingsRow(
+                                    icon: "gearshape.fill",
+                                    title: "General",
+                                    action: {}
+                                )
+
+                                ContentSafetyRow()
+
+                                SettingsRow(
                                     icon: "lock.fill",
                                     title: "Privacy",
                                     action: {

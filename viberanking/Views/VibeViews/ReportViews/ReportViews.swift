@@ -43,4 +43,17 @@ extension View {
             .zIndex(1000)
         )
     }
+
+    /// Add block user action to any view via a context menu when userId exists
+    func withBlockUserContextMenu(userId: String?) -> some View {
+        self.contextMenu {
+            if let userId = userId {
+                Button(role: .destructive) {
+                    UserBlocklist.shared.add(userId)
+                } label: {
+                    Label("Block User", systemImage: "hand.raised.fill")
+                }
+            }
+        }
+    }
 }

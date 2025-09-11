@@ -18,6 +18,9 @@ struct LanguageSettingsView: View {
     var body: some View {
         NavigationView {
             List {
+                Section(header: Text("Safety")) {
+                    SafetyBlurToggleRow()
+                }
                 Section {
                     ForEach(LocalizationManager.Language.allCases, id: \.rawValue) { language in
                         languageRow(for: language)

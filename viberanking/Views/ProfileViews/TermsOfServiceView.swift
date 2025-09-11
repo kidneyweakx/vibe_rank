@@ -58,6 +58,14 @@ struct TermsOfServiceView: View {
                                 "tos.section2.b5".localized
                             ]
                         )
+
+                        // No Tolerance Policy (explicit per Guideline 1.2)
+                        TermsSection(
+                            title: "No Tolerance Policy for Objectionable Content",
+                            content: [
+                                "By using this app, you agree to our strict no-tolerance policy for objectionable content and abusive behavior. Content that is sexual, violent, hateful, harassing, discriminatory, illegal, or otherwise inappropriate is strictly prohibited. Reports are reviewed within 24 hours and offending content will be removed. Offending users may be ejected."
+                            ]
+                        )
                         
                         // Section 3
                         TermsSection(
