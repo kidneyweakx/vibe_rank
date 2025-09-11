@@ -61,8 +61,10 @@ struct viberankingApp: App {
                 .environmentObject(localizationManager)
                 .environmentObject(themeManager)
                 .onAppear {
-                    // Log app start event
-                    AnalyticsService.shared.logEvent(.featureUsed(feature: "app_launch"))
+                    // Request App Tracking Transparency, then log app start event
+                    TrackingAuthorizationManager.shared.requestAuthorizationIfNeeded { _ in
+                        AnalyticsService.shared.logEvent(.featureUsed(feature: "app_launch"))
+                    }
                 }
                 .onOpenURL { url in
                     // Handle Google Sign-In URL callback

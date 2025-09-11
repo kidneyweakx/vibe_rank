@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AppTrackingTransparency
 import os.log
 
 // MARK: - Analytics Service Protocol
@@ -84,7 +85,8 @@ class AnalyticsService: AnalyticsServiceProtocol {
     private init() {}
     
     func logEvent(_ event: AnalyticsEvent) {
-        guard AppEnvironment.current.enableAnalytics else {
+        guard AppEnvironment.current.enableAnalytics,
+              TrackingAuthorizationManager.shared.isAuthorized else {
             return
         }
         
@@ -96,14 +98,16 @@ class AnalyticsService: AnalyticsServiceProtocol {
     }
     
     func setUserProperty(_ property: String, value: String?) {
-        guard AppEnvironment.current.enableAnalytics else { return }
+        guard AppEnvironment.current.enableAnalytics,
+              TrackingAuthorizationManager.shared.isAuthorized else { return }
         
         // Firebase Analytics implementation will be added when Firebase is properly configured
         logger.debug("User property set: \(property) = \(value ?? "nil")")
     }
     
     func setUserId(_ userId: String?) {
-        guard AppEnvironment.current.enableAnalytics else { return }
+        guard AppEnvironment.current.enableAnalytics,
+              TrackingAuthorizationManager.shared.isAuthorized else { return }
         
         // Firebase Analytics implementation will be added when Firebase is properly configured
         logger.debug("User ID set: \(userId ?? "nil")")

@@ -22,6 +22,8 @@
 		<string>en</string>
 		<string>zh-Hant</string>
 	</array>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>We use your data to provide personalized content and measure performance. We ask for permission to track activity across apps and websites to support these features.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>需要使用相機拍攝照片</string>
 </dict>
