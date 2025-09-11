@@ -318,4 +318,12 @@ class UserAPI {
             throw error
         }
     }
+
+    /// Permanently delete the current authenticated user's account
+    func deleteAccount() async throws {
+        try await apiClient.performRequest(
+            endpoint: "/api/user/delete",
+            method: .DELETE
+        )
+    }
 }

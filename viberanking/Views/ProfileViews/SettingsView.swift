@@ -224,6 +224,10 @@ struct SettingsView: View {
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundColor(.white)
                             
+                            // Delete Account
+                            DeleteAccountButton()
+                                .environmentObject(authViewModel)
+
                             Button {
                                 showingLogoutAlert = true
                             } label: {
