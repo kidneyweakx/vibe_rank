@@ -17,9 +17,13 @@ struct ImageCropView: View {
     @State private var imageScale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
     
-    // 裁切框的尺寸 (9:16 比例) - 使用更大的尺寸
-    private let cropWidth: CGFloat = 320
-    private let cropHeight: CGFloat = 568 // 320 * 16/9 ≈ 568
+    // 裁切框的尺寸 (9:16 比例) - 自適應 iPhone / iPad
+    private var cropWidth: CGFloat {
+        let minSide = min(UIScreen.main.bounds.width, UIScreen.main.bounds.height)
+        let ratio: CGFloat = UIDevice.current.userInterfaceIdiom == .pad ? 0.58 : 0.6
+        return max(320, minSide * ratio)
+    }
+    private var cropHeight: CGFloat { cropWidth * 16.0 / 9.0 }
     
     var body: some View {
         NavigationView {
@@ -109,27 +113,25 @@ struct ImageCropView: View {
                     }
                     .frame(width: cropWidth, height: cropHeight)
                     .clipped()
-                    .gesture(
-                        SimultaneousGesture(
-                            // 拖動手勢
-                            DragGesture()
-                                .onChanged { value in
-                                    let newOffset = CGPoint(x: value.translation.width, y: value.translation.height)
-                                    imageOffset = limitOffset(newOffset)
-                                },
-                            // 縮放手勢
-                            MagnificationGesture()
-                                .onChanged { value in
-                                    let delta = value / lastScale
-                                    lastScale = value
-                                    let newScale = imageScale * delta
-                                    let minScale = getMinimumScale()
-                                    imageScale = max(minScale, min(newScale, 3.0))
-                                }
-                                .onEnded { _ in
-                                    lastScale = 1.0
-                                }
-                        )
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                let newOffset = CGPoint(x: value.translation.width, y: value.translation.height)
+                                imageOffset = limitOffset(newOffset)
+                            }
+                    )
+                    .simultaneousGesture(
+                        MagnificationGesture()
+                            .onChanged { value in
+                                let delta = value / lastScale
+                                lastScale = value
+                                let newScale = imageScale * delta
+                                let minScale = getMinimumScale()
+                                imageScale = max(minScale, min(newScale, 3.0))
+                            }
+                            .onEnded { _ in
+                                lastScale = 1.0
+                            }
                     )
                     
                     Text("crop.aspect_916".localized)

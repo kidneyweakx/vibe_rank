@@ -83,7 +83,7 @@ class PhotoRatingViewModel: BaseViewModel {
         do {
             // 在背景線程請求 API
             let response = try await Task.detached(priority: .userInitiated) {
-                try await self.rateAPI.getRandomPhotos(userId: userId, limit: 20)
+                try await self.rateAPI.getRandomPhotos(userId: userId, limit: 10)
             }.value
             
             var built = try await self.buildPhotosResolvingURLs(from: response.data)

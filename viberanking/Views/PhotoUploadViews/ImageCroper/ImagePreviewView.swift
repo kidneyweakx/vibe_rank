@@ -65,72 +65,28 @@ struct ImagePreviewView: View {
 
                     Spacer()
 
-                    // 標籤與操作
+                    // 標籤
                     if !isUploading {
-                        VStack(spacing: 16) {
-                            // 標籤選擇
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("upload.tags".localized)
-                                    .foregroundColor(.white.opacity(0.8))
-                                    .font(.caption)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("upload.tags".localized)
+                                .foregroundColor(.white.opacity(0.8))
+                                .font(.caption)
+                                .frame(maxWidth: .infinity, alignment: .leading)
 
-                                // Horizontal scrollable chips (max 5 selected)
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    LazyHStack(spacing: 8) {
-                                        ForEach(allTags, id: \.id) { tag in
-                                            let isSelected = selectedTagIds.contains(tag.id)
-                                            TagChipView(tag: tag, isSelected: isSelected) {
-                                                toggleTagSelection(tag)
-                                            }
-                                            .opacity(!isSelected && selectedTagIds.count >= 5 ? 0.5 : 1.0)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                LazyHStack(spacing: 8) {
+                                    ForEach(allTags, id: \.id) { tag in
+                                        let isSelected = selectedTagIds.contains(tag.id)
+                                        TagChipView(tag: tag, isSelected: isSelected) {
+                                            toggleTagSelection(tag)
                                         }
+                                        .opacity(!isSelected && selectedTagIds.count >= 5 ? 0.5 : 1.0)
                                     }
-                                    .padding(.horizontal, 2)
                                 }
-                            }
-
-                            // 操作按鈕列
-                            HStack(spacing: 20) {
-                                // 裁切
-                                Button {
-                                    showingCropView = true
-                                } label: {
-                                    VStack(spacing: 8) {
-                                        Image(systemName: "crop")
-                                            .font(.title2)
-                                        Text("upload.crop".localized)
-                                            .font(.caption)
-                                    }
-                                    .foregroundColor(.white)
-                                    .frame(width: 60, height: 60)
-                                    .background(Color.gray.opacity(0.3))
-                                    .cornerRadius(30)
-                                }
-
-                                Spacer()
-
-                                // 上傳
-                                Button {
-                                    uploadImage()
-                                } label: {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "arrow.up.circle.fill")
-                                            .font(.title2)
-                                        Text(croppedImage == nil ? "upload.please_crop_first".localized : "upload.start_upload".localized)
-                                            .font(.headline)
-                                    }
-                                    .foregroundColor(.white)
-                                    .frame(height: 50)
-                                    .frame(maxWidth: .infinity)
-                                    .background(croppedImage == nil ? Color.gray : Color.blue)
-                                    .cornerRadius(25)
-                                }
-                                .disabled(croppedImage == nil)
+                                .padding(.horizontal, 2)
                             }
                         }
                         .padding(.horizontal, 20)
-                        .padding(.bottom, 40)
                     }
                 }
             }
@@ -148,14 +104,61 @@ struct ImagePreviewView: View {
         .task { await loadAllTags() }
         .onAppear {
             print("🎯 ImagePreviewView 顯示 - 圖片尺寸: \(image.size)")
-            // Auto present crop view on appear to ensure user crops before upload
-            if !showingCropView {
-                showingCropView = true
+        }
+        // Present crop as full screen on iPad, sheet on iPhone
+        .if(UIDevice.current.userInterfaceIdiom == .pad) { view in
+            view.fullScreenCover(isPresented: $showingCropView) {
+                ImageCropView(image: croppedImage ?? image) { croppedResult in
+                    croppedImage = croppedResult
+                }
             }
         }
-        .sheet(isPresented: $showingCropView) {
-            ImageCropView(image: croppedImage ?? image) { croppedResult in
-                croppedImage = croppedResult
+        .if(UIDevice.current.userInterfaceIdiom != .pad) { view in
+            view.sheet(isPresented: $showingCropView) {
+                ImageCropView(image: croppedImage ?? image) { croppedResult in
+                    croppedImage = croppedResult
+                }
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+            }
+        }
+        // 固定底部操作列（iPad 也可見）
+        .safeAreaInset(edge: .bottom) {
+            if !isUploading {
+                HStack(spacing: 16) {
+                    Button {
+                        showingCropView = true
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "crop")
+                            Text("upload.crop".localized)
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color.gray.opacity(0.3))
+                        .cornerRadius(12)
+                    }
+
+                    Button {
+                        uploadImage()
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.up.circle.fill")
+                            Text(croppedImage == nil ? "upload.please_crop_first".localized : "upload.start_upload".localized)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(croppedImage == nil ? Color.gray : Color.blue)
+                        .cornerRadius(12)
+                    }
+                    .disabled(croppedImage == nil)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, max(8, UIApplication.shared.windows.first?.safeAreaInsets.bottom ?? 0))
+                .background(.ultraThinMaterial)
             }
         }
         .onChange(of: showingCropView) { isShowing in
