@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import Vision
 
 @MainActor
 class JourneyViewModel: BaseViewModel {
@@ -18,6 +19,8 @@ class JourneyViewModel: BaseViewModel {
     
     // MARK: - Private Properties
     private let rateAPI = RateAPI()
+    private let fileAPI = FileAPI()
+    private let evaluator = AIPhotoEvaluator.shared
     private var currentUserId: String = ""
     
     // MARK: - Public Methods
@@ -76,6 +79,50 @@ class JourneyViewModel: BaseViewModel {
         return journeyInfo?.totalUsers.formatted() ?? "0"
     }
     
+    // MARK: - AI Evaluation
+    @Published var latestEvaluationText: String?
+    @Published var outfitEvaluation: AIOutfitEvaluation?
+    @Published var latestPhotoURL: URL?
+    
+    /// Evaluate the most recent uploaded photo using Vision.
+    func evaluateLatestPhotoIfPossible() async {
+        guard !currentUserId.isEmpty else { return }
+        do {
+            let response = try await fileAPI.getUserPhotos(userId: currentUserId, page: 1, limit: 1)
+            guard let first = response.data.photos.sorted(by: { $0.uploadedAt > $1.uploadedAt }).first else {
+                await MainActor.run { self.latestEvaluationText = "No uploaded photo found" }
+                return
+            }
+            guard let urlString = URL(string: first.urls.bestAvailableURL) else {
+                await MainActor.run { self.latestEvaluationText = "Invalid image URL" }
+                return
+            }
+            let result = try await evaluator.evaluate(imageURL: urlString)
+            let verdict = result.isHandsome ? "Looks handsome" : "Needs improvement"
+            let summary = String(format: "Score: %.0f/100  |  Confidence: %.0f%%\nFaces: %d\n%@",
+                                 result.score,
+                                 result.confidence * 100,
+                                 result.faceCount,
+                                 result.notes.joined(separator: ", "))
+            await MainActor.run {
+                self.latestEvaluationText = verdict + "\n" + summary
+                self.latestPhotoURL = urlString
+            }
+        } catch {
+            await MainActor.run { self.latestEvaluationText = "Evaluation failed: \(error.localizedDescription)" }
+        }
+    }
+
+    /// Analyze outfit for the latest photo and store rich annotations
+    func analyzeOutfitForLatestPhoto() async {
+        guard let url = latestPhotoURL else { return }
+        do {
+            let result = try await evaluator.analyzeOutfit(imageURL: url)
+            await MainActor.run { self.outfitEvaluation = result }
+        } catch {
+            await MainActor.run { self.latestEvaluationText = "Outfit analysis failed: \(error.localizedDescription)" }
+        }
+    }
 
 }
 

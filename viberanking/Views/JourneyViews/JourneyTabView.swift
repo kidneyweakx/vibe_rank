@@ -12,6 +12,8 @@ struct JourneyTabView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @StateObject private var viewModel = JourneyViewModel()
     @State private var showingPaywall = false
+    @State private var showingEvaluation = false
+    @State private var showDressingRoom = false
     @State private var isLoaded = false
     
     var body: some View {
@@ -85,8 +87,27 @@ struct JourneyTabView: View {
         }
         .navigationBarHidden(true)
         .sheet(isPresented: $showingPaywall) {
-            PaywallView(isPresented: $showingPaywall)
+            PaywallView(isPresented: $showingPaywall) {
+                Task {
+                    await viewModel.evaluateLatestPhotoIfPossible()
+                    await viewModel.analyzeOutfitForLatestPhoto()
+                }
+                showDressingRoom = true
+            }
         }
+        .background(
+            NavigationLink("", destination: DressingRoomView(userId: authViewModel.user?.id ?? "").environmentObject(themeManager), isActive: $showDressingRoom)
+                .opacity(0)
+        )
+        .alert("AI Evaluation", isPresented: $showingEvaluation, actions: {
+            Button("OK", role: .cancel) {}
+        }, message: {
+            if let result = viewModel.latestEvaluationText {
+                Text(result)
+            } else {
+                Text("No result available")
+            }
+        })
         .onAppear {
             loadDataIfNeeded()
         }

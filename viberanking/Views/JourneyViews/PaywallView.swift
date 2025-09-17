@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PaywallView: View {
     @Binding var isPresented: Bool
+    let onPurchased: (() -> Void)?
     @State private var selectedPlan = 0
     
     var body: some View {
@@ -90,7 +91,7 @@ struct PaywallView: View {
                         
                         // Purchase Button
                         Button(action: {
-                            // Handle purchase
+                            // Handle purchase (mock)
                             purchaseAIFeatures()
                         }) {
                             HStack {
@@ -156,8 +157,9 @@ struct PaywallView: View {
     }
     
     private func purchaseAIFeatures() {
-        // TODO: Implement Apple In-App Purchase
-        // For now, just close the paywall
+        // TODO: Implement Apple In-App Purchase (StoreKit)
+        // Mock purchase success
+        onPurchased?()
         isPresented = false
     }
 }
@@ -247,5 +249,5 @@ struct PricingCard: View {
 }
 
 #Preview {
-    PaywallView(isPresented: .constant(true))
+    PaywallView(isPresented: .constant(true), onPurchased: {})
 }
