@@ -11,6 +11,7 @@ import UIKit
 struct ImagePreviewView: View {
     let image: UIImage
     let onCancel: () -> Void
+    let onUploaded: (() -> Void)?
     
     @State private var croppedImage: UIImage?
     @State private var isUploading = false
@@ -26,9 +27,10 @@ struct ImagePreviewView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
     @Environment(\.dismiss) private var dismiss
     
-    init(image: UIImage, onCancel: @escaping () -> Void) {
+    init(image: UIImage, onCancel: @escaping () -> Void, onUploaded: (() -> Void)? = nil) {
         self.image = image
         self.onCancel = onCancel
+        self.onUploaded = onUploaded
     }
     
     var body: some View {
@@ -173,6 +175,7 @@ struct ImagePreviewView: View {
         }
         .alert("upload.success".localized, isPresented: $uploadSuccess) {
             Button("common.ok".localized) {
+                onUploaded?()
                 onCancel()
                 dismiss()
             }

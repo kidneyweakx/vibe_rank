@@ -10,6 +10,8 @@ import SwiftUI
 struct ReportButton: View {
     /// Optional photo id to report. If nil, the sheet opens but submission will be disabled.
     var photoId: String? = nil
+    /// Optional user id to enable Block User in the same sheet
+    var userId: String? = nil
 
     @State private var showReportSheet = false
     
@@ -32,7 +34,7 @@ struct ReportButton: View {
         .buttonStyle(.plain)
         .contentShape(Rectangle())
         .sheet(isPresented: $showReportSheet) {
-            ReportSheetView(photoId: photoId)
+            ReportSheetView(photoId: photoId, userId: userId)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
@@ -43,6 +45,6 @@ struct ReportButton: View {
 }
 
 #Preview {
-    ReportButton()
+    ReportButton(photoId: "demo-photo", userId: "user-123")
         .background(Color.black)
 }

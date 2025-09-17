@@ -141,6 +141,8 @@ struct ProfileTabView: View {
                 if let image = selectedRegularImage {
                     ImagePreviewView(image: image) {
                         selectedRegularImage = nil
+                    } onUploaded: {
+                        Task { await viewModel.refreshData() }
                     }
                 } else {
                     Text("common.image_load_failed".localized)

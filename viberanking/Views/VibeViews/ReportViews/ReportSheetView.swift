@@ -9,9 +9,11 @@ import SwiftUI
 
 struct ReportSheetView: View {
     let photoId: String?
+    let userId: String?
     @Environment(\.dismiss) private var dismiss
     @State private var selectedReportType: ReportType?
     @State private var showReportDetail = false
+    @State private var showBlockConfirmation = false
     
     var body: some View {
         NavigationView {
@@ -34,9 +36,36 @@ struct ReportSheetView: View {
                     .padding(.top, 20)
                     .padding(.bottom, 32)
                     
-                    // Report Options
+                    // Actions
                     ScrollView {
                         VStack(spacing: 0) {
+                            // Block user (if available)
+                            if let userId = userId {
+                                Button(role: .destructive) {
+                                    showBlockConfirmation = true
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "hand.raised.fill")
+                                            .foregroundColor(.red)
+                                        Text("Block User")
+                                            .foregroundColor(.red)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .foregroundColor(.red.opacity(0.7))
+                                    }
+                                    .padding(16)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(Color.red.opacity(0.08))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(Color.red.opacity(0.15), lineWidth: 1)
+                                            )
+                                    )
+                                }
+                                .padding(.bottom, 16)
+                            }
+
                             ForEach(ReportType.allCases, id: \.self) { reportType in
                                 ReportOptionRow(
                                     reportType: reportType,
@@ -80,9 +109,21 @@ struct ReportSheetView: View {
         .onAppear {
             print("🔘 ReportSheetView: Appeared with photoId: \(photoId ?? "nil")")
         }
+        .alert("Block User", isPresented: $showBlockConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Block", role: .destructive) {
+                if let userId = userId {
+                    UserBlocklist.shared.add(userId)
+                    print("🛑 Blocked user: \(userId)")
+                }
+                dismiss()
+            }
+        } message: {
+            Text("You won't see content from this user anymore.")
+        }
     }
 }
 
 #Preview {
-    ReportSheetView(photoId: "demo-photo")
+    ReportSheetView(photoId: "demo-photo", userId: "user-123")
 }
