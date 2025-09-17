@@ -23,6 +23,7 @@ struct ProfileTabView: View {
     @State private var showingRegularPhotoPicker = false
     @State private var showingRegularImagePreview = false
     @State private var selectedRegularImage: UIImage?
+    @State private var focusTodayTrigger = UUID()
     
     var body: some View {
         NavigationStack {
@@ -73,10 +74,14 @@ struct ProfileTabView: View {
         .task {
             if let userId = authViewModel.user?.id {
                 await viewModel.loadUserProfile(userId: userId)
+                // Focus on today on initial load
+                focusTodayTrigger = UUID()
             }
         }
         .refreshable {
             await viewModel.refreshData()
+            // After refresh (e.g., after upload), focus on today
+            focusTodayTrigger = UUID()
         }
 
         .actionSheet(isPresented: $showingActionSheet) {
@@ -142,7 +147,10 @@ struct ProfileTabView: View {
                     ImagePreviewView(image: image) {
                         selectedRegularImage = nil
                     } onUploaded: {
-                        Task { await viewModel.refreshData() }
+                        Task {
+                            await viewModel.refreshData()
+                            await MainActor.run { focusTodayTrigger = UUID() }
+                        }
                     }
                 } else {
                     Text("common.image_load_failed".localized)
@@ -438,7 +446,7 @@ private extension ProfileTabView {
                     WeeklyPhotoSection(week: week, onPhotoTap: {
                         // This should trigger the regular photo upload flow (like + button)
                         showingUploadMenu = true
-                    })
+                    }, focusTodayTrigger: focusTodayTrigger)
                 }
             }
             .padding(.horizontal, 16)

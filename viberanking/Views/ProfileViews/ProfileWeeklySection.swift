@@ -26,6 +26,7 @@ struct DayData {
 struct WeeklyPhotoSection: View {
     let week: WeekData
     let onPhotoTap: () -> Void
+    var focusTodayTrigger: UUID? = nil
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -45,18 +46,43 @@ struct WeeklyPhotoSection: View {
                 }
             }
             
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(Array(week.days.enumerated()), id: \.offset) { _, day in
-                        // Show all photos; if none, show one empty slot
-                        let totalSlots = max(1, day.photoURLs.count)
-                        ForEach(0..<totalSlots, id: \.self) { slot in
-                            DayPhotoCard(day: day, slotIndex: slot, onTap: onPhotoTap)
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(Array(week.days.enumerated()), id: \.offset) { _, day in
+                            let totalSlots = max(1, day.photoURLs.count)
+                            ForEach(0..<totalSlots, id: \.self) { slot in
+                                DayPhotoCard(day: day, slotIndex: slot, onTap: onPhotoTap)
+                                    .id(slot == 0 ? dayAnchorId(for: day) : nil)
+                            }
                         }
                     }
+                    .padding(.horizontal, 4)
                 }
-                .padding(.horizontal, 4)
+                .onChange(of: focusTodayTrigger) { _ in
+                    scrollToTodayIfNeeded(proxy: proxy)
+                }
+                .onAppear {
+                    scrollToTodayIfNeeded(proxy: proxy)
+                }
             }
+        }
+    }
+}
+
+// MARK: - Private helpers
+private extension WeeklyPhotoSection {
+    func dayAnchorId(for day: DayData) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return "day-" + formatter.string(from: day.date)
+    }
+
+    func scrollToTodayIfNeeded(proxy: ScrollViewProxy) {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        if let todayDay = week.days.first(where: { calendar.isDate(calendar.startOfDay(for: $0.date), inSameDayAs: today) }) {
+            proxy.scrollTo(dayAnchorId(for: todayDay), anchor: .center)
         }
     }
 }
