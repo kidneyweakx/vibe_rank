@@ -15,6 +15,7 @@ struct RootEntryView: View {
     var body: some View {
         ZStack {
             ContentView()
+                .trackScreen(name: "RootEntry")
 
             if showTrackingPrePrompt {
                 TrackingPrePromptView(
@@ -26,6 +27,8 @@ struct RootEntryView: View {
         }
         .onAppear {
             evaluateAndPresentPrePromptIfNeeded()
+            // Ensure Apple analytics is started in case app init missed it
+            AppleAnalyticsManager.shared.start()
         }
     }
 

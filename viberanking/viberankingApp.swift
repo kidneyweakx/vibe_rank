@@ -7,6 +7,7 @@
 
 import SwiftUI
 import GoogleSignIn
+import MetricKit
 
 @main
 struct viberankingApp: App {
@@ -15,6 +16,7 @@ struct viberankingApp: App {
     @StateObject private var errorHandler = ErrorHandler()
     @StateObject private var localizationManager = LocalizationManager.shared
     @StateObject private var themeManager = ThemeManager()
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         // Configure Google Sign-In
@@ -31,6 +33,9 @@ struct viberankingApp: App {
         
         // Check Apple ID credential state at launch
         checkAppleIDCredentialStateAtLaunch()
+
+        // Start Apple analytics (MetricKit)
+        AppleAnalyticsManager.shared.start()
     }
     
     /// Configure Google Sign-In
@@ -78,6 +83,9 @@ struct viberankingApp: App {
                     if let recoverySuggestion = errorHandler.currentError?.recoverySuggestion {
                         Text(recoverySuggestion)
                     }
+                }
+                .onChange(of: scenePhase) { newPhase in
+                    SessionTracker.shared.handleScenePhaseChange(newPhase)
                 }
         }
     }

@@ -15,6 +15,7 @@ protocol AnalyticsServiceProtocol {
     func setUserProperty(_ property: String, value: String?)
     func setUserId(_ userId: String?)
     func logScreenView(_ screenName: String, screenClass: String?)
+    func logScreenDuration(_ screenName: String, seconds: Int)
 }
 
 // MARK: - Analytics Events
@@ -28,6 +29,7 @@ enum AnalyticsEvent {
     case errorOccurred(error: String, screen: String)
     case screenViewed(screenName: String)
     case featureUsed(feature: String)
+    case screenDuration(screenName: String, seconds: Int)
     
     var name: String {
         switch self {
@@ -49,6 +51,8 @@ enum AnalyticsEvent {
             return "screen_view"
         case .featureUsed:
             return "feature_used"
+        case .screenDuration:
+            return "screen_duration"
         }
     }
     
@@ -72,6 +76,8 @@ enum AnalyticsEvent {
             return ["screen_name": screenName]
         case .featureUsed(let feature):
             return ["feature": feature]
+        case .screenDuration(let screenName, let seconds):
+            return ["screen_name": screenName, "seconds": seconds]
         }
     }
 }
@@ -119,6 +125,11 @@ class AnalyticsService: AnalyticsServiceProtocol {
         if let screenClass = screenClass {
             logger.debug("Screen view: \(screenName), class: \(screenClass)")
         }
+    }
+
+    func logScreenDuration(_ screenName: String, seconds: Int) {
+        logEvent(.screenDuration(screenName: screenName, seconds: seconds))
+        logger.debug("Screen duration: \(screenName) = \(seconds, privacy: .public)s")
     }
 }
 
