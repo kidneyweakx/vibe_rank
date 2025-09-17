@@ -183,9 +183,12 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
                             let displayName = [appleIDCredential.fullName?.givenName, appleIDCredential.fullName?.familyName]
                                 .compactMap { $0 }
                                 .joined(separator: " ")
-                            
+
+                            // Preserve existing/saved name on re-login when Apple doesn't provide fullName again
+                            let preservedName = self.currentUser?.name ?? self.getSavedUserFromKeychain()?.name ?? ""
+
                             let userData = InitialUserData(
-                                name: displayName.isEmpty ? "Apple User" : displayName,
+                                name: displayName.isEmpty ? preservedName : displayName,
                                 email: appleIDCredential.email ?? "",
                                 profileImageURL: nil, // Apple doesn't provide profile images
                                 authProvider: "apple",

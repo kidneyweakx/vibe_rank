@@ -539,6 +539,11 @@
 "journey.stats.total_users" = "總用戶";
 "journey.stats.top_percentage" = "前 %d%%";
 
+// MARK: - Notifications (Local)
+"notif.daily.title" = "你的每日 vibe 更新";
+"notif.daily.body.beat_people" = "今天你贏過了 %d 個人，繼續保持。";
+"notif.daily.body.generic" = "你的 vibe 正在進化，打開 App 看看吧。";
+
 // MARK: - Paywall
 "paywall.title" = "解鎖 AI 風格建議";
 "paywall.subtitle" = "讓 AI 為你量身打造專屬風格方案";

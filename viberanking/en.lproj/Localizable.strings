@@ -633,6 +633,11 @@
 "journey.stats.total_users" = "Total Users";
 "journey.stats.top_percentage" = "Top %d%%";
 
+// MARK: - Notifications (Local)
+"notif.daily.title" = "Your daily vibe update";
+"notif.daily.body.beat_people" = "Today you beat %d people. Keep going.";
+"notif.daily.body.generic" = "Your vibe is evolving. Open the app to check in.";
+
 // MARK: - Paywall
 "paywall.title" = "Unlock AI Style Suggestions";
 "paywall.subtitle" = "Let AI create a personalized style plan for you";

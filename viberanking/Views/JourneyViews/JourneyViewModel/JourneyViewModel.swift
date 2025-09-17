@@ -33,6 +33,11 @@ class JourneyViewModel: BaseViewModel {
                 self.chartData = journeyResponse.data.weeklyTrend.enumerated().map { index, dailyScore in
                     ChartDataPoint(day: index, score: dailyScore.score ?? 0.0)
                 }
+                // Save latest snapshot for notifications
+                LocalNotificationService.saveLatestRankingSnapshot(
+                    overallRank: journeyResponse.data.overallRank,
+                    totalUsers: journeyResponse.data.totalUsers
+                )
             }
         }
     }

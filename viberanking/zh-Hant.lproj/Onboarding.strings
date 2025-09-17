@@ -34,6 +34,9 @@
 "onb.notif.item.2" = "每週回顧：看到自己比上週又成長了多少";
 "onb.notif.item.3" = "個人化洞察，讓你更快升級";
 "onb.notif.cta.enable" = "開啟通知";
+"onb.notif.time_label" = "提醒時間";
+"onb.notif.permission_denied" = "通知未開啟，你可至「設定」開啟。";
+"onb.notif.scheduled" = "已設定每日提醒：%@";
 
 "common.back" = "返回";
 "common.next" = "下一步";

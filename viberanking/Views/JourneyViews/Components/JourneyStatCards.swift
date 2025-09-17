@@ -26,13 +26,13 @@ struct JourneyStatCards: View {
             HStack(spacing: 16) {
                 StatCards(
                     title: "journey.stats.female_attraction".localized,
-                    value: String(format: "%.1f", max(0, min(10, femaleAttraction / 10))),
+                    value: String(format: "%.0f%%", max(0, min(100, femaleAttraction))),
                     color: .pink,
                     icon: "heart.fill"
                 )
                 StatCards(
                     title: "journey.stats.male_attraction".localized,
-                    value: String(format: "%.1f", max(0, min(10, maleAttraction / 10))),
+                    value: String(format: "%.0f%%", max(0, min(100, maleAttraction))),
                     color: .blue,
                     icon: "star.fill"
                 )

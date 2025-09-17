@@ -489,3 +489,8 @@
 "profile.add_photo" = "写真を追加";
 "profile.scan_to_view" = "スキャンしてプロフィールを表示";
 "profile.share_qr_code" = "QRコードを共有";
+
+// MARK: - Notifications (Local)
+"notif.daily.title" = "毎日の vibe アップデート";
+"notif.daily.body.beat_people" = "今日は %d 人を上回りました。続けましょう。";
+"notif.daily.body.generic" = "あなたの vibe は進化中。アプリでチェック。";
