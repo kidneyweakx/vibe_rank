@@ -18,7 +18,7 @@ struct OnboardingSetupView: View {
     @State private var showProfileSetup: Bool = false
     @State private var answers = OnboardingAnswers()
 
-    private let totalSteps: Int = 7
+    private let totalSteps: Int = 8
 
     var body: some View {
         VStack(spacing: 0) {
@@ -31,26 +31,29 @@ struct OnboardingSetupView: View {
 
             // Steps content
             TabView(selection: $currentStepIndex) {
-                OnboardingStepIntro(next: goNext)
+                OnboardingStepPrivacyPolicy(next: goNext)
                     .tag(0)
 
-                OnboardingStepValue(next: goNext, back: goBack)
+                OnboardingStepIntro(next: goNext)
                     .tag(1)
 
-                OnboardingStepAge(selectAge: { range in answers.ageRange = range; goNext() }, back: goBack)
+                OnboardingStepValue(next: goNext, back: goBack)
                     .tag(2)
 
-                OnboardingStepGender(selectGender: { gender in answers.gender = gender; goNext() }, back: goBack)
+                OnboardingStepAge(selectAge: { range in answers.ageRange = range; goNext() }, back: goBack)
                     .tag(3)
 
-                OnboardingStepVibeSelection(next: { goNext() }, back: goBack, onSelect: { idx in answers.vibeLevel = idx })
+                OnboardingStepGender(selectGender: { gender in answers.gender = gender; goNext() }, back: goBack)
                     .tag(4)
 
-                OnboardingStepTimeInvestment(next: { hours in answers.timeInvestmentHours = hours; goNext() }, back: goBack)
+                OnboardingStepVibeSelection(next: { goNext() }, back: goBack, onSelect: { idx in answers.vibeLevel = idx })
                     .tag(5)
 
-                OnboardingStepNotifications(complete: completeOnboarding, back: goBack)
+                OnboardingStepTimeInvestment(next: { hours in answers.timeInvestmentHours = hours; goNext() }, back: goBack)
                     .tag(6)
+
+                OnboardingStepNotifications(complete: completeOnboarding, back: goBack)
+                    .tag(7)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
         }

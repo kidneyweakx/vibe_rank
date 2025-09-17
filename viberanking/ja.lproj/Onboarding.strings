@@ -48,3 +48,8 @@
 "common.back" = "戻る";
 "common.next" = "次へ";
 
+"onb.privacy.title" = "プライバシーポリシー";
+"onb.privacy.lastUpdated" = "最終更新日: 2025年9月09日";
+"onb.privacy.agree" = "プライバシーポリシーを読み、同意しました";
+"onb.privacy.cta" = "同意して続行";
+

@@ -38,3 +38,8 @@
 "common.back" = "返回";
 "common.next" = "下一步";
 
+"onb.privacy.title" = "隱私權政策";
+"onb.privacy.lastUpdated" = "最後更新：2025 年 9 月 09 日";
+"onb.privacy.agree" = "我已閱讀並同意隱私權政策";
+"onb.privacy.cta" = "同意並繼續";
+

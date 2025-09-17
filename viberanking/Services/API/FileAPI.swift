@@ -15,7 +15,7 @@ struct PhotoUploadResponse: Codable {
     let uploadedAt: Date
 }
 
-// API 包裝響應結構
+// API Response Model
 struct APIResponse<T: Codable>: Codable {
     let success: Bool
     let data: T
@@ -81,13 +81,6 @@ class FileAPI {
             throw APIError.serverError(400)
         }
         return url
-    }
-
-    /// Verify file exists
-    func verifyFile(key: String) async throws -> Bool {
-        let endpoint = "/api/file/verify/\(key)"
-        try await apiClient.performRequest(endpoint: endpoint, method: .GET)
-        return true
     }
     
     /// Get user photos list

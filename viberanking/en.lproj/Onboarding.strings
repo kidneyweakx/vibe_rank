@@ -42,3 +42,8 @@
 "common.back" = "Back";
 "common.next" = "Next";
 
+"onb.privacy.title" = "Privacy Policy";
+"onb.privacy.lastUpdated" = "Last updated: September 09, 2025";
+"onb.privacy.agree" = "I have read and agree to the Privacy Policy";
+"onb.privacy.cta" = "Agree and Continue";
+
