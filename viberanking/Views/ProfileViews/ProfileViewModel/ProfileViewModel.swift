@@ -29,7 +29,7 @@ class ProfileViewModel: BaseViewModel {
     
     // MARK: - Public Methods
     
-    func loadUserProfile(userId: String) async {
+    func loadUserProfile(userId: String, forceReload: Bool = false) async {
         // Prevent multiple simultaneous calls
         guard !isLoadingProfile else {
             print("⚠️ ProfileViewModel: Already loading profile, skipping duplicate call")
@@ -37,14 +37,14 @@ class ProfileViewModel: BaseViewModel {
         }
         
         // Check if we already have data for this user
-        if currentUserId == userId && journeyInfo != nil {
+        if !forceReload && currentUserId == userId && journeyInfo != nil {
             print("✅ ProfileViewModel: Already have data for userId: \(userId), skipping load")
             return
         }
         
         // Prevent too frequent calls (minimum 2 seconds between calls)
         let now = Date()
-        if now.timeIntervalSince(lastLoadTime) < 2.0 {
+        if !forceReload && now.timeIntervalSince(lastLoadTime) < 2.0 {
             print("⚠️ ProfileViewModel: Too frequent calls, skipping (last call was \(now.timeIntervalSince(lastLoadTime))s ago)")
             return
         }
@@ -236,7 +236,7 @@ class ProfileViewModel: BaseViewModel {
         guard !currentUserId.isEmpty else { return }
         print("🔄 ProfileViewModel: Force refreshing data for userId: \(currentUserId)")
         isLoadingProfile = false // Reset loading flag to allow refresh
-        await loadUserProfile(userId: currentUserId)
+        await loadUserProfile(userId: currentUserId, forceReload: true)
     }
     
     // MARK: - Computed Properties
