@@ -14,6 +14,8 @@ struct ReportSheetView: View {
     @State private var selectedReportType: ReportType?
     @State private var showReportDetail = false
     @State private var showBlockConfirmation = false
+    @StateObject private var authService = AuthenticationService()
+    private let fileAPI = FileAPI()
     
     var body: some View {
         NavigationView {
@@ -115,6 +117,25 @@ struct ReportSheetView: View {
                 if let userId = userId {
                     UserBlocklist.shared.add(userId)
                     print("🛑 Blocked user: \(userId)")
+                }
+                // Also submit a report like other actions with a fixed reason
+                if let photoId = photoId {
+                    Task {
+                        do {
+                            let reporterId = authService.currentUser?.id
+                            let reason = "Block User"
+                            print("📡 ReportSheetView: Auto submitting report for block action")
+                            print("   - photoId: \(photoId)")
+                            print("   - reporterId: \(reporterId ?? "nil")")
+                            print("   - reason: \(reason)")
+                            try await fileAPI.submitReport(photoId: photoId, reporterId: reporterId, reason: reason)
+                            print("✅ ReportSheetView: Auto report submitted")
+                        } catch {
+                            print("❌ ReportSheetView: Failed to auto submit report: \(error)")
+                        }
+                    }
+                } else {
+                    print("⚠️ ReportSheetView: No photoId available, skipping auto report on block")
                 }
                 dismiss()
             }

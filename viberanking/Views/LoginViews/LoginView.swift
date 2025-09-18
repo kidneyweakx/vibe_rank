@@ -151,7 +151,7 @@ struct ModernLoadingView: View {
                     )
             }
             
-            Text("登入中...")
+            Text("auth.signing_in".localized)
                 .font(.system(size: 18, weight: .medium))
                 .foregroundColor(.white)
         }

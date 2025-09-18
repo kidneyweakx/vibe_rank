@@ -221,28 +221,20 @@ struct JourneyTabView: View {
                     }
                 }
                 
-                Button(action: {
-                    showingPaywall = true
-                }) {
-                    HStack {
-                        Image(systemName: "sparkles")
-                        Text("journey.ai_improvement.unlock_button".localized)
-                            .fontWeight(.semibold)
-                        Spacer()
-                        Image(systemName: "arrow.right")
-                    }
-                    .foregroundColor(.white)
-                    .padding(.vertical, 16)
-                    .padding(.horizontal, 20)
-                    .background(
-                        LinearGradient(
-                            colors: [.purple, .pink],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .cornerRadius(12)
+                HStack {
+                    Image(systemName: "sparkles")
+                    Text("Coming soon")
+                        .fontWeight(.semibold)
+                    Spacer()
+                    Image(systemName: "lock.fill")
                 }
+                .foregroundColor(.white.opacity(0.6))
+                .padding(.vertical, 16)
+                .padding(.horizontal, 20)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.gray.opacity(0.3))
+                )
             }
         }
         .padding(20)
