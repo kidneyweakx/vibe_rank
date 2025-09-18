@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
@@ -20,10 +21,9 @@ struct SettingsView: View {
     @State private var customUserID: String = ""
     @State private var isCheckingID = false
     @State private var idAvailable: Bool? = nil
-    @State private var bio = ""
-    @State private var location = ""
     @State private var pendingAvatarURL: String? = nil
     @State private var showingSpotlightResetAlert = false
+    @State private var notificationsEnabled = false
     
     // Callback for resetting spotlight
     var onResetSpotlight: (() -> Void)?
@@ -148,8 +148,6 @@ struct SettingsView: View {
                                             .foregroundColor(.secondary)
                                     }
                                 }
-                                SettingsTextField(title: "Bio", text: $bio, placeholder: "Tell us about yourself")
-                                SettingsTextField(title: "Location", text: $location, placeholder: "Your location")
                             }
                         }
                         
@@ -160,46 +158,45 @@ struct SettingsView: View {
                                 .foregroundColor(.white)
                             
                             VStack(spacing: 12) {
-                                SettingsRow(
-                                    icon: "bell.fill",
-                                    title: "Notifications",
-                                    action: {
-                                        // Handle notifications
+                                // Notifications toggle
+                                HStack {
+                                    Image(systemName: "bell.fill")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.white.opacity(0.8))
+                                        .frame(width: 24)
+                                    Text("Daily Reminder")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.white)
+                                    Spacer()
+                                    Toggle("", isOn: $notificationsEnabled)
+                                        .labelsHidden()
+                                }
+                                .padding(16)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color.black.opacity(0.3))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                                        )
+                                )
+                                .onChange(of: notificationsEnabled) { enabled in
+                                    Task {
+                                        if enabled {
+                                            let granted = await LocalNotificationService.shared.requestAuthorization()
+                                            if granted {
+                                                try? await LocalNotificationService.shared.scheduleDailyReminder(hour: 20, minute: 0)
+                                            } else {
+                                                await MainActor.run { notificationsEnabled = false }
+                                            }
+                                        } else {
+                                            await LocalNotificationService.shared.cancelDailyReminder()
+                                        }
                                     }
-                                )
-                                
-                                SettingsRow(
-                                    icon: "gearshape.fill",
-                                    title: "General",
-                                    action: {}
-                                )
+                                }
 
                                 ContentSafetyRow()
 
-                                SettingsRow(
-                                    icon: "lock.fill",
-                                    title: "Privacy",
-                                    action: {
-                                        showPrivacy = true
-                                    }
-                                )
-                                
-                                SettingsRow(
-                                    icon: "questionmark.circle.fill",
-                                    title: "Help & Support",
-                                    action: {
-                                        // Handle help
-                                    }
-                                )
-                                
-                                SettingsRow(
-                                    icon: "info.circle.fill",
-                                    title: "About",
-                                    action: {
-                                        // Handle about
-                                    }
-                                )
-                                
                                 SettingsRow(
                                     icon: "doc.text.fill",
                                     title: "Terms of Service",
@@ -213,6 +210,14 @@ struct SettingsView: View {
                                     title: "Contact Us",
                                     action: {
                                         showContact = true
+                                    }
+                                )
+                                
+                                SettingsRow(
+                                    icon: "lock.fill",
+                                    title: "Privacy",
+                                    action: {
+                                        showPrivacy = true
                                     }
                                 )
                                 
@@ -298,6 +303,11 @@ struct SettingsView: View {
             // Load profile data when view appears
             if let userId = authViewModel.user?.id {
                 await profileViewModel.loadUserProfile(userId: userId)
+            }
+            // Load notification authorization status
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            await MainActor.run {
+                notificationsEnabled = (settings.authorizationStatus == .authorized)
             }
         }
         .sheet(isPresented: $showTerms) {
