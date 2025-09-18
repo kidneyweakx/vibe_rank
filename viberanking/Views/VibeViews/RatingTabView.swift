@@ -103,6 +103,10 @@ struct RatingTabView: View {
                 Task { await viewModel.refreshPhotos() }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .requestSkipCurrentPhoto)) { _ in
+            // Skip the current photo immediately when notified (e.g., after blocking)
+            skipPhoto(for: viewModel.currentPhotoIndex)
+        }
         .onChange(of: viewModel.currentPhotoIndex) { _ in
             // Preload next images for better performance
             preloadNextImages(currentIndex: viewModel.currentPhotoIndex)

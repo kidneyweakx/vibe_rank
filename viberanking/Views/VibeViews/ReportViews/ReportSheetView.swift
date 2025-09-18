@@ -137,6 +137,8 @@ struct ReportSheetView: View {
                 } else {
                     print("⚠️ ReportSheetView: No photoId available, skipping auto report on block")
                 }
+                // Notify rating view to skip current photo
+                NotificationCenter.default.post(name: .requestSkipCurrentPhoto, object: nil)
                 dismiss()
             }
         } message: {
