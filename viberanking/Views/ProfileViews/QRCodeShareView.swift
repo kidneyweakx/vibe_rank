@@ -102,7 +102,7 @@ struct QRCodeShareView: View {
     }
     
     private func generateQRCode() {
-        let profileURL = "https://viberanking.app/profile/\(userId)"
+        let profileURL = "https://viberank.xyz/profile/\(userId)"
         let data = Data(profileURL.utf8)
         filter.setValue(data, forKey: "inputMessage")
         

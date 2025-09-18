@@ -87,6 +87,11 @@ class AnalyticsService: AnalyticsServiceProtocol {
     static let shared = AnalyticsService()
     
     private let logger = Logger(subsystem: "com.viberanking.analytics", category: "Analytics")
+    private let syncQueue = DispatchQueue(label: "com.viberanking.analytics.syncQueue")
+
+    // Local in-memory counters for quick analysis (not persisted off device)
+    private var eventCounts: [String: Int] = [:]
+    private var screenDurations: [String: Int] = [:]
     
     private init() {}
     
@@ -100,6 +105,15 @@ class AnalyticsService: AnalyticsServiceProtocol {
         // For now, just log to console
         if AppConfiguration.Debug.enableDetailedLogging {
             logger.info("Analytics event logged: \(event.name) with parameters: \(event.parameters)")
+        }
+
+        // Increment local counters for quick analysis
+        syncQueue.async { [weak self] in
+            guard let self else { return }
+            self.eventCounts[event.name, default: 0] += 1
+            if case let .screenDuration(screenName, seconds) = event {
+                self.screenDurations[screenName, default: 0] += max(0, seconds)
+            }
         }
     }
     
@@ -131,6 +145,35 @@ class AnalyticsService: AnalyticsServiceProtocol {
         logEvent(.screenDuration(screenName: screenName, seconds: seconds))
         logger.debug("Screen duration: \(screenName) = \(seconds, privacy: .public)s")
     }
+}
+
+// MARK: - Lightweight Analysis Snapshot
+extension AnalyticsService {
+    /// Returns a thread-safe snapshot of local analytics counters.
+    /// This does not perform any network I/O and can be used to render a quick in-app summary.
+    func analysisSnapshot() -> AnalyticsSnapshot {
+        var countsCopy: [String: Int] = [:]
+        var durationsCopy: [String: Int] = [:]
+        syncQueue.sync {
+            countsCopy = self.eventCounts
+            durationsCopy = self.screenDurations
+        }
+        let totalEvents = countsCopy.values.reduce(0, +)
+        let topEvents = Array(countsCopy.sorted { $0.value > $1.value }.prefix(5))
+        let topScreens = Array(durationsCopy.sorted { $0.value > $1.value }.prefix(5))
+        return AnalyticsSnapshot(
+            totalEvents: totalEvents,
+            topEventCounts: Dictionary(uniqueKeysWithValues: topEvents),
+            topScreenDurations: Dictionary(uniqueKeysWithValues: topScreens)
+        )
+    }
+}
+
+/// Immutable representation of local analytics summary.
+struct AnalyticsSnapshot {
+    let totalEvents: Int
+    let topEventCounts: [String: Int]
+    let topScreenDurations: [String: Int]
 }
 
 // MARK: - Performance Monitoring

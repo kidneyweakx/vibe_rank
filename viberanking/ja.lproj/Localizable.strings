@@ -433,11 +433,11 @@
 "contact.title" = "お問い合わせ";
 "contact.subtitle" = "ご意見・ご質問・サポートが必要な場合は、お気軽にご連絡ください:";
 "contact.email" = "メール";
-"contact.email.address" = "support@ninjaplus.app";
+"contact.email.address" = "support@viberank.xyz";
 "contact.twitter" = "Twitter";
-"contact.twitter.handle" = "@ninjaplusapp";
+"contact.twitter.handle" = "@ninjatofuture";
 "contact.business" = "ビジネスお問い合わせ";
-"contact.business.address" = "business@ninjaplus.app";
+"contact.business.address" = "business@viberank.xyz";
 
 // MARK: - Home
 "home.recommended.title" = "おすすめ";

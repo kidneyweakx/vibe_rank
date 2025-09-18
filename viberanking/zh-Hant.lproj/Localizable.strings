@@ -433,11 +433,11 @@
 "contact.title" = "聯絡我們";
 "contact.subtitle" = "我們很樂意聽到你的聲音。如有任何問題、回饋或需要支援，歡迎與我們聯繫：";
 "contact.email" = "電子郵件";
-"contact.email.address" = "support@ninjaplus.app";
+"contact.email.address" = "support@viberank.xyz";
 "contact.twitter" = "Twitter";
-"contact.twitter.handle" = "@ninjaplusapp";
+"contact.twitter.handle" = "@ninjatofuture";
 "contact.business" = "商務合作";
-"contact.business.address" = "business@ninjaplus.app";
+"contact.business.address" = "business@viberank.xyz";
 
 // MARK: - Home
 "home.recommended.title" = "推薦用戶";

@@ -433,11 +433,11 @@
 "contact.title" = "Contact Us";
 "contact.subtitle" = "We'd love to hear from you. If you have questions, feedback, or need support, please reach out:";
 "contact.email" = "Email";
-"contact.email.address" = "support@ninjaplus.app";
+"contact.email.address" = "support@viberank.xyz";
 "contact.twitter" = "Twitter";
-"contact.twitter.handle" = "@ninjaplusapp";
+"contact.twitter.handle" = "@ninjatofuture";
 "contact.business" = "Business Inquiries";
-"contact.business.address" = "business@ninjaplus.app";
+"contact.business.address" = "business@viberank.xyz";
 
 // MARK: - Legal (Privacy & ToS)
 "policy.privacy.title" = "Privacy Policy";
