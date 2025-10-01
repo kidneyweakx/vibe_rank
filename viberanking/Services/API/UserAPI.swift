@@ -235,7 +235,12 @@ class UserAPI {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        request.setValue(apiClient.accessToken, forHTTPHeaderField: "X-Access-Token")
+
+        // Add JWT token if available
+        if let jwtToken = try? KeychainItem.readJWTToken() {
+            request.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
+        }
+
         request.httpBody = body
         
         print("📤 ProfilePicture Upload Request:")

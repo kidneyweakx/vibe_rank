@@ -236,7 +236,6 @@ private extension RatingTabView {
             // Call rating API directly
             let rateAPI = RateAPI()
             let response = try await rateAPI.ratePhoto(
-                raterId: authViewModel.user?.id ?? "",
                 photoId: photo.id,
                 type: type
             )

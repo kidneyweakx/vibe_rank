@@ -123,7 +123,6 @@ class PhotoRatingViewModel: BaseViewModel {
         Task.detached(priority: .background) {
             do {
                 let response = try await self.rateAPI.ratePhoto(
-                    raterId: self.currentUserId,
                     photoId: photo.id,
                     type: type
                 )
