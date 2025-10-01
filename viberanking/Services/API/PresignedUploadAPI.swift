@@ -50,11 +50,11 @@ struct PresignedUploadResponse<T: Codable>: Codable {
 final class PresignedUploadAPI {
     private let apiClient = APIClient.shared
     
-    func requestPresignedURL(userId: String, fileExtension: String = "webp", contentType: String = "image/webp") async throws -> PresignedUploadInfo {
+    /// Request presigned URL for upload (userId extracted from JWT token)
+    func requestPresignedURL(fileExtension: String = "webp", contentType: String = "image/webp") async throws -> PresignedUploadInfo {
         // Suggest a key to the backend; backend may override/return its own
-        let generatedKey = "photos/\(userId)/\(UUID().uuidString).\(fileExtension)"
+        let generatedKey = "photos/\(UUID().uuidString).\(fileExtension)"
         let body: [String: Any] = [
-            "userId": userId,
             "key": generatedKey,
             "contentType": contentType
         ]

@@ -123,14 +123,13 @@ class RateAPI {
     
     // MARK: - Rating Operations
     
-    /// Rate a photo
-    func ratePhoto(raterId: String, photoId: String, type: RatingType) async throws -> RatePhotoResponse {
+    /// Rate a photo (raterId extracted from JWT token)
+    func ratePhoto(photoId: String, type: RatingType) async throws -> RatePhotoResponse {
         let body: [String: Any] = [
-            "raterId": raterId,
             "photoId": photoId,
             "type": type.rawValue
         ]
-        
+
         return try await apiClient.performRequest(
             endpoint: "/api/rate/photo",
             method: .POST,
@@ -148,11 +147,11 @@ class RateAPI {
         )
     }
     
-    /// Get random photos for rating
-    func getRandomPhotos(userId: String, limit: Int = 10) async throws -> RandomPhotosResponse {
-        print("🔍 Fetching random photos for userId: \(userId), limit: \(limit)")
+    /// Get random photos for rating (userId extracted from JWT token)
+    func getRandomPhotos(limit: Int = 10) async throws -> RandomPhotosResponse {
+        print("🔍 Fetching random photos, limit: \(limit)")
         let response = try await apiClient.performRequest(
-            endpoint: "/api/rate/photos/random?userId=\(userId)&limit=\(limit)",
+            endpoint: "/api/rate/photos/random?limit=\(limit)",
             method: .GET,
             responseType: RandomPhotosResponse.self
         )

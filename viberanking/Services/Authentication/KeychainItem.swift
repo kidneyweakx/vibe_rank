@@ -153,4 +153,25 @@ extension KeychainItem {
     static let firstNameKey = "com.viberanking.firstname"
     static let lastNameKey = "com.viberanking.lastname"
     static let emailKey = "com.viberanking.email"
+    static let jwtTokenKey = "com.viberanking.jwttoken"
+
+    // MARK: - JWT Token Management
+
+    /// Save JWT token to keychain
+    static func saveJWTToken(_ token: String) throws {
+        let keychainItem = KeychainItem(service: jwtTokenKey, account: "jwt")
+        try keychainItem.saveItem(token)
+    }
+
+    /// Read JWT token from keychain
+    static func readJWTToken() throws -> String {
+        let keychainItem = KeychainItem(service: jwtTokenKey, account: "jwt")
+        return try keychainItem.readItem()
+    }
+
+    /// Delete JWT token from keychain
+    static func deleteJWTToken() throws {
+        let keychainItem = KeychainItem(service: jwtTokenKey, account: "jwt")
+        try keychainItem.deleteItem()
+    }
 }

@@ -249,6 +249,10 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
     private func verifyGoogleToken(idToken: String, accessToken: String) async throws -> User {
         do {
             let response = try await authAPI.verifyGoogleToken(idToken: idToken, accessToken: accessToken)
+
+            // Save JWT token to keychain
+            try? KeychainItem.saveJWTToken(response.token)
+
             return User(
                 id: response.user.id,
                 name: response.user.name,
@@ -269,6 +273,10 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
                 fullName: fullName,
                 email: email
             )
+
+            // Save JWT token to keychain
+            try? KeychainItem.saveJWTToken(response.token)
+
             return User(
                 id: response.user.id,
                 name: response.user.name,
@@ -283,6 +291,10 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
     private func verifyPasswordCredential(username: String, password: String) async throws -> User {
         do {
             let response = try await authAPI.verifyPasswordCredential(username: username, password: password)
+
+            // Save JWT token to keychain
+            try? KeychainItem.saveJWTToken(response.token)
+
             return User(
                 id: response.user.id,
                 name: response.user.name,
@@ -363,13 +375,17 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
     func completeProfileSetup(_ profileData: UserProfileData) async throws -> User {
         do {
             let response = try await authAPI.createUserProfile(profileData)
+
+            // Save JWT token to keychain
+            try? KeychainItem.saveJWTToken(response.token)
+
             let user = User(
                 id: response.user.id,
                 name: response.user.name,
                 email: response.user.email,
                 profileImageURL: response.user.avatar
             )
-            
+
             currentUser = user
             saveUserToKeychain(user)
             pendingUserData = nil // Clear pending data
@@ -411,6 +427,10 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
     func completeOnboarding(_ payload: OnboardingCompletePayload) async throws -> User {
         do {
             let response = try await authAPI.completeOnboarding(payload)
+
+            // Save JWT token to keychain
+            try? KeychainItem.saveJWTToken(response.token)
+
             let user = User(
                 id: response.user.id,
                 name: response.user.name,
@@ -560,11 +580,15 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
         if GIDSignIn.sharedInstance.currentUser != nil {
             GIDSignIn.sharedInstance.signOut()
         }
-        
+
         clearUserIdentifier()
         clearSavedUser()
+
+        // Delete JWT token from keychain
+        try? KeychainItem.deleteJWTToken()
+
         currentUser = nil
-        
+
         // Optional API notification
         try? await authAPI.signOut()
     }

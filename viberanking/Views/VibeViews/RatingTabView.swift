@@ -323,11 +323,9 @@ private extension RatingTabView {
     
     // Load more photos in background without blocking UI
     private func loadMorePhotosInBackground() async {
-        guard let userId = authViewModel.user?.id else { return }
-        
         do {
             let rateAPI = RateAPI()
-            let response = try await rateAPI.getRandomPhotos(userId: userId, limit: 10)
+            let response = try await rateAPI.getRandomPhotos(limit: 10)
             
             // Build photos resolving URLs - use a simpler approach to avoid access issues
             var newPhotos: [Photo] = []

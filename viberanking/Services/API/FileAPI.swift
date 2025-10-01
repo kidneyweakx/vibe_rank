@@ -46,11 +46,11 @@ class FileAPI {
     
     /// Upload photo via Presigned URL (PUT to R2), then finalize with backend metadata.
     /// If presign flow is unavailable (e.g., 422), gracefully fallback to base64 JSON upload.
-    func uploadPhoto(_ imageData: Data, userId: String) async throws -> PhotoUploadResponse {
+    /// (userId extracted from JWT token)
+    func uploadPhoto(_ imageData: Data) async throws -> PhotoUploadResponse {
         do {
             // 1) Request a presigned URL for WebP upload
             let presigned = try await presignedAPI.requestPresignedURL(
-                userId: userId,
                 fileExtension: "webp",
                 contentType: "image/webp"
             )
@@ -58,14 +58,14 @@ class FileAPI {
             try await presignedUploader.upload(data: imageData, to: presigned.url, headers: presigned.headers)
             // 3) Ask backend to create/return the photo record for this key
             do {
-                return try await finalizeUploadedPhoto(userId: userId, key: presigned.key, sizeBytes: imageData.count)
+                return try await finalizeUploadedPhoto(key: presigned.key, sizeBytes: imageData.count)
             } catch {
                 let urls = R2PhotoURLBuilder().buildURLs(forKey: presigned.key)
                 return PhotoUploadResponse(photoId: UUID().uuidString, urls: urls, uploadedAt: Date())
             }
         } catch {
             // Fallback path while backend presign endpoint is not ready
-            return try await uploadPhotoViaBase64(imageData, userId: userId)
+            return try await uploadPhotoViaBase64(imageData)
         }
     }
     
@@ -108,40 +108,37 @@ class FileAPI {
 
     // MARK: - Reports
 
-    /// Submit a report for a specific photo
+    /// Submit a report for a specific photo (reporterId extracted from JWT token)
     /// - Parameters:
     ///   - photoId: The ID of the photo being reported
-    ///   - reporterId: Optional reporter user ID (nil for anonymous)
     ///   - reason: The reason string describing the report
-    func submitReport(photoId: String, reporterId: String?, reason: String) async throws {
+    func submitReport(photoId: String, reason: String) async throws {
         print("📡 FileAPI: submitReport called")
         print("   - photoId: \(photoId)")
-        print("   - reporterId: \(reporterId ?? "nil")")
         print("   - reason: \(reason)")
-        
-        var body: [String: Any] = [
+
+        let body: [String: Any] = [
             "photoId": photoId,
             "reason": reason
         ]
-        if let reporterId = reporterId { body["reporterId"] = reporterId }
-        
+
         print("📡 FileAPI: Making API request to /api/file/report")
         print("📡 FileAPI: Request body: \(body)")
-        
+
         try await apiClient.performRequest(
             endpoint: "/api/file/report",
             method: .POST,
             body: body
         )
-        
+
         print("✅ FileAPI: Report submission completed successfully")
     }
 }
 
 // MARK: - Private helpers
 private extension FileAPI {
-    /// Legacy: Upload using base64 JSON payload to Workers endpoint
-    func uploadPhotoViaBase64(_ imageData: Data, userId: String) async throws -> PhotoUploadResponse {
+    /// Legacy: Upload using base64 JSON payload to Workers endpoint (userId extracted from JWT token)
+    func uploadPhotoViaBase64(_ imageData: Data) async throws -> PhotoUploadResponse {
         struct UploadData: Codable {
             let id: String?
             let photoId: String?
@@ -155,7 +152,6 @@ private extension FileAPI {
         }
         let base64 = imageData.base64EncodedString()
         let body: [String: Any] = [
-            "userId": userId,
             "imageData": base64,
             "format": "webp"
         ]
@@ -178,7 +174,8 @@ private extension FileAPI {
         return PhotoUploadResponse(photoId: returnedId, urls: urls, uploadedAt: response.data.uploadedAt ?? Date())
     }
     /// Tell backend that the object at `key` has been uploaded; expect photo id and URLs in response.
-    func finalizeUploadedPhoto(userId: String, key: String, sizeBytes: Int?) async throws -> PhotoUploadResponse {
+    /// (userId extracted from JWT token)
+    func finalizeUploadedPhoto(key: String, sizeBytes: Int?) async throws -> PhotoUploadResponse {
         struct UploadData: Codable {
             let id: String?
             let photoId: String?
@@ -192,7 +189,6 @@ private extension FileAPI {
         }
         let body: [String: Any] = {
             var dict: [String: Any] = [
-                "userId": userId,
                 "key": key,
                 "contentType": "image/webp"
             ]

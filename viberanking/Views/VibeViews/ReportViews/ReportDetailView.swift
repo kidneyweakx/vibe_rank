@@ -147,17 +147,14 @@ struct ReportDetailView: View {
         
         Task {
             do {
-                // Get current user ID if authenticated, otherwise submit as anonymous
-                let reporterId: String? = authService.currentUser?.id
                 let reason = reasonForReport()
-                
+
                 print("📝 ReportDetailView: Submitting report with:")
                 print("   - photoId: \(photoId)")
-                print("   - reporterId: \(reporterId ?? "nil (anonymous)")")
                 print("   - reason: \(reason)")
-                
-                try await fileAPI.submitReport(photoId: photoId, reporterId: reporterId, reason: reason)
-                
+
+                try await fileAPI.submitReport(photoId: photoId, reason: reason)
+
                 print("✅ ReportDetailView: Report submitted successfully")
                 await MainActor.run {
                     isSubmitting = false

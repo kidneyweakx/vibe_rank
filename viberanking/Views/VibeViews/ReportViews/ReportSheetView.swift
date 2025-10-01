@@ -122,13 +122,11 @@ struct ReportSheetView: View {
                 if let photoId = photoId {
                     Task {
                         do {
-                            let reporterId = authService.currentUser?.id
                             let reason = "Block User"
                             print("📡 ReportSheetView: Auto submitting report for block action")
                             print("   - photoId: \(photoId)")
-                            print("   - reporterId: \(reporterId ?? "nil")")
                             print("   - reason: \(reason)")
-                            try await fileAPI.submitReport(photoId: photoId, reporterId: reporterId, reason: reason)
+                            try await fileAPI.submitReport(photoId: photoId, reason: reason)
                             print("✅ ReportSheetView: Auto report submitted")
                         } catch {
                             print("❌ ReportSheetView: Failed to auto submit report: \(error)")

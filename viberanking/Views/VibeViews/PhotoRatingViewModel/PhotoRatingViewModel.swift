@@ -79,11 +79,11 @@ class PhotoRatingViewModel: BaseViewModel {
     func loadPhotosForRating(userId: String) async {
         currentUserId = userId
         isLoading = true
-        
+
         do {
             // 在背景線程請求 API
             let response = try await Task.detached(priority: .userInitiated) {
-                try await self.rateAPI.getRandomPhotos(userId: userId, limit: 10)
+                try await self.rateAPI.getRandomPhotos(limit: 10)
             }.value
             
             var built = try await self.buildPhotosResolvingURLs(from: response.data)
@@ -292,7 +292,7 @@ private extension PhotoRatingViewModel {
         do {
             // 在背景線程請求 API
             let response = try await Task.detached(priority: .userInitiated) {
-                try await self.rateAPI.getRandomPhotos(userId: self.currentUserId, limit: 10)
+                try await self.rateAPI.getRandomPhotos(limit: 10)
             }.value
             
             let newPhotos = try await self.buildPhotosResolvingURLs(from: response.data)

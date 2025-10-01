@@ -28,21 +28,6 @@ class AuthAPI {
         )
     }
     
-    // MARK: - Test Authentication
-    
-    func testLogin(email: String, name: String) async throws -> AuthResponse {
-        let body = [
-            "email": email,
-            "name": name
-        ]
-        return try await apiClient.performRequest(
-            endpoint: "/api/auth/test",
-            method: .POST,
-            body: body,
-            responseType: AuthResponse.self
-        )
-    }
-    
     // MARK: - Apple Authentication
     
     func verifyAppleToken(

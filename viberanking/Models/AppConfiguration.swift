@@ -146,11 +146,11 @@ enum AppEnvironment {
     var baseURL: String {
         switch self {
         case .development:
-            return "https://vibe-backend.kidneyweakx.workers.dev"
+            return "https://vibe-backend2.kidneyweakx.workers.dev"
         case .staging:
-            return "https://vibe-backend.kidneyweakx.workers.dev"
+            return "https://vibe-backend2.kidneyweakx.workers.dev"
         case .production:
-            return "https://vibe-backend.kidneyweakx.workers.dev"
+            return "https://vibe-backend2.kidneyweakx.workers.dev"
         }
     }
     
