@@ -17,12 +17,22 @@ struct ProfileInfoResponse: Codable {
 struct ProfileInfoData: Codable {
     // User basic info
     let user: UserBasicInfo
-    
-    // Journey/Stats info - 使用新的 ProfileJourneyInfo 模型
-    let journey: ProfileJourneyInfo
-    
-    // User photos
-    let photos: UserPhotosData
+
+    // Backend returns "stats" not "journey" (see getProfileInfo.ts:131)
+    let stats: ProfileJourneyInfo
+
+    // Backend returns photos as plain array, not { photos, totalCount, hasMore } (see getProfileInfo.ts:147)
+    let photos: [PhotoInfo]
+
+    // Provide computed property for backward compatibility
+    var journey: ProfileJourneyInfo {
+        return stats
+    }
+
+    // Provide computed property for backward compatibility
+    var photosData: UserPhotosData {
+        return UserPhotosData(photos: photos, totalCount: photos.count, hasMore: false)
+    }
 }
 
 struct UserBasicInfo: Codable {
@@ -115,9 +125,9 @@ class ProfileInfoAPI {
                 print("   - User Gender: \(data.user.gender ?? "None")")
                 print("   - User Provider: \(data.user.provider ?? "None")")
                 print("   - Journey Info Available: \(data.journey != nil)")
-                print("   - Photos Count: \(data.photos.photos.count)")
-                print("   - Total Photos: \(data.photos.totalCount)")
-                print("   - Has More Photos: \(data.photos.hasMore)")
+                print("   - Photos Count: \(data.photos.count)")
+                print("   - Total Photos: \(data.photos.count)")
+                print("   - Has More Photos: false")
             }
             
             return response
@@ -155,8 +165,8 @@ class ProfileInfoAPI {
                 let data = response.data
                 print("   - User ID: \(data.user.id)")
                 print("   - User Name: \(data.user.name)")
-                print("   - Photos Count: \(data.photos.photos.count)")
-                print("   - Total Photos: \(data.photos.totalCount)")
+                print("   - Photos Count: \(data.photos.count)")
+                print("   - Total Photos: \(data.photos.count)")
             }
             
             return response

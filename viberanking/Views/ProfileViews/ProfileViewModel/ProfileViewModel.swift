@@ -83,9 +83,9 @@ class ProfileViewModel: BaseViewModel {
                     print("   - User Gender: \(data.user.gender ?? "None")")
                     print("   - User Provider: \(data.user.provider ?? "None")")
                     print("   - Journey Info Available: \(data.journey != nil)")
-                    print("   - Photos Count: \(data.photos.photos.count)")
-                    print("   - Total Photos: \(data.photos.totalCount)")
-                    print("   - Has More Photos: \(data.photos.hasMore)")
+                    print("   - Photos Count: \(data.photos.count)")
+                    print("   - Total Photos: \(data.photos.count)")
+                    print("   - Has More Photos: false")
                     
                     // Update user basic info
                     print("🔄 ProfileViewModel: Updating user basic info...")
@@ -126,18 +126,18 @@ class ProfileViewModel: BaseViewModel {
                     
                     // Update user photos
                     print("🔄 ProfileViewModel: Updating user photos...")
-                    self.userPhotoInfos = data.photos.photos
-                    self.userPhotos = data.photos.photos.map { info in
+                    self.userPhotoInfos = data.photos
+                    self.userPhotos = data.photos.map { info in
                         Photo(id: info.id, userId: info.userId, imageURL: info.urls)
                     }
                     print("   ✅ User photos updated")
                     print("   - PhotoInfos Count: \(self.userPhotoInfos.count)")
                     print("   - Photos Count: \(self.userPhotos.count)")
-                    
+
                     print("🎉 ProfileViewModel: Successfully loaded profile using consolidated API!")
                     print("📈 ProfileViewModel: Performance Summary:")
                     print("   - API Duration: \(String(format: "%.2f", duration))s")
-                    print("   - Data Points: \(data.photos.photos.count) photos, \(data.journey.recentRatings.count) ratings")
+                    print("   - Data Points: \(data.photos.count) photos, \(data.journey.recentRatings.count) ratings")
                     return
                 } else {
                     print("⚠️ ProfileViewModel: Consolidated API returned success=false")

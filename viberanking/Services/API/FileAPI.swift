@@ -27,11 +27,13 @@ struct PhotoListResponse: Codable {
     let hasMore: Bool
 }
 
+// Backend PhotoInfo includes optional tags (see file.ts:26-32)
 struct PhotoInfo: Codable {
     let id: String
     let userId: String
     let urls: PhotoURLs
     let uploadedAt: Date
+    let tags: [Tag]?
 }
 
 // MARK: - File API Implementation

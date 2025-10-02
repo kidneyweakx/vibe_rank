@@ -272,29 +272,46 @@ class AuthenticationViewModel: ObservableObject {
     }
     
     /// Sign out the current user
-    func signOut() {
+    func signOut(dueTo reason: String? = nil) {
         isLoading = true
-        
+
+        if let reason = reason {
+            print("🔐 Signing out due to: \(reason)")
+        }
+
         Task {
             do {
                 if !isGuest {
                     try await authenticationService.signOut()
                 }
-                self.user = nil
-                self.isAuthenticated = false
-                self.isGuest = false
-                self.authState = .signedOut
-                
+
+                await MainActor.run {
+                    self.user = nil
+                    self.isAuthenticated = false
+                    self.isGuest = false
+                    self.authState = .signedOut
+
+                    // Set error message if signed out due to session expiry
+                    if reason?.contains("expired") == true || reason?.contains("401") == true {
+                        self.errorMessage = "Your session has expired. Please sign in again."
+                    }
+                }
+
                 // Log analytics event
                 logAuthenticationEvent(provider: "signout", success: true)
             } catch {
-                self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
-                self.authState = .error(self.errorMessage ?? "Unknown error")
-                
+                await MainActor.run {
+                    self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
+                    self.authState = .error(self.errorMessage ?? "Unknown error")
+                }
+
                 // Log analytics event
                 logAuthenticationEvent(provider: "signout", success: false)
             }
-            isLoading = false
+
+            await MainActor.run {
+                isLoading = false
+            }
         }
     }
     

@@ -19,6 +19,7 @@ struct HomeInfoData: Codable {
     let recentEvents: [RecentEvent]
 }
 
+// Backend returns { overall, male, female, totalUsers } from getRankingList
 struct TopUsersData: Codable {
     let overall: [TopUser]
     let male: [TopUser]

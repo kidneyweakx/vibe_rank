@@ -21,21 +21,24 @@ struct viberankingApp: App {
     init() {
         // Configure Google Sign-In
         configureGoogleSignIn()
-        
+
         // Test Apple Sign-In configuration
         AppleSignInTestHelper.testConfiguration()
         AppleSignInTestHelper.checkDeviceSupport()
         AppleSignInTestHelper.testKeychainOperations()
-        
+
         // Print app info for debugging
         print("App Version: \(AppInfo.fullVersionString)")
         print("Environment: \(AppEnvironment.current)")
-        
+
         // Check Apple ID credential state at launch
         checkAppleIDCredentialStateAtLaunch()
 
         // Start Apple analytics (MetricKit)
         AppleAnalyticsManager.shared.start()
+
+        // Setup session expiry observer
+        setupSessionExpiryObserver()
     }
     
     /// Configure Google Sign-In
@@ -56,6 +59,18 @@ struct viberankingApp: App {
         // 這個檢查現在由 AuthenticationService 的 init 方法處理
         // 不需要在這裡重複檢查
         print("ℹ️ 認證狀態檢查將由 AuthenticationService 處理")
+    }
+
+    /// Setup observer for session expiry notifications
+    private func setupSessionExpiryObserver() {
+        NotificationCenter.default.addObserver(
+            forName: .userSessionExpired,
+            object: nil,
+            queue: .main
+        ) { [weak authenticationViewModel] _ in
+            print("🔒 Session expired notification received - signing out user")
+            authenticationViewModel?.signOut(dueTo: "Session expired (401)")
+        }
     }
 
     var body: some Scene {

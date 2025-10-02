@@ -86,11 +86,13 @@ struct LevelProgress: Codable {
     let progressPercentage: Double
 }
 
+// Backend returns: { id, type, createdAt, raterName, raterGender } (see journeyService.ts:266)
 struct RecentRating: Codable {
-    let photoId: String
-    let photoUrl: String
+    let id: String
     let type: String
     let createdAt: Date
+    let raterName: String?
+    let raterGender: String?
 }
 
 struct RandomPhotosResponse: Codable {
