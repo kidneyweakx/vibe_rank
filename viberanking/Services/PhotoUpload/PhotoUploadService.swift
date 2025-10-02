@@ -85,7 +85,7 @@ class PhotoUploadService {
             logger.info("📤 Step 2: Uploading to API - PhotoID: \(photoId)")
             await updateUploadStatus(photoId: photoId, status: .uploading(progress: 0.0))
 
-            let response = try await fileAPI.uploadPhoto(webpData)
+            let response = try await fileAPI.uploadPhoto(webpData, takenAt: captureDate)
             logger.info("✅ API upload completed - PhotoID: \(photoId), ResponseID: \(response.photoId)")
             
             // Step 3: Create Photo object

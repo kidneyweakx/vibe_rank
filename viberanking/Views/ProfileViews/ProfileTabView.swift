@@ -460,9 +460,11 @@ private extension ProfileTabView {
         // Start from current week's start
         let startOfThisWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) ?? today
         // Map user's photos by day (startOfDay)
+        // Use takenAt if available, otherwise fall back to uploadedAt
         var photosByDay: [Date: [PhotoInfo]] = [:]
         for info in viewModel.userPhotoInfos {
-            let dayStart = calendar.startOfDay(for: info.uploadedAt)
+            let photoDate = info.takenAt ?? info.uploadedAt
+            let dayStart = calendar.startOfDay(for: photoDate)
             photosByDay[dayStart, default: []].append(info)
         }
         

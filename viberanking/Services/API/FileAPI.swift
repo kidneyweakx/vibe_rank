@@ -33,6 +33,7 @@ struct PhotoInfo: Codable {
     let userId: String
     let urls: PhotoURLs
     let uploadedAt: Date
+    let takenAt: Date?
     let tags: [Tag]?
 }
 
@@ -183,7 +184,7 @@ private extension FileAPI {
     }
     /// Tell backend that the object at `key` has been uploaded; expect photo id and URLs in response.
     /// (userId extracted from JWT token)
-    func finalizeUploadedPhoto(key: String, sizeBytes: Int?) async throws -> PhotoUploadResponse {
+    func finalizeUploadedPhoto(key: String, sizeBytes: Int?, takenAt: Date? = nil) async throws -> PhotoUploadResponse {
         struct UploadData: Codable {
             let id: String?
             let photoId: String?
@@ -201,6 +202,11 @@ private extension FileAPI {
                 "contentType": "image/webp"
             ]
             if let sizeBytes { dict["sizeBytes"] = sizeBytes }
+            if let takenAt {
+                let formatter = ISO8601DateFormatter()
+                formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                dict["takenAt"] = formatter.string(from: takenAt)
+            }
             return dict
         }()
         let response = try await apiClient.performRequest(

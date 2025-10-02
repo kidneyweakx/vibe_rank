@@ -102,18 +102,26 @@ Central configuration for:
 ## Image Processing
 
 ### WebP Conversion
-- All photos are converted to WebP format before upload
+- **All photos MUST be converted to WebP format before upload**
 - Uses `SDWebImageWebPCoder` framework via `WebPConverter.shared`
 - Adaptive quality compression: starts at 0.8, reduces to 0.4 if size exceeds limits
 - Max dimension: 1200px (configurable via `AppConfiguration.Photo.highResSize`)
 - Size limit accounts for base64 encoding overhead (72% of 10MB = ~7.2MB binary)
 
+### Metadata Extraction
+- **Photo capture time (EXIF takenAt) is extracted from images before upload**
+- Uses `ImageMetadataExtractor` utility to extract EXIF DateTimeOriginal
+- Supports extraction from UIImage, Data, and PHAsset
+- If no EXIF date is available, backend uses upload time as fallback
+- Photos are sorted by takenAt (with uploadedAt fallback) in ProfileView for chronological ordering
+
 ### Upload Flow
-1. Image → PNG data → WebP conversion with quality adjustment
-2. Request presigned URL from backend (`/api/file/presign`)
-3. PUT binary data directly to R2 storage
-4. Finalize upload with backend (`/api/file/photos/complete`)
-5. Fallback to base64 JSON upload if presigned flow fails
+1. Extract EXIF capture date from image (if available)
+2. Image → PNG data → WebP conversion with quality adjustment
+3. Request presigned URL from backend (`/api/file/presign`)
+4. PUT binary data directly to R2 storage
+5. Finalize upload with backend (`/api/file/photos/complete`) including optional takenAt timestamp
+6. Fallback to base64 JSON upload if presigned flow fails
 
 ## Dependencies (SPM)
 
