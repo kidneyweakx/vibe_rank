@@ -49,7 +49,7 @@ class FileAPI {
     /// Upload photo via Presigned URL (PUT to R2), then finalize with backend metadata.
     /// If presign flow is unavailable (e.g., 422), gracefully fallback to base64 JSON upload.
     /// (userId extracted from JWT token)
-    func uploadPhoto(_ imageData: Data) async throws -> PhotoUploadResponse {
+    func uploadPhoto(_ imageData: Data, takenAt: Date? = nil) async throws -> PhotoUploadResponse {
         do {
             // 1) Request a presigned URL for WebP upload
             let presigned = try await presignedAPI.requestPresignedURL(
@@ -60,7 +60,7 @@ class FileAPI {
             try await presignedUploader.upload(data: imageData, to: presigned.url, headers: presigned.headers)
             // 3) Ask backend to create/return the photo record for this key
             do {
-                return try await finalizeUploadedPhoto(key: presigned.key, sizeBytes: imageData.count)
+                return try await finalizeUploadedPhoto(key: presigned.key, sizeBytes: imageData.count, takenAt: takenAt)
             } catch {
                 let urls = R2PhotoURLBuilder().buildURLs(forKey: presigned.key)
                 return PhotoUploadResponse(photoId: UUID().uuidString, urls: urls, uploadedAt: Date())
@@ -113,16 +113,22 @@ class FileAPI {
     /// Submit a report for a specific photo (reporterId extracted from JWT token)
     /// - Parameters:
     ///   - photoId: The ID of the photo being reported
-    ///   - reason: The reason string describing the report
-    func submitReport(photoId: String, reason: String) async throws {
+    ///   - reason: Backend-compatible reason code (inappropriate, spam, harassment, nudity, violence, other)
+    ///   - details: Optional additional details about the report
+    func submitReport(photoId: String, reason: String, details: String? = nil) async throws {
         print("📡 FileAPI: submitReport called")
         print("   - photoId: \(photoId)")
         print("   - reason: \(reason)")
+        print("   - details: \(details ?? "none")")
 
-        let body: [String: Any] = [
+        var body: [String: Any] = [
             "photoId": photoId,
             "reason": reason
         ]
+
+        if let details = details {
+            body["details"] = details
+        }
 
         print("📡 FileAPI: Making API request to /api/file/report")
         print("📡 FileAPI: Request body: \(body)")

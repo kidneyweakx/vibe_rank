@@ -25,7 +25,8 @@ class PhotoRatingViewModel: BaseViewModel {
     @Published var showUnlockCelebration: Bool = false
     @Published var currentTags: [Tag] = []
     @Published var photoUserNames: [String: String] = [:] // photoId -> userName
-    
+    @Published var photoTags: [String: [Tag]] = [:] // photoId -> [Tag]
+
     // MARK: - Private Properties
     private let rateAPI = RateAPI()
     private let tagsAPI = TagsAPI()
@@ -95,11 +96,14 @@ class PhotoRatingViewModel: BaseViewModel {
             await MainActor.run {
                 self.photos = built
                 self.photoUserNames = Dictionary(uniqueKeysWithValues: response.data.map { ($0.id, $0.user.name) })
+                self.photoTags = Dictionary(uniqueKeysWithValues: response.data.map { ($0.id, $0.tags ?? []) })
                 self.currentPhotoIndex = 0
                 self.isLoading = false
+                // Update currentTags for first photo
+                if let firstPhoto = self.photos.first {
+                    self.currentTags = self.photoTags[firstPhoto.id] ?? []
+                }
             }
-            
-            await fetchTagsForCurrentPhoto()
             Task.detached { await self.preloadImages() }
             
             print("✅ Successfully loaded \(built.count) photos for rating")
@@ -299,9 +303,10 @@ private extension PhotoRatingViewModel {
             // 回到主線程更新 UI
             await MainActor.run {
                 self.photos.append(contentsOf: newPhotos)
-                // Extend name mapping for newly loaded items
-                for item in response.data { 
-                    self.photoUserNames[item.id] = item.user.name 
+                // Extend name and tags mapping for newly loaded items
+                for item in response.data {
+                    self.photoUserNames[item.id] = item.user.name
+                    self.photoTags[item.id] = item.tags ?? []
                 }
             }
         } catch {
@@ -330,21 +335,10 @@ private extension PhotoRatingViewModel {
             await MainActor.run { self.currentTags = [] }
             return
         }
-        
-        do {
-            // 在背景線程請求 API
-            let response = try await Task.detached(priority: .userInitiated) {
-                try await self.tagsAPI.getTagsForPhoto(photoId: photo.id)
-            }.value
-            
-            // 回到主線程更新 UI
-            await MainActor.run { 
-                self.currentTags = response.data 
-            }
-        } catch {
-            await MainActor.run { 
-                self.currentTags = [] 
-            }
+
+        // Use pre-loaded tags from photoTags dictionary
+        await MainActor.run {
+            self.currentTags = self.photoTags[photo.id] ?? []
         }
     }
 

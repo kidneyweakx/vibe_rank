@@ -53,12 +53,12 @@ struct ReportOptionRow: View {
 #Preview {
     VStack(spacing: 12) {
         ReportOptionRow(
-            reportType: .fakeProfile,
+            reportType: .inappropriate,
             isSelected: false
         ) {}
-        
+
         ReportOptionRow(
-            reportType: .fakeProfile,
+            reportType: .spam,
             isSelected: true
         ) {}
     }

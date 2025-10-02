@@ -29,13 +29,21 @@ class PhotoUploadService {
     func uploadPhoto(_ image: UIImage, for userId: String) async throws -> Photo {
         let photoId = UUID().uuidString
         let uploadTask = UploadTask(photoId: photoId, userId: userId)
-        
+
         await MainActor.run {
             activeUploads[photoId] = uploadTask
         }
-        
+
         logger.info("🚀 Starting photo upload - PhotoID: \(photoId), UserID: \(userId)")
         logger.debug("📊 Image size: \(image.size.width)x\(image.size.height)")
+
+        // Extract capture date from image metadata
+        let captureDate = ImageMetadataExtractor.extractCaptureDate(from: image)
+        if let captureDate = captureDate {
+            logger.info("📅 Extracted capture date: \(captureDate)")
+        } else {
+            logger.debug("⚠️ No capture date found in image metadata, will use upload time")
+        }
         
         do {
             // Step 1: Convert to WebP (在背景線程執行)

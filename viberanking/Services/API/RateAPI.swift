@@ -109,6 +109,7 @@ struct RatingPhoto: Codable {
     let size: Int?
     let uploadedAt: Date
     let user: PhotoUser
+    let tags: [Tag]?
 }
 
 struct PhotoUser: Codable {

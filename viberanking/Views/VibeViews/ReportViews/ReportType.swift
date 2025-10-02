@@ -7,88 +7,79 @@
 
 import SwiftUI
 
-enum ReportType: CaseIterable {
-    case fakeProfile
-    case advertiser
-    case fraud
-    case explicitContent
-    case profanity
-    case harmfulMinors
-    case cyberbullying
-    
+enum ReportType: String, CaseIterable {
+    case inappropriate = "inappropriate"
+    case spam = "spam"
+    case harassment = "harassment"
+    case nudity = "nudity"
+    case violence = "violence"
+    case other = "other"
+
     var title: String {
         switch self {
-        case .fakeProfile:
-            return "Fake Profile Information/Photos"
-        case .advertiser:
-            return "Advertiser/Spam"
-        case .fraud:
-            return "Fraud"
-        case .explicitContent:
-            return "Explicit content"
-        case .profanity:
-            return "Profanity/Harassment"
-        case .harmfulMinors:
-            return "Harmful information involving minors"
-        case .cyberbullying:
-            return "Cyberbullying"
+        case .inappropriate:
+            return "Inappropriate Content"
+        case .spam:
+            return "Spam or Advertising"
+        case .harassment:
+            return "Harassment or Bullying"
+        case .nudity:
+            return "Nudity or Sexual Content"
+        case .violence:
+            return "Violence or Threats"
+        case .other:
+            return "Other"
         }
     }
     
     var iconName: String {
         switch self {
-        case .fakeProfile:
-            return "person.crop.circle.badge.exclamationmark"
-        case .advertiser:
-            return "tag"
-        case .fraud:
-            return "person.crop.circle.badge.xmark"
-        case .explicitContent:
+        case .inappropriate:
             return "exclamationmark.triangle"
-        case .profanity:
+        case .spam:
+            return "tag"
+        case .harassment:
             return "text.bubble"
-        case .harmfulMinors:
-            return "leaf"
-        case .cyberbullying:
-            return "xmark.square"
+        case .nudity:
+            return "eye.slash"
+        case .violence:
+            return "exclamationmark.shield"
+        case .other:
+            return "ellipsis.circle"
         }
     }
-    
+
     var iconColor: Color {
         switch self {
-        case .fakeProfile:
-            return .purple
-        case .advertiser:
-            return .blue
-        case .fraud:
-            return .gray
-        case .explicitContent:
-            return .pink
-        case .profanity:
+        case .inappropriate:
             return .orange
-        case .harmfulMinors:
-            return .green
-        case .cyberbullying:
+        case .spam:
             return .blue
+        case .harassment:
+            return .red
+        case .nudity:
+            return .pink
+        case .violence:
+            return .purple
+        case .other:
+            return .gray
         }
     }
-    
+
     var description: String {
         switch self {
-        case .fakeProfile:
-            return "Report fake or impersonating profiles, stolen photos, or misleading information"
-        case .advertiser:
-            return "Report spam, advertising, or promotional content"
-        case .fraud:
-            return "Report scams, fraud attempts, or deceptive behavior"
-        case .explicitContent:
-            return "Report inappropriate, explicit, or adult content"
-        case .profanity:
-            return "Report offensive language, harassment, or abusive behavior"
-        case .harmfulMinors:
-            return "Report content that could harm or exploit minors"
-        case .cyberbullying:
-            return "Report bullying, intimidation, or targeted harassment"
+        case .inappropriate:
+            return "Content that violates community guidelines"
+        case .spam:
+            return "Spam, advertising, or promotional content"
+        case .harassment:
+            return "Bullying, harassment, or abusive behavior"
+        case .nudity:
+            return "Inappropriate sexual or nudity content"
+        case .violence:
+            return "Violence, threats, or harmful content"
+        case .other:
+            return "Other issues not listed above"
         }
     }
 }

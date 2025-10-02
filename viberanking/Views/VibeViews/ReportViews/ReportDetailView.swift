@@ -147,13 +147,19 @@ struct ReportDetailView: View {
         
         Task {
             do {
-                let reason = reasonForReport()
+                let reason = reportType.rawValue // Use backend-compatible reason
+                let details = reportText.trimmingCharacters(in: .whitespacesAndNewlines)
 
                 print("📝 ReportDetailView: Submitting report with:")
                 print("   - photoId: \(photoId)")
                 print("   - reason: \(reason)")
+                print("   - details: \(details)")
 
-                try await fileAPI.submitReport(photoId: photoId, reason: reason)
+                try await fileAPI.submitReport(
+                    photoId: photoId,
+                    reason: reason,
+                    details: details.isEmpty ? nil : details
+                )
 
                 print("✅ ReportDetailView: Report submitted successfully")
                 await MainActor.run {
@@ -174,7 +180,8 @@ struct ReportDetailView: View {
         }
     }
 
-    private func reasonForReport() -> String {
+    // MARK: - Removed reasonForReport() - no longer needed
+    private func oldReasonForReport() -> String {
         let base = reportType.title
         if reportText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return base
@@ -184,6 +191,6 @@ struct ReportDetailView: View {
 }
 
 #Preview {
-    ReportDetailView(reportType: .fakeProfile, photoId: "demo-photo")
+    ReportDetailView(reportType: .inappropriate, photoId: "demo-photo")
 }
 
