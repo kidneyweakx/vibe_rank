@@ -15,13 +15,17 @@ struct EventItemCard: View {
                 onTap()
             }
         }) {
-            VStack(spacing: 0) {
+            ZStack(alignment: .topTrailing) {
+                // Main card content
                 ZStack {
+                    // Background gradient
                     LinearGradient(
                         colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
+
+                    // Image
                     if let urlString = item.imageURL, let url = URL(string: urlString) {
                         AsyncImage(url: url) { phase in
                             switch phase {
@@ -36,8 +40,6 @@ struct EventItemCard: View {
                                 image
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                    .clipped()
                             case .failure:
                                 VStack(spacing: 12) {
                                     Image(systemName: "calendar.badge.exclamationmark")
@@ -51,7 +53,6 @@ struct EventItemCard: View {
                                 Color.clear
                             }
                         }
-                        .clipped()
                     } else {
                         VStack(spacing: 12) {
                             Image(systemName: "calendar.badge.plus")
@@ -62,55 +63,66 @@ struct EventItemCard: View {
                                 .foregroundColor(.white.opacity(0.4))
                         }
                     }
-                    LinearGradient(
-                        colors: [Color.clear, Color.clear, Color.black.opacity(0.7)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    VStack { Spacer() }
+
+                    // Bottom gradient overlay
                     VStack {
-                        HStack {
-                            Spacer()
-                            HStack(spacing: 6) {
-                                Image(systemName: "star.fill")
-                                    .font(.system(size: 8, weight: .bold))
-                                    .foregroundColor(.yellow)
-                                Text("common.partner_event".localized)
-                                    .font(.system(size: 10, weight: .semibold))
-                                    .foregroundColor(.white)
-                            }
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(
-                                Capsule()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color.purple.opacity(0.8), Color.pink.opacity(0.7)],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                                    .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
-                            )
-                        }
                         Spacer()
-                    }
-                    .padding(12)
-                }
-                .aspectRatio(9/16, contentMode: .fit)
-                .clipped()
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(
-                            LinearGradient(
-                                colors: [Color.white.opacity(0.2), Color.white.opacity(0.05)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
+                        LinearGradient(
+                            colors: [Color.clear, Color.black.opacity(0.4), Color.black.opacity(0.8)],
+                            startPoint: .top,
+                            endPoint: .bottom
                         )
+                        .frame(height: 120)
+                    }
+
+                    // Event info at bottom
+                    VStack {
+                        Spacer()
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(item.title)
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                                .lineLimit(2)
+                                .multilineTextAlignment(.leading)
+
+                            if let description = item.description, !description.isEmpty {
+                                Text(description)
+                                    .font(.system(size: 13, weight: .regular))
+                                    .foregroundColor(.white.opacity(0.85))
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.leading)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(16)
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .shadow(color: .black.opacity(0.3), radius: 12, x: 0, y: 6)
+
+                // Partner badge (positioned correctly with padding)
+                HStack(spacing: 6) {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundColor(.yellow)
+                    Text("common.partner_event".localized)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.purple.opacity(0.95), Color.pink.opacity(0.85)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .shadow(color: .purple.opacity(0.4), radius: 8, x: 0, y: 4)
                 )
+                .padding([.top, .trailing], 12)
             }
         }
         .buttonStyle(PlainButtonStyle())

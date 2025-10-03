@@ -91,9 +91,26 @@ struct HomeView: View {
                     // AdMob Banner section
                     VStack(alignment: .leading, spacing: 16) {
                         sectionHeader("home.ads.title".localized, subtitle: "home.ads.subtitle".localized)
+                            .padding(.horizontal, 20)
+
                         AdMobAdaptiveBannerView()
                             .frame(height: 90)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.white.opacity(0.05), Color.white.opacity(0.02)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                            )
+                            .padding(.horizontal, 20)
                     }
 
                     // Empty state when no data

@@ -1,101 +1,118 @@
 import SwiftUI
 
-// MARK: - Ranked User Card (9:16 portrait)
+// MARK: - Ranked User Card (Circular with ranking badge)
 struct RankedUserCard: View {
     let gallery: TopUserGallery
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                ZStack {
-                    Circle()
-                        .fill(rankGradient)
-                        .frame(width: 28, height: 28)
-                        .shadow(color: rankColor.opacity(0.3), radius: 4, x: 0, y: 2)
-                    Text("\(gallery.rank)")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.white)
-                }
-                Spacer()
-                if gallery.rank <= 3 {
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 16))
-                        .foregroundColor(rankColor)
-                }
-            }
-
-            ZStack {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+        VStack(spacing: 10) {
+            ZStack(alignment: .bottomTrailing) {
+                // Avatar
                 if let first = gallery.photoURLs.first, let url = URL(string: first) {
                     AsyncImage(url: url) { phase in
                         switch phase {
                         case .empty:
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                                .tint(.white.opacity(0.7))
-                                .scaleEffect(0.8)
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .overlay(
+                                    ProgressView()
+                                        .progressViewStyle(.circular)
+                                        .tint(.white.opacity(0.7))
+                                        .scaleEffect(0.8)
+                                )
                         case .success(let image):
                             image
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: 100)
-                                .aspectRatio(9/16, contentMode: .fill)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .frame(width: 80, height: 80)
+                                .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(rankGradient, lineWidth: gallery.rank <= 3 ? 3 : 2)
+                                )
                         case .failure:
-                            VStack(spacing: 8) {
-                                Image(systemName: "photo.artframe")
-                                    .font(.system(size: 32))
-                                    .foregroundColor(.white.opacity(0.4))
-                                Text("common.photo".localized)
-                                    .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.4))
-                            }
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .overlay(
+                                    Image(systemName: "person.fill")
+                                        .font(.system(size: 32))
+                                        .foregroundColor(.white.opacity(0.4))
+                                )
                         @unknown default:
                             Color.clear
                         }
                     }
-                    .frame(width: 100)
-                    .aspectRatio(9/16, contentMode: .fit)
-                    .clipped()
                 } else {
-                    VStack(spacing: 8) {
-                        Image(systemName: "photo.artframe")
-                            .font(.system(size: 32))
-                            .foregroundColor(.white.opacity(0.4))
-                        Text("common.no_photos".localized)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.4))
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 80, height: 80)
+                        .overlay(
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 32))
+                                .foregroundColor(.white.opacity(0.4))
+                        )
+                }
+
+                // Rank badge
+                ZStack {
+                    Circle()
+                        .fill(rankGradient)
+                        .frame(width: 28, height: 28)
+                        .shadow(color: rankColor.opacity(0.5), radius: 6, x: 0, y: 3)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.black.opacity(0.2), lineWidth: 2)
+                        )
+
+                    Text("\(gallery.rank)")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white)
+                }
+                .offset(x: 2, y: 2)
+            }
+            .frame(width: 80, height: 80)
+
+            VStack(spacing: 3) {
+                Text(gallery.name)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+
+                if gallery.rank <= 3 {
+                    HStack(spacing: 3) {
+                        Image(systemName: "crown.fill")
+                            .font(.system(size: 9))
+                            .foregroundColor(rankColor)
+                        Text("#\(gallery.rank)")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.white.opacity(0.8))
                     }
+                } else {
+                    Text("#\(gallery.rank)")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.white.opacity(0.6))
                 }
             }
-            .frame(width: 100)
-            .aspectRatio(9/16, contentMode: .fit)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.2), Color.white.opacity(0.05)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
-            )
-
-            Text(gallery.name)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.white)
-                .lineLimit(1)
         }
-        .frame(width: 100)
-        .padding(.vertical, 8)
+        .frame(width: 88)
     }
     
     private var rankColor: Color {

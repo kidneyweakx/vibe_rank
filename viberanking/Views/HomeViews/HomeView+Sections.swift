@@ -138,37 +138,37 @@ extension HomeView {
     var recommendedSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader("home.recommended.title".localized, subtitle: "home.recommended.subtitle".localized)
+                .padding(.horizontal, 20)
+
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     ForEach(topUserGalleries, id: \.userId) { gallery in
                         RankedUserCard(gallery: gallery)
-                            .frame(width: 100)
+                            .frame(width: 88)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.trailing, 20)
+                .padding(.horizontal, 4)
             }
+            .padding(.horizontal, 20)
         }
     }
 
     var eventSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader("home.events.title".localized, subtitle: "home.events.subtitle".localized)
-            GeometryReader { proxy in
-                let gridConfig = calculateGridConfiguration(for: proxy.size.width)
-                ScrollView {
-                    LazyVGrid(columns: gridConfig.columns, spacing: gridConfig.spacing) {
-                        ForEach(events) { item in
-                            EventItemCard(item: item) { }
-                                .frame(width: gridConfig.cardWidth)
-                                .aspectRatio(9/16, contentMode: .fit)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                        }
+                .padding(.horizontal, 20)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 16) {
+                    ForEach(events) { item in
+                        EventItemCard(item: item) { }
+                            .frame(width: 280)
+                            .aspectRatio(9/16, contentMode: .fit)
                     }
-                    .padding(.bottom, 20)
                 }
+                .padding(.horizontal, 4)
             }
-            .frame(minHeight: 400)
+            .padding(.horizontal, 20)
         }
     }
 
@@ -180,13 +180,13 @@ extension HomeView {
     }
 
     func sectionHeader(_ title: String, subtitle: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.system(size: 24, weight: .bold))
+                .font(.system(size: 22, weight: .bold))
                 .foregroundColor(.white)
             Text(subtitle)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.white.opacity(0.6))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.white.opacity(0.65))
         }
     }
 }
