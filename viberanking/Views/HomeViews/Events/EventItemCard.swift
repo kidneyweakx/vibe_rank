@@ -18,9 +18,12 @@ struct EventItemCard: View {
             ZStack(alignment: .topTrailing) {
                 // Main card content
                 ZStack {
-                    // Background gradient
+                    // Background gradient with subtle color tint
                     LinearGradient(
-                        colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                        colors: [
+                            Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.12),
+                            Color(red: 255/255, green: 139/255, blue: 148/255).opacity(0.08)
+                        ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -97,8 +100,8 @@ struct EventItemCard: View {
                         .padding(16)
                     }
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .shadow(color: .black.opacity(0.3), radius: 12, x: 0, y: 6)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .shadow(color: .black.opacity(0.4), radius: 10, x: 0, y: 5)
 
                 // Partner badge (positioned correctly with padding)
                 HStack(spacing: 6) {
@@ -115,12 +118,15 @@ struct EventItemCard: View {
                     Capsule()
                         .fill(
                             LinearGradient(
-                                colors: [Color.purple.opacity(0.95), Color.pink.opacity(0.85)],
+                                colors: [
+                                    Color(red: 255/255, green: 139/255, blue: 148/255), // Coral
+                                    Color(red: 94/255, green: 205/255, blue: 200/255)   // Turquoise
+                                ],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
-                        .shadow(color: .purple.opacity(0.4), radius: 8, x: 0, y: 4)
+                        .shadow(color: Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.4), radius: 8, x: 0, y: 4)
                 )
                 .padding([.top, .trailing], 12)
             }

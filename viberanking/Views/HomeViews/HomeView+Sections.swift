@@ -33,14 +33,14 @@ extension HomeView {
                                 title: "home.statistics.users".localized,
                                 value: "\(stats.totalUsers)",
                                 icon: "person.3.fill",
-                                color: .blue
+                                color: Color(red: 255/255, green: 139/255, blue: 148/255) // Coral
                             )
 
                             StatisticCard(
                                 title: "home.statistics.photos".localized,
                                 value: "\(stats.totalPhotos)",
                                 icon: "photo.fill",
-                                color: .green
+                                color: Color(red: 184/255, green: 152/255, blue: 156/255) // Rose
                             )
                         }
 
@@ -49,14 +49,14 @@ extension HomeView {
                                 title: "home.statistics.ratings".localized,
                                 value: "\(stats.totalRatings)",
                                 icon: "star.fill",
-                                color: .yellow
+                                color: Color(red: 152/255, green: 161/255, blue: 159/255) // Gray
                             )
 
                             StatisticCard(
                                 title: "home.statistics.events".localized,
                                 value: "\(stats.activeEvents)",
                                 icon: "calendar.fill",
-                                color: .purple
+                                color: Color(red: 94/255, green: 205/255, blue: 200/255) // Turquoise
                             )
                         }
                     }
@@ -67,28 +67,28 @@ extension HomeView {
                             title: "home.statistics.users".localized,
                             value: "\(stats.totalUsers)",
                             icon: "person.3.fill",
-                            color: .blue
+                            color: Color(red: 255/255, green: 139/255, blue: 148/255) // Coral
                         )
 
                         StatisticCard(
                             title: "home.statistics.photos".localized,
                             value: "\(stats.totalPhotos)",
                             icon: "photo.fill",
-                            color: .green
+                            color: Color(red: 184/255, green: 152/255, blue: 156/255) // Rose
                         )
 
                         StatisticCard(
                             title: "home.statistics.ratings".localized,
                             value: "\(stats.totalRatings)",
                             icon: "star.fill",
-                            color: .yellow
+                            color: Color(red: 152/255, green: 161/255, blue: 159/255) // Gray
                         )
 
                         StatisticCard(
                             title: "home.statistics.events".localized,
                             value: "\(stats.activeEvents)",
                             icon: "calendar.fill",
-                            color: .purple
+                            color: Color(red: 94/255, green: 205/255, blue: 200/255) // Turquoise
                         )
                     }
                 }
@@ -159,10 +159,10 @@ extension HomeView {
                 .padding(.horizontal, 20)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     ForEach(events) { item in
                         EventItemCard(item: item) { }
-                            .frame(width: 280)
+                            .frame(width: 200)
                             .aspectRatio(9/16, contentMode: .fit)
                     }
                 }
@@ -174,7 +174,17 @@ extension HomeView {
 
     var divider: some View {
         Rectangle()
-            .fill(Color.white.opacity(0.1))
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color.clear,
+                        Color.white.opacity(0.15),
+                        Color.clear
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
             .frame(height: 1)
             .padding(.horizontal, 20)
     }
@@ -183,10 +193,19 @@ extension HomeView {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.system(size: 22, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 255/255, green: 139/255, blue: 148/255),
+                            Color.white
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
             Text(subtitle)
                 .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.white.opacity(0.65))
+                .foregroundColor(.white.opacity(0.7))
         }
     }
 }

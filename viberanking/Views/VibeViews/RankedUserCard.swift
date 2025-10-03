@@ -120,10 +120,10 @@ struct RankedUserCard: View {
         case 1: return .yellow
         case 2: return Color(red: 0.75, green: 0.75, blue: 0.75)
         case 3: return Color(red: 0.8, green: 0.5, blue: 0.2)
-        default: return .blue
+        default: return Color(red: 94/255, green: 205/255, blue: 200/255) // Turquoise from logo
         }
     }
-    
+
     private var rankGradient: LinearGradient {
         switch gallery.rank {
         case 1:
@@ -133,7 +133,15 @@ struct RankedUserCard: View {
         case 3:
             return LinearGradient(colors: [Color(red: 1.0, green: 0.6, blue: 0.2), Color(red: 0.6, green: 0.3, blue: 0.1)], startPoint: .topLeading, endPoint: .bottomTrailing)
         default:
-            return LinearGradient(colors: [.blue, Color.blue.opacity(0.7)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            // Logo gradient for other ranks
+            return LinearGradient(
+                colors: [
+                    Color(red: 94/255, green: 205/255, blue: 200/255),  // Turquoise
+                    Color(red: 152/255, green: 161/255, blue: 159/255)  // Gray
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
         }
     }
 }

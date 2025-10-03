@@ -98,28 +98,28 @@ struct StatisticCard: View {
                 .lineLimit(2)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
+        .padding(.vertical, 18)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 14)
                 .fill(
                     LinearGradient(
-                        colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                        colors: [color.opacity(0.15), color.opacity(0.05)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
-                .shadow(color: color.opacity(0.2), radius: 8, x: 0, y: 4)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: 14)
                         .stroke(
                             LinearGradient(
-                                colors: [color.opacity(0.3), color.opacity(0.1)],
+                                colors: [color.opacity(0.4), color.opacity(0.2)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
-                            lineWidth: 1
+                            lineWidth: 1.5
                         )
                 )
+                .shadow(color: color.opacity(0.25), radius: 10, x: 0, y: 4)
         )
     }
 }
@@ -134,7 +134,10 @@ struct FeaturedUserCard: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [Color.pink.opacity(0.8), Color.purple.opacity(0.6)],
+                            colors: [
+                                Color(red: 255/255, green: 139/255, blue: 148/255), // Coral
+                                Color(red: 94/255, green: 205/255, blue: 200/255)   // Turquoise
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -211,7 +214,10 @@ struct TrendingEventCard: View {
                         Rectangle()
                             .fill(
                                 LinearGradient(
-                                    colors: [Color.purple.opacity(0.6), Color.pink.opacity(0.4)],
+                                    colors: [
+                                        Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.5),  // Turquoise
+                                        Color(red: 255/255, green: 139/255, blue: 148/255).opacity(0.4)  // Coral
+                                    ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -221,7 +227,10 @@ struct TrendingEventCard: View {
                     Rectangle()
                         .fill(
                             LinearGradient(
-                                colors: [Color.purple.opacity(0.6), Color.pink.opacity(0.4)],
+                                colors: [
+                                    Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.5),  // Turquoise
+                                    Color(red: 255/255, green: 139/255, blue: 148/255).opacity(0.4)  // Coral
+                                ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )

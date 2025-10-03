@@ -32,7 +32,18 @@ struct HomeView: View {
     
     private var mainContent: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            // Subtle gradient background instead of pure black
+            LinearGradient(
+                colors: [
+                    Color(red: 0.06, green: 0.06, blue: 0.08),
+                    Color(red: 0.04, green: 0.04, blue: 0.06),
+                    Color.black
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+
             if isLoaded {
                 loadedContent
             } else {
@@ -63,25 +74,26 @@ struct HomeView: View {
     private var loadedContent: some View {
         ZStack {
             ScrollView {
-                LazyVStack(spacing: 32) {
+                LazyVStack(spacing: 28) {
                     // Announcements section
                     if !announcements.isEmpty {
                         announcementsSection
+                            .padding(.top, 12)
                         divider
                     }
-                    
+
                     // Statistics section
                     if let stats = statistics {
                         statisticsSection(stats)
                         divider
                     }
-                    
+
                     // Featured users section (using topUserGalleries from API)
                     if !topUserGalleries.isEmpty {
                         recommendedSection
                         divider
                     }
-                    
+
                     // Events section (using events from API)
                     if !events.isEmpty {
                         eventSection

@@ -41,13 +41,19 @@ struct LightTheme: ColorScheme {
 }
 
 struct DarkTheme: ColorScheme {
-    var primary = Color(red: 0.2, green: 0.4, blue: 1.0)
-    var secondary = Color(red: 0.0, green: 0.7, blue: 1.0)
-    var accent = Color(red: 1.0, green: 0.8, blue: 0.0)
-    var background = Color.black 
+    // Logo gradient colors: Coral Pink → Turquoise
+    var primary = Color(red: 255/255, green: 139/255, blue: 148/255) // Coral Pink
+    var secondary = Color(red: 94/255, green: 205/255, blue: 200/255) // Turquoise
+    var accent = Color(red: 94/255, green: 205/255, blue: 200/255) // Turquoise accent
+    var background = Color(red: 0.06, green: 0.06, blue: 0.08) // Subtle dark blue-black
     var text = Color.white
-    var cardBackground = Color(white: 0.05) 
-    var chartGradient = [Color.white, Color.red]
+    var cardBackground = Color(red: 0.10, green: 0.10, blue: 0.12) // Lighter dark with subtle blue
+    var chartGradient = [
+        Color(red: 255/255, green: 139/255, blue: 148/255), // Coral Pink
+        Color(red: 184/255, green: 152/255, blue: 156/255), // Rose Mauve
+        Color(red: 152/255, green: 161/255, blue: 159/255), // Gray
+        Color(red: 94/255, green: 205/255, blue: 200/255)   // Turquoise
+    ]
 }
 
 struct BlueYellowTheme: ColorScheme {
