@@ -16,21 +16,21 @@ struct OnboardingStepTimeInvestment: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 28) {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("onb.time.title.en".localized(table: "Onboarding"))
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.white)
                         Text(String(format: "onb.time.subtitle.en".localized(table: "Onboarding"), Int(hoursPerWeek)))
-                            .font(.system(size: 15))
+                            .font(.system(size: 16))
                             .foregroundColor(.white.opacity(0.75))
                     }
 
                     // Modern draggable pie chart
-                    VStack(spacing: 16) {
+                    VStack(spacing: 20) {
                         TimePieChartView(value: hoursPerWeek / 30.0)
                             .frame(height: 200)
-                        
+
                         Slider(value: $hoursPerWeek, in: 0...30, step: 1)
                             .accentColor(.blue)
                     }
@@ -40,26 +40,45 @@ struct OnboardingStepTimeInvestment: View {
                 .padding(24)
             }
 
+            // Divider
+            Rectangle()
+                .fill(Color.white.opacity(0.1))
+                .frame(height: 1)
+
             HStack(spacing: 12) {
                 Button(action: back) {
                     Text("common.back".localized(table: "Onboarding"))
+                        .font(.system(size: 17, weight: .medium))
                         .frame(maxWidth: .infinity)
                         .padding()
                         .foregroundColor(.white)
-                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.25)))
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.white.opacity(0.25), lineWidth: 1.5)
+                        )
                 }
 
                 Button(action: { next(Int(hoursPerWeek)) }) {
                     Text("common.next".localized(table: "Onboarding"))
+                        .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(RoundedRectangle(cornerRadius: 12).fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing)))
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [.blue, .purple]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        )
                 }
             }
             .padding(20)
         }
-        .background(Color.black)
+        .background(Color.black.ignoresSafeArea())
         .preferredColorScheme(.dark)
     }
 }

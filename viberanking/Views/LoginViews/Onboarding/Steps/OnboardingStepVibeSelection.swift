@@ -18,9 +18,9 @@ struct OnboardingStepVibeSelection: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 24) {
                     Text("onb.vibe.title".localized(table: "Onboarding"))
-                        .font(.system(size: 22, weight: .semibold))
+                        .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
 
                     VStack(spacing: 12) {
@@ -31,7 +31,8 @@ struct OnboardingStepVibeSelection: View {
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundColor(.white)
                                 }
-                                .padding()
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 16)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
@@ -39,7 +40,7 @@ struct OnboardingStepVibeSelection: View {
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .stroke(selectedIndex == index ? Color.blue : Color.white.opacity(0.25), lineWidth: 1)
+                                        .stroke(selectedIndex == index ? Color.blue : Color.white.opacity(0.25), lineWidth: 1.5)
                                 )
                             }
                             .buttonStyle(.plain)
@@ -49,29 +50,47 @@ struct OnboardingStepVibeSelection: View {
                 .padding(24)
             }
 
+            // Divider
+            Rectangle()
+                .fill(Color.white.opacity(0.1))
+                .frame(height: 1)
+
             HStack(spacing: 12) {
                 Button(action: back) {
                     Text("common.back".localized(table: "Onboarding"))
+                        .font(.system(size: 17, weight: .medium))
                         .frame(maxWidth: .infinity)
                         .padding()
                         .foregroundColor(.white)
-                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.25)))
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.white.opacity(0.25), lineWidth: 1.5)
+                        )
                 }
 
-                Button(action: {
-                    next()
-                }) {
+                Button(action: { next() }) {
                     Text("common.next".localized(table: "Onboarding"))
+                        .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(RoundedRectangle(cornerRadius: 12).fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing)))
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [.blue, .purple]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        )
                 }
                 .disabled(selectedIndex == nil)
                 .opacity(selectedIndex == nil ? 0.6 : 1)
             }
             .padding(20)
         }
+        .background(Color.black.ignoresSafeArea())
         .preferredColorScheme(.dark)
     }
 }

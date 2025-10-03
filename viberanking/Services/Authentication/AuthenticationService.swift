@@ -350,7 +350,7 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
     }
     
     // MARK: - Guest Sign-In
-    
+
     func signInAsGuest() async -> User {
         print("👤 開始訪客登入...")
         let guestId = "guest_\(UUID().uuidString)"
@@ -359,9 +359,10 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
             name: "Guest_\(String(guestId.suffix(8)))", // Use last 8 chars of guest ID for better identification
             email: "guest\(String(guestId.suffix(8)))@example.com"
         )
-        
+
         currentUser = guestUser
-        saveUserToKeychain(guestUser)
+        // DO NOT save to keychain yet - only save after onboarding is completed
+        // This prevents incomplete guest users from persisting if user abandons onboarding
         print("✅ 訪客登入成功: \(guestUser.name)")
         return guestUser
     }

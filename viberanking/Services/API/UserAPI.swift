@@ -223,8 +223,8 @@ class UserAPI {
         
         // Add image file
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"imageFile\"; filename=\"profile.jpg\"\r\n".data(using: .utf8)!)
-        body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"imageFile\"; filename=\"profile.webp\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: image/webp\r\n\r\n".data(using: .utf8)!)
         body.append(imageData)
         body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
         

@@ -16,17 +16,17 @@ struct OnboardingStepGender: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 24) {
                     Text("onb.gender.title".localized(table: "Onboarding"))
-                        .font(.system(size: 26, weight: .bold))
+                        .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
 
                     HStack(spacing: 12) {
                         ForEach(Gender.allCases, id: \.self) { gender in
                             GenderSelectionButton(
-                                gender: gender, 
-                                isSelected: selectedGender == gender, 
-                                action: { 
+                                gender: gender,
+                                isSelected: selectedGender == gender,
+                                action: {
                                     selectedGender = gender
                                     selectGender(gender)
                                 }
@@ -37,17 +37,27 @@ struct OnboardingStepGender: View {
                 .padding(24)
             }
 
+            // Divider
+            Rectangle()
+                .fill(Color.white.opacity(0.1))
+                .frame(height: 1)
+
             HStack(spacing: 12) {
                 Button(action: back) {
                     Text("common.back".localized(table: "Onboarding"))
+                        .font(.system(size: 17, weight: .medium))
                         .frame(maxWidth: .infinity)
                         .padding()
                         .foregroundColor(.white)
-                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.25)))
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.white.opacity(0.25), lineWidth: 1.5)
+                        )
                 }
             }
             .padding(20)
         }
+        .background(Color.black.ignoresSafeArea())
         .preferredColorScheme(.dark)
     }
 }

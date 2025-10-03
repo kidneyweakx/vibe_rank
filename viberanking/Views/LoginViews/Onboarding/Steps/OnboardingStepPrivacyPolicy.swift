@@ -16,7 +16,7 @@ struct OnboardingStepPrivacyPolicy: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 20) {
                     Text("onb.privacy.title".localized(table: "Onboarding"))
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
@@ -33,6 +33,11 @@ struct OnboardingStepPrivacyPolicy: View {
                 .padding(24)
             }
 
+            // Divider
+            Rectangle()
+                .fill(Color.white.opacity(0.1))
+                .frame(height: 1)
+
             VStack(spacing: 12) {
                 Toggle(isOn: $isAgreed) {
                     Text("onb.privacy.agree".localized(table: "Onboarding"))
@@ -41,6 +46,7 @@ struct OnboardingStepPrivacyPolicy: View {
                 }
                 .toggleStyle(SwitchToggleStyle(tint: .blue))
                 .padding(.horizontal, 20)
+                .padding(.top, 12)
 
                 Button(action: next) {
                     HStack {
@@ -52,8 +58,20 @@ struct OnboardingStepPrivacyPolicy: View {
                     .foregroundColor(.white)
                     .padding()
                     .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(isAgreed ? LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing) : LinearGradient(gradient: Gradient(colors: [.gray.opacity(0.6), .gray.opacity(0.6)]), startPoint: .leading, endPoint: .trailing))
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(
+                                isAgreed
+                                    ? LinearGradient(
+                                        gradient: Gradient(colors: [.blue, .purple]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                    : LinearGradient(
+                                        gradient: Gradient(colors: [.gray.opacity(0.4), .gray.opacity(0.4)]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                            )
                     )
                 }
                 .disabled(!isAgreed)

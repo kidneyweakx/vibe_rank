@@ -17,6 +17,7 @@ struct OnboardingSetupView: View {
     @State private var currentStepIndex: Int = 0
     @State private var showProfileSetup: Bool = false
     @State private var answers = OnboardingAnswers()
+    @State private var showExitConfirmation: Bool = false
 
     private let totalSteps: Int = 8
 
@@ -58,11 +59,19 @@ struct OnboardingSetupView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
         }
         .background(Color.black.ignoresSafeArea())
-        .animation(.easeInOut, value: currentStepIndex)
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: currentStepIndex)
         .preferredColorScheme(.dark)
         .fullScreenCover(isPresented: $showProfileSetup) {
             UserProfileSetupView(initialUserData: initialUserData, onboardingAnswers: answers)
                 .environmentObject(authViewModel)
+        }
+        .alert("onb.exit.title".localized(table: "Onboarding"), isPresented: $showExitConfirmation) {
+            Button("onb.exit.cancel".localized(table: "Onboarding"), role: .cancel) { }
+            Button("onb.exit.confirm".localized(table: "Onboarding"), role: .destructive) {
+                handleExit()
+            }
+        } message: {
+            Text("onb.exit.message".localized(table: "Onboarding"))
         }
     }
 
@@ -80,6 +89,23 @@ struct OnboardingSetupView: View {
     private func goBack() {
         if currentStepIndex > 0 {
             currentStepIndex -= 1
+        } else {
+            // At first step, show exit confirmation
+            showExitConfirmation = true
+        }
+    }
+
+    private func handleExit() {
+        // For guest users, clear the temporary session
+        if initialUserData.authProvider == "guest" {
+            Task {
+                await authViewModel.signOut(dueTo: "User cancelled onboarding")
+            }
+        } else {
+            // For OAuth users, also sign out to allow re-authentication
+            Task {
+                await authViewModel.signOut(dueTo: "User cancelled onboarding")
+            }
         }
     }
 

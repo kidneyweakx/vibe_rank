@@ -11,45 +11,62 @@ struct OnboardingStepIntro: View {
     let next: () -> Void
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 28) {
-                VStack(alignment: .leading, spacing: 14) {
-                    Text("onb.intro.headline".localized(table: "Onboarding"))
-                        .font(.system(size: 30, weight: .bold))
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.leading)
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: 32) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("onb.intro.headline".localized(table: "Onboarding"))
+                            .font(.system(size: 32, weight: .bold))
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.leading)
 
-                    MarkdownText(text: "onb.intro.subheadline".localized(table: "Onboarding"))
-                        .font(.system(size: 18))
-                        .foregroundColor(.white.opacity(0.85))
-                        .fixedSize(horizontal: false, vertical: true)
+                        MarkdownText(text: "onb.intro.subheadline".localized(table: "Onboarding"))
+                            .font(.system(size: 18))
+                            .foregroundColor(.white.opacity(0.85))
+                            .fixedSize(horizontal: false, vertical: true)
 
-                    Text("onb.intro.description".localized(table: "Onboarding"))
-                        .font(.system(size: 16))
-                        .foregroundColor(.white.opacity(0.75))
-                        .fixedSize(horizontal: false, vertical: true)
+                        Text("onb.intro.description".localized(table: "Onboarding"))
+                            .font(.system(size: 16))
+                            .foregroundColor(.white.opacity(0.75))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
+                .padding(24)
+            }
 
+            // Divider
+            Rectangle()
+                .fill(Color.white.opacity(0.1))
+                .frame(height: 1)
+
+            HStack(spacing: 12) {
                 Button(action: next) {
-                    HStack {
+                    HStack(spacing: 8) {
                         Text("onb.intro.cta".localized(table: "Onboarding"))
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(.system(size: 17, weight: .semibold))
                         Spacer()
                         Image(systemName: "arrow.right")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 14, weight: .semibold))
                     }
                     .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
                     .padding()
                     .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing))
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [.blue, .purple]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
                     )
                 }
                 .buttonStyle(.plain)
             }
-            .padding(24)
+            .padding(20)
         }
-        .background(Color.black)
+        .background(Color.black.ignoresSafeArea())
         .preferredColorScheme(.dark)
     }
 }

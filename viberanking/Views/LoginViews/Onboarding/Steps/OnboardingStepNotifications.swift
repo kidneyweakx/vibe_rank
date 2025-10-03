@@ -22,7 +22,7 @@ struct OnboardingStepNotifications: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     Text("onb.notif.title".localized(table: "Onboarding"))
-                        .font(.system(size: 24, weight: .semibold))
+                        .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
 
                     VStack(alignment: .leading, spacing: 16) {
@@ -40,7 +40,7 @@ struct OnboardingStepNotifications: View {
                         )
                     }
 
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 12) {
                         Text("onb.notif.time_label".localized(table: "Onboarding"))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
@@ -50,12 +50,12 @@ struct OnboardingStepNotifications: View {
                             .colorScheme(.dark)
                         if let scheduledInfo {
                             Text(scheduledInfo)
-                                .font(.system(size: 13))
-                                .foregroundColor(.white.opacity(0.6))
+                                .font(.system(size: 14))
+                                .foregroundColor(.white.opacity(0.7))
                         }
                         if let errorMessage {
                             Text(errorMessage)
-                                .font(.system(size: 13))
+                                .font(.system(size: 14))
                                 .foregroundColor(.red)
                         }
                     }
@@ -63,13 +63,22 @@ struct OnboardingStepNotifications: View {
                 .padding(24)
             }
 
+            // Divider
+            Rectangle()
+                .fill(Color.white.opacity(0.1))
+                .frame(height: 1)
+
             HStack(spacing: 12) {
                 Button(action: back) {
                     Text("common.back".localized(table: "Onboarding"))
+                        .font(.system(size: 17, weight: .medium))
                         .frame(maxWidth: .infinity)
                         .padding()
                         .foregroundColor(.white)
-                        .background(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.25)))
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.white.opacity(0.25), lineWidth: 1.5)
+                        )
                 }
 
                 Button(action: enableAndSchedule) {
@@ -80,17 +89,27 @@ struct OnboardingStepNotifications: View {
                             .padding()
                     } else {
                         Text("onb.notif.cta.enable".localized(table: "Onboarding"))
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
                     }
                 }
-                .background(RoundedRectangle(cornerRadius: 12).fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing)))
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [.blue, .purple]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                )
                 .disabled(isScheduling)
             }
             .padding(20)
         }
-        .background(Color.black)
+        .background(Color.black.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .onAppear { scheduledInfo = nil; errorMessage = nil }
     }

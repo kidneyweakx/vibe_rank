@@ -10,41 +10,38 @@ import SwiftUI
 /// View for setting up user profile after first-time authentication
 struct UserProfileSetupView: View {
     @EnvironmentObject private var authViewModel: AuthenticationViewModel
-    // Force dark appearance for this screen
     @Environment(\.dismiss) private var dismiss
-    
+
     @State private var displayName: String = ""
     @State private var customUserID: String = ""
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     @State private var showingError: Bool = false
-    
+    @State private var showExitConfirmation: Bool = false
+
     let initialUserData: InitialUserData
     var onboardingAnswers: OnboardingAnswers? = nil
-    
+
     var body: some View {
-        NavigationView {
+        VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 32) {
                     // Header Section
                     headerSection
-                    
+                        .padding(.top, 32)
+
                     // Profile Setup Form
                     profileSetupForm
-                    
-                    // Continue Button
-                    continueButton
-                    
-                    Spacer(minLength: 50)
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 20)
+                .padding(.bottom, 20)
             }
-            .background(backgroundGradient)
-            .navigationTitle("profile_setup.title".localized(table: "ProfileSetup"))
-            .navigationBarTitleDisplayMode(.large)
-            .navigationBarBackButtonHidden(true)
+
+            // Bottom Button Section
+            bottomButtonSection
         }
+        .background(Color.black.ignoresSafeArea())
+        .preferredColorScheme(.dark)
         .onAppear {
             setupInitialData()
         }
@@ -53,17 +50,32 @@ struct UserProfileSetupView: View {
         } message: {
             Text(errorMessage ?? "profile_setup.unknown_error".localized(table: "ProfileSetup"))
         }
-        .overlay {
-            if isLoading {
-                ProfileSetupLoadingOverlay()
+        .alert("onb.exit.title".localized(table: "Onboarding"), isPresented: $showExitConfirmation) {
+            Button("onb.exit.cancel".localized(table: "Onboarding"), role: .cancel) { }
+            Button("onb.exit.confirm".localized(table: "Onboarding"), role: .destructive) {
+                handleExit()
             }
+        } message: {
+            Text("onb.exit.message".localized(table: "Onboarding"))
+        }
+    }
+
+    // MARK: - Exit Handling
+
+    private func handleExit() {
+        // Dismiss the profile setup view first
+        dismiss()
+
+        // Sign out to allow re-authentication
+        Task {
+            await authViewModel.signOut(dueTo: "User cancelled profile setup")
         }
     }
     
     // MARK: - Header Section
-    
+
     private var headerSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             // Profile Image
             AsyncImage(url: URL(string: initialUserData.profileImageURL ?? "")) { image in
                 image
@@ -72,98 +84,126 @@ struct UserProfileSetupView: View {
             } placeholder: {
                 Image(systemName: "person.circle.fill")
                     .font(.system(size: 80))
-                    .foregroundColor(.gray)
+                    .foregroundColor(.white.opacity(0.3))
             }
             .frame(width: 100, height: 100)
             .clipShape(Circle())
             .overlay(
                 Circle()
-                    .stroke(Color.white.opacity(0.2), lineWidth: 3)
+                    .stroke(
+                        LinearGradient(
+                            gradient: Gradient(colors: [.blue, .purple]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 3
+                    )
             )
-            
-            VStack(spacing: 8) {
-                Text("profile_setup.welcome_title".localized(table: "ProfileSetup"))
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                
-                Text("profile_setup.welcome_subtitle".localized(table: "ProfileSetup"))
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.6))
-                    .multilineTextAlignment(.center)
-            }
+
+            OnboardingSectionTitle(
+                title: "profile_setup.welcome_title".localized(table: "ProfileSetup"),
+                subtitle: "profile_setup.welcome_subtitle".localized(table: "ProfileSetup")
+            )
         }
     }
     
     // MARK: - Profile Setup Form
-    
+
     private var profileSetupForm: some View {
         VStack(spacing: 24) {
             // Display Name Field
-            VStack(alignment: .leading, spacing: 8) {
-                Text("profile_setup.display_name".localized(table: "ProfileSetup"))
-                    .font(.headline)
-                    .foregroundColor(.white)
-                
-                TextField("profile_setup.display_name_placeholder".localized(table: "ProfileSetup"), text: $displayName)
-                    .textFieldStyle(CustomTextFieldStyle())
-                    .autocapitalization(.words)
-                    .disableAutocorrection(true)
+            VStack(alignment: .leading, spacing: 12) {
+                OnboardingFieldLabel(
+                    text: "profile_setup.display_name".localized(table: "ProfileSetup"),
+                    isRequired: true
+                )
+
+                OnboardingTextField(
+                    placeholder: "profile_setup.display_name_placeholder".localized(table: "ProfileSetup"),
+                    text: $displayName,
+                    autocapitalization: .words
+                )
             }
-            
+
             // Custom User ID Field
-            VStack(alignment: .leading, spacing: 8) {
-                Text("profile_setup.user_id".localized(table: "ProfileSetup"))
-                    .font(.headline)
-                    .foregroundColor(.white)
-                
-                TextField("profile_setup.user_id_placeholder".localized(table: "ProfileSetup"), text: $customUserID)
-                    .textFieldStyle(CustomTextFieldStyle())
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                
-                Text("profile_setup.user_id_hint".localized(table: "ProfileSetup"))
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.6))
+            VStack(alignment: .leading, spacing: 12) {
+                OnboardingFieldLabel(
+                    text: "profile_setup.user_id".localized(table: "ProfileSetup"),
+                    isRequired: true
+                )
+
+                OnboardingTextField(
+                    placeholder: "profile_setup.user_id_placeholder".localized(table: "ProfileSetup"),
+                    text: $customUserID
+                )
+
+                OnboardingHintText(
+                    text: "profile_setup.user_id_hint".localized(table: "ProfileSetup")
+                )
             }
-            
         }
-        .padding(24)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color(hex: "2D2D2D"))
-                .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 4)
-        )
     }
     
-    // MARK: - Continue Button
-    
-    private var continueButton: some View {
-        Button(action: completeProfileSetup) {
-            HStack {
-                Text("profile_setup.continue".localized(table: "ProfileSetup"))
-                    .font(.system(size: 18, weight: .semibold))
-                
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 16, weight: .semibold))
-            }
-            .foregroundColor(.white)
-            .frame(maxWidth: .infinity)
-            .frame(height: 56)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color.blue, Color.purple]),
-                            startPoint: .leading,
-                            endPoint: .trailing
+    // MARK: - Bottom Button Section
+
+    private var bottomButtonSection: some View {
+        VStack(spacing: 0) {
+            // Divider
+            Rectangle()
+                .fill(Color.white.opacity(0.1))
+                .frame(height: 1)
+
+            HStack(spacing: 12) {
+                // Back/Cancel Button
+                Button(action: { showExitConfirmation = true }) {
+                    Text("common.back".localized(table: "Onboarding"))
+                        .font(.system(size: 17, weight: .medium))
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .foregroundColor(.white)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.white.opacity(0.25), lineWidth: 1.5)
                         )
-                    )
-            )
+                }
+                .disabled(isLoading)
+
+                // Continue Button
+                Button(action: completeProfileSetup) {
+                    if isLoading {
+                        ProgressView()
+                            .tint(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                    } else {
+                        HStack(spacing: 8) {
+                            Text("profile_setup.continue".localized(table: "ProfileSetup"))
+                                .font(.system(size: 17, weight: .semibold))
+
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                    }
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.blue, Color.purple]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                )
+                .disabled(isLoading || displayName.isEmpty || customUserID.isEmpty)
+                .opacity(displayName.isEmpty || customUserID.isEmpty ? 0.6 : 1.0)
+            }
+            .padding(20)
         }
-        .disabled(isLoading || displayName.isEmpty || customUserID.isEmpty)
-        .opacity(displayName.isEmpty || customUserID.isEmpty ? 0.6 : 1.0)
-        .padding(.horizontal, 24)
+        .background(Color.black)
     }
     
     // MARK: - Background

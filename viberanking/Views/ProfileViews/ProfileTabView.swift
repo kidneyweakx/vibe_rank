@@ -178,29 +178,35 @@ struct ProfileTabView: View {
     }
     
     private func uploadProfileImage(_ image: UIImage) {
-        guard let userId = authViewModel.user?.id else { 
+        guard let userId = authViewModel.user?.id else {
             print("❌ ProfileTabView: No user ID available for upload")
-            return 
+            return
         }
-        
+
         print("📸 ProfileTabView: Starting profile picture upload")
         print("  - User ID: \(userId)")
         print("  - Image Size: \(image.size)")
-        
+
         Task {
             await MainActor.run {
                 isUploadingProfilePicture = true
                 uploadProgress = 0.0
             }
-            
+
             do {
-                // Compress image to reduce upload size
-                guard let imageData = image.jpegData(compressionQuality: 0.8) else {
-                    print("❌ ProfileTabView: Failed to compress image to JPEG")
+                // Resize and convert to WebP to reduce upload size
+                let maxSide = CGFloat(800) // Profile pictures don't need to be huge
+                let resizedImage = image.scaledDownIfNeeded(maxDimension: maxSide)
+
+                guard let pngData = resizedImage.pngData() else {
+                    print("❌ ProfileTabView: Failed to convert image to PNG")
                     throw APIError.invalidResponse
                 }
-                
-                print("📸 ProfileTabView: Image compressed successfully")
+
+                // Convert to WebP with quality 0.85 (higher quality for profile pics)
+                let imageData = try await WebPConverter.shared.convertToWebP(pngData, quality: 0.85)
+
+                print("📸 ProfileTabView: Image converted to WebP successfully")
                 print("  - Compressed size: \(imageData.count) bytes")
                 
                 // Simulate progress updates

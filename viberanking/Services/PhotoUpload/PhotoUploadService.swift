@@ -46,40 +46,42 @@ class PhotoUploadService {
         }
         
         do {
-            // Step 1: Convert to WebP (在背景線程執行)
+            // Step 1: Resize and convert to WebP
             logger.info("🔄 Step 1: Converting to WebP - PhotoID: \(photoId)")
             await updateUploadStatus(photoId: photoId, status: .processing)
-            
-            // 在背景線程處理：先限制最大邊長，再轉成 PNG 資料
-            let imageData = await withCheckedContinuation { continuation in
+
+            // Resize and convert in background thread
+            let (pngData, resizedSize) = await withCheckedContinuation { continuation in
                 Task.detached {
                     let maxSide = CGFloat(AppConfiguration.Photo.highResSize)
-                    let boundedImage = image.scaledDownIfNeeded(maxDimension: maxSide)
-                    let data = boundedImage.pngData()
-                    continuation.resume(returning: data)
+                    let resizedImage = image.scaledDownIfNeeded(maxDimension: maxSide)
+                    let data = resizedImage.pngData()
+                    continuation.resume(returning: (data, resizedImage.size))
                 }
             }
-            
-            guard let imageData = imageData else {
-                logger.error("❌ Failed to convert image to PNG data - PhotoID: \(photoId)")
+
+            guard let imageData = pngData else {
+                logger.error("❌ Failed to convert image to PNG - PhotoID: \(photoId)")
                 throw AppError.invalidImageFormat
             }
-            
-            logger.debug("📦 PNG data size: \(imageData.count) bytes - PhotoID: \(photoId)")
-            
-            // 先以預設品質轉 WebP，若仍超過大小上限則逐步降低品質
+
+            logger.debug("📦 Resized to \(Int(resizedSize.width))x\(Int(resizedSize.height)), PNG: \(imageData.count) bytes - PhotoID: \(photoId)")
+
+            // Convert to WebP with adaptive quality
             var targetQuality: Float = 0.8
-            var webpData = try await convertToWebP(imageData, quality: targetQuality)
-            // 若走 base64 JSON 上傳，實際線上限制應預留 25% 空間 (base64 膨脹約 33%)
+            var webpData = try await webpConverter.convertToWebP(imageData, quality: targetQuality)
+
             let maxBytesBinary = AppConfiguration.Photo.maxFileSizeMB * 1024 * 1024
             let safetyRatioForBase64: Double = 0.72
             let maxBytesForPayload = Int(Double(maxBytesBinary) * safetyRatioForBase64)
+
             while webpData.count > maxBytesForPayload && targetQuality > 0.4 {
                 targetQuality -= 0.1
-                logger.warning("⚠️ WebP size \(webpData.count) > \(maxBytesForPayload). Retrying with quality=\(String(format: "%.1f", targetQuality)) - PhotoID: \(photoId)")
-                webpData = try await convertToWebP(imageData, quality: targetQuality)
+                logger.warning("⚠️ WebP \(webpData.count) > \(maxBytesForPayload). Retrying quality=\(String(format: "%.1f", targetQuality))")
+                webpData = try await webpConverter.convertToWebP(imageData, quality: targetQuality)
             }
-            logger.info("✅ WebP conversion completed - PhotoID: \(photoId), Size: \(webpData.count) bytes (limit: \(maxBytesForPayload)), Quality: \(String(format: "%.1f", targetQuality))")
+
+            logger.info("✅ WebP conversion - Size: \(webpData.count) bytes, Quality: \(String(format: "%.1f", targetQuality))")
             
             // Step 2: Upload via API
             logger.info("📤 Step 2: Uploading to API - PhotoID: \(photoId)")
@@ -118,22 +120,6 @@ class PhotoUploadService {
         }
     }
     
-    /// Convert image to WebP format using WebPConverter
-    func convertToWebP(_ imageData: Data, quality: Float) async throws -> Data {
-        logger.debug("🔧 Converting to WebP - Input size: \(imageData.count) bytes, Quality: \(quality)")
-        let startTime = CFAbsoluteTimeGetCurrent()
-        
-        do {
-            let webpData = try await webpConverter.convertToWebP(imageData, quality: quality)
-            let duration = CFAbsoluteTimeGetCurrent() - startTime
-            logger.info("✅ WebP conversion successful - Output size: \(webpData.count) bytes, Duration: \(String(format: "%.2f", duration))s")
-            return webpData
-        } catch {
-            logger.error("❌ WebP conversion failed - Error: \(error.localizedDescription)")
-            throw error
-        }
-    }
-
     /// Get upload progress for a photo
     func getUploadProgress(for photoId: String) -> UploadProgress {
         if let task = activeUploads[photoId] {
@@ -141,31 +127,6 @@ class PhotoUploadService {
         }
         logger.debug("⚠️ No active upload found - PhotoID: \(photoId)")
         return UploadProgress(photoId: photoId, status: .pending, progress: 0.0)
-    }
-    
-    /// Get upload statuses for multiple photos
-    func getUploadStatuses(for photoIds: [String]) -> [String: UploadProgress] {
-        var statuses: [String: UploadProgress] = [:]
-        for photoId in photoIds {
-            statuses[photoId] = getUploadProgress(for: photoId)
-        }
-        return statuses
-    }
-    
-    /// Generate thumbnails at different sizes using WebP conversion
-    func generateThumbnails(_ imageData: Data) async throws -> PhotoSizes {
-        logger.info("🖼️ Generating thumbnails - Input size: \(imageData.count) bytes")
-        let startTime = CFAbsoluteTimeGetCurrent()
-        
-        do {
-            let photoSizes = try await webpConverter.generateThumbnails(imageData)
-            let duration = CFAbsoluteTimeGetCurrent() - startTime
-            logger.info("✅ Thumbnails generated successfully - Duration: \(String(format: "%.2f", duration))s")
-            return photoSizes
-        } catch {
-            logger.error("❌ Thumbnail generation failed - Error: \(error.localizedDescription)")
-            throw error
-        }
     }
     
     /// Cancel upload for a specific photo
