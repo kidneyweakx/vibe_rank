@@ -34,11 +34,11 @@ struct AnnouncementCard: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(colorForType(announcement.type).opacity(0.1))
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color(red: 0.1, green: 0.1, blue: 0.1))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(colorForType(announcement.type).opacity(0.3), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(colorForType(announcement.type).opacity(0.4), lineWidth: 1.5)
                 )
         )
     }
@@ -54,10 +54,10 @@ struct AnnouncementCard: View {
     
     private func colorForType(_ type: AnnouncementType) -> Color {
         switch type {
-        case .info: return .blue
+        case .info: return Color(red: 255/255, green: 0/255, blue: 92/255) // Primary red
         case .warning: return .orange
         case .success: return .green
-        case .event: return .purple
+        case .event: return Color(red: 255/255, green: 0/255, blue: 92/255) // Primary red
         }
     }
 }
@@ -73,13 +73,7 @@ struct StatisticCard: View {
         VStack(spacing: 10) {
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [color.opacity(0.3), color.opacity(0.1)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(color.opacity(0.2))
                     .frame(width: 48, height: 48)
 
                 Image(systemName: icon)
@@ -101,25 +95,11 @@ struct StatisticCard: View {
         .padding(.vertical, 18)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(
-                    LinearGradient(
-                        colors: [color.opacity(0.15), color.opacity(0.05)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(Color(red: 0.1, green: 0.1, blue: 0.1)) // Dark gray
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(
-                            LinearGradient(
-                                colors: [color.opacity(0.4), color.opacity(0.2)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1.5
-                        )
+                        .stroke(color.opacity(0.3), lineWidth: 1.5)
                 )
-                .shadow(color: color.opacity(0.25), radius: 10, x: 0, y: 4)
         )
     }
 }
@@ -132,16 +112,7 @@ struct FeaturedUserCard: View {
         VStack(spacing: 8) {
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color(red: 255/255, green: 139/255, blue: 148/255), // Coral
-                                Color(red: 94/255, green: 205/255, blue: 200/255)   // Turquoise
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(Color(red: 255/255, green: 0/255, blue: 92/255).opacity(0.2)) // Primary red
                     .frame(width: 60, height: 60)
                 
                 if let avatarURL = user.avatar, let url = URL(string: avatarURL) {
@@ -212,29 +183,11 @@ struct TrendingEventCard: View {
                             .aspectRatio(contentMode: .fill)
                     } placeholder: {
                         Rectangle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.5),  // Turquoise
-                                        Color(red: 255/255, green: 139/255, blue: 148/255).opacity(0.4)  // Coral
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .fill(Color.gray.opacity(0.3))
                     }
                 } else {
                     Rectangle()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.5),  // Turquoise
-                                    Color(red: 255/255, green: 139/255, blue: 148/255).opacity(0.4)  // Coral
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(Color.gray.opacity(0.3))
                 }
                 
                 // Gradient overlay

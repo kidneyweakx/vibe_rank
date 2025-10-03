@@ -4,7 +4,11 @@ import SwiftUI
 extension HomeView {
     var announcementsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader("home.announcements.title".localized, subtitle: "home.announcements.subtitle".localized)
+            Text("Announcements")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.white)
+                .padding(.horizontal, 24)
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
                     ForEach(announcements, id: \.id) { announcement in
@@ -12,15 +16,17 @@ extension HomeView {
                             .frame(width: 280)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.trailing, 20)
+                .padding(.horizontal, 24)
             }
         }
     }
     
     func statisticsSection(_ stats: HomeStatistics) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader("home.statistics.title".localized, subtitle: "home.statistics.subtitle".localized)
+            Text("Community Stats")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.white)
+                .padding(.horizontal, 24)
 
             GeometryReader { geometry in
                 let isCompact = geometry.size.width < 600
@@ -33,14 +39,14 @@ extension HomeView {
                                 title: "home.statistics.users".localized,
                                 value: "\(stats.totalUsers)",
                                 icon: "person.3.fill",
-                                color: Color(red: 255/255, green: 139/255, blue: 148/255) // Coral
+                                color: Color(red: 255/255, green: 0/255, blue: 92/255) // Primary red
                             )
 
                             StatisticCard(
                                 title: "home.statistics.photos".localized,
                                 value: "\(stats.totalPhotos)",
                                 icon: "photo.fill",
-                                color: Color(red: 184/255, green: 152/255, blue: 156/255) // Rose
+                                color: Color.white
                             )
                         }
 
@@ -49,14 +55,14 @@ extension HomeView {
                                 title: "home.statistics.ratings".localized,
                                 value: "\(stats.totalRatings)",
                                 icon: "star.fill",
-                                color: Color(red: 152/255, green: 161/255, blue: 159/255) // Gray
+                                color: Color.white
                             )
 
                             StatisticCard(
                                 title: "home.statistics.events".localized,
                                 value: "\(stats.activeEvents)",
                                 icon: "calendar.fill",
-                                color: Color(red: 94/255, green: 205/255, blue: 200/255) // Turquoise
+                                color: Color(red: 255/255, green: 0/255, blue: 92/255) // Primary red
                             )
                         }
                     }
@@ -67,28 +73,28 @@ extension HomeView {
                             title: "home.statistics.users".localized,
                             value: "\(stats.totalUsers)",
                             icon: "person.3.fill",
-                            color: Color(red: 255/255, green: 139/255, blue: 148/255) // Coral
+                            color: Color(red: 255/255, green: 0/255, blue: 92/255) // Primary red
                         )
 
                         StatisticCard(
                             title: "home.statistics.photos".localized,
                             value: "\(stats.totalPhotos)",
                             icon: "photo.fill",
-                            color: Color(red: 184/255, green: 152/255, blue: 156/255) // Rose
+                            color: Color.white
                         )
 
                         StatisticCard(
                             title: "home.statistics.ratings".localized,
                             value: "\(stats.totalRatings)",
                             icon: "star.fill",
-                            color: Color(red: 152/255, green: 161/255, blue: 159/255) // Gray
+                            color: Color.white
                         )
 
                         StatisticCard(
                             title: "home.statistics.events".localized,
                             value: "\(stats.activeEvents)",
                             icon: "calendar.fill",
-                            color: Color(red: 94/255, green: 205/255, blue: 200/255) // Turquoise
+                            color: Color(red: 255/255, green: 0/255, blue: 92/255) // Primary red
                         )
                     }
                 }
@@ -135,77 +141,93 @@ extension HomeView {
         }
     }
     
-    var recommendedSection: some View {
+    var topCreatorsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader("home.recommended.title".localized, subtitle: "home.recommended.subtitle".localized)
-                .padding(.horizontal, 20)
+            Text("Top Creators")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.white)
+                .padding(.horizontal, 24)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(topUserGalleries, id: \.userId) { gallery in
-                        RankedUserCard(gallery: gallery)
-                            .frame(width: 88)
+                HStack(spacing: 16) {
+                    ForEach(Array(topUserGalleries.prefix(5).enumerated()), id: \.element.userId) { index, gallery in
+                        VStack(spacing: 8) {
+                            ZStack(alignment: .bottomTrailing) {
+                                // Simple square image
+                                if let photoURL = gallery.photoURLs.first, let url = URL(string: photoURL) {
+                                    AsyncImage(url: url) { phase in
+                                        switch phase {
+                                        case .success(let image):
+                                            image
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 70, height: 70)
+                                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                        default:
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.gray.opacity(0.3))
+                                                .frame(width: 70, height: 70)
+                                                .overlay(
+                                                    Image(systemName: "person.fill")
+                                                        .foregroundColor(.gray)
+                                                )
+                                        }
+                                    }
+                                }
+
+                                // Rank badge
+                                Circle()
+                                    .fill(index == 0 ? Color(red: 255/255, green: 0/255, blue: 92/255) : Color.gray)
+                                    .frame(width: 24, height: 24)
+                                    .overlay(
+                                        Text("\(index + 1)")
+                                            .font(.system(size: 11, weight: .bold))
+                                            .foregroundColor(.white)
+                                    )
+                                    .offset(x: 4, y: 4)
+                            }
+
+                            Text(gallery.name)
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+                        }
+                        .frame(width: 80)
                     }
                 }
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 24)
             }
-            .padding(.horizontal, 20)
         }
     }
 
-    var eventSection: some View {
+    var upcomingEventsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader("home.events.title".localized, subtitle: "home.events.subtitle".localized)
-                .padding(.horizontal, 20)
+            Text("Upcoming Events")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.white)
+                .padding(.horizontal, 24)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(events) { item in
-                        EventItemCard(item: item) { }
-                            .frame(width: 200)
-                            .aspectRatio(9/16, contentMode: .fit)
-                    }
-                }
-                .padding(.horizontal, 4)
-            }
-            .padding(.horizontal, 20)
+            EventCardStack(events: events)
+                .frame(height: 500)
+                .padding(.horizontal, 24)
         }
     }
 
     var divider: some View {
         Rectangle()
-            .fill(
-                LinearGradient(
-                    colors: [
-                        Color.clear,
-                        Color.white.opacity(0.15),
-                        Color.clear
-                    ],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
+            .fill(Color.white.opacity(0.1))
             .frame(height: 1)
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 24)
     }
 
     func sectionHeader(_ title: String, subtitle: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.system(size: 22, weight: .bold))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 255/255, green: 139/255, blue: 148/255),
-                            Color.white
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.white)
             Text(subtitle)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.white.opacity(0.7))
+                .font(.system(size: 13, weight: .regular))
+                .foregroundColor(.white.opacity(0.6))
         }
     }
 }

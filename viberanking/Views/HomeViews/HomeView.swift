@@ -32,17 +32,8 @@ struct HomeView: View {
     
     private var mainContent: some View {
         ZStack {
-            // Subtle gradient background instead of pure black
-            LinearGradient(
-                colors: [
-                    Color(red: 0.06, green: 0.06, blue: 0.08),
-                    Color(red: 0.04, green: 0.04, blue: 0.06),
-                    Color.black
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            // Pure black background (simplified)
+            Color.black.ignoresSafeArea()
 
             if isLoaded {
                 loadedContent
@@ -75,11 +66,33 @@ struct HomeView: View {
         ZStack {
             ScrollView {
                 LazyVStack(spacing: 28) {
-                    // Announcements section
-                    if !announcements.isEmpty {
-                        announcementsSection
-                            .padding(.top, 12)
-                        divider
+                    // Discover Header with notification
+                    HStack {
+                        Text("Discover")
+                            .font(.system(size: 32, weight: .bold))
+                            .foregroundColor(.white)
+                        Spacer()
+                        ZStack(alignment: .topTrailing) {
+                            Image(systemName: "bell.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white.opacity(0.8))
+                            Circle()
+                                .fill(Color(red: 255/255, green: 0/255, blue: 92/255)) // #FF005C
+                                .frame(width: 10, height: 10)
+                                .offset(x: 4, y: -4)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 12)
+
+                    // Featured users section (using topUserGalleries from API)
+                    if !topUserGalleries.isEmpty {
+                        topCreatorsSection
+                    }
+
+                    // Events section with card stack (using events from API)
+                    if !events.isEmpty {
+                        upcomingEventsSection
                     }
 
                     // Statistics section
@@ -88,41 +101,31 @@ struct HomeView: View {
                         divider
                     }
 
-                    // Featured users section (using topUserGalleries from API)
-                    if !topUserGalleries.isEmpty {
-                        recommendedSection
+                    // Announcements section
+                    if !announcements.isEmpty {
+                        announcementsSection
                         divider
                     }
 
-                    // Events section (using events from API)
-                    if !events.isEmpty {
-                        eventSection
-                        divider
-                    }
-
-                    // AdMob Banner section
+                    // AdMob Banner section (unified black-red style)
                     VStack(alignment: .leading, spacing: 16) {
-                        sectionHeader("home.ads.title".localized, subtitle: "home.ads.subtitle".localized)
-                            .padding(.horizontal, 20)
+                        Text("Sponsors")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 24)
 
                         AdMobAdaptiveBannerView()
                             .frame(height: 90)
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color.white.opacity(0.05), Color.white.opacity(0.02)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
+                                    .fill(Color(red: 0.1, green: 0.1, blue: 0.1)) // Subtle dark gray
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                    .stroke(Color(red: 255/255, green: 0/255, blue: 92/255).opacity(0.3), lineWidth: 1)
                             )
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 24)
                     }
 
                     // Empty state when no data
