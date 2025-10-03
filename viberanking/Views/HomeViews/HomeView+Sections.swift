@@ -21,35 +21,79 @@ extension HomeView {
     func statisticsSection(_ stats: HomeStatistics) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             sectionHeader("home.statistics.title".localized, subtitle: "home.statistics.subtitle".localized)
-            HStack(spacing: 16) {
-                StatisticCard(
-                    title: "home.statistics.users".localized,
-                    value: "\(stats.totalUsers)",
-                    icon: "person.3.fill",
-                    color: .blue
-                )
-                
-                StatisticCard(
-                    title: "home.statistics.photos".localized,
-                    value: "\(stats.totalPhotos)",
-                    icon: "photo.fill",
-                    color: .green
-                )
-                
-                StatisticCard(
-                    title: "home.statistics.ratings".localized,
-                    value: "\(stats.totalRatings)",
-                    icon: "star.fill",
-                    color: .yellow
-                )
-                
-                StatisticCard(
-                    title: "home.statistics.events".localized,
-                    value: "\(stats.activeEvents)",
-                    icon: "calendar.fill",
-                    color: .purple
-                )
+
+            GeometryReader { geometry in
+                let isCompact = geometry.size.width < 600
+
+                if isCompact {
+                    // Compact layout (phone): 2x2 grid
+                    VStack(spacing: 16) {
+                        HStack(spacing: 16) {
+                            StatisticCard(
+                                title: "home.statistics.users".localized,
+                                value: "\(stats.totalUsers)",
+                                icon: "person.3.fill",
+                                color: .blue
+                            )
+
+                            StatisticCard(
+                                title: "home.statistics.photos".localized,
+                                value: "\(stats.totalPhotos)",
+                                icon: "photo.fill",
+                                color: .green
+                            )
+                        }
+
+                        HStack(spacing: 16) {
+                            StatisticCard(
+                                title: "home.statistics.ratings".localized,
+                                value: "\(stats.totalRatings)",
+                                icon: "star.fill",
+                                color: .yellow
+                            )
+
+                            StatisticCard(
+                                title: "home.statistics.events".localized,
+                                value: "\(stats.activeEvents)",
+                                icon: "calendar.fill",
+                                color: .purple
+                            )
+                        }
+                    }
+                } else {
+                    // Expanded layout (iPad): single row
+                    HStack(spacing: 16) {
+                        StatisticCard(
+                            title: "home.statistics.users".localized,
+                            value: "\(stats.totalUsers)",
+                            icon: "person.3.fill",
+                            color: .blue
+                        )
+
+                        StatisticCard(
+                            title: "home.statistics.photos".localized,
+                            value: "\(stats.totalPhotos)",
+                            icon: "photo.fill",
+                            color: .green
+                        )
+
+                        StatisticCard(
+                            title: "home.statistics.ratings".localized,
+                            value: "\(stats.totalRatings)",
+                            icon: "star.fill",
+                            color: .yellow
+                        )
+
+                        StatisticCard(
+                            title: "home.statistics.events".localized,
+                            value: "\(stats.activeEvents)",
+                            icon: "calendar.fill",
+                            color: .purple
+                        )
+                    }
+                }
             }
+            .frame(height: 140)
             .padding(.horizontal, 20)
         }
     }

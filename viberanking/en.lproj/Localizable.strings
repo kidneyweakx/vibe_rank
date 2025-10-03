@@ -525,6 +525,8 @@
 "home.recommended.subtitle" = "Top ranked users";
 "home.events.title" = "Events";
 "home.events.subtitle" = "Latest event submissions";
+"home.ads.title" = "Sponsored";
+"home.ads.subtitle" = "Support us by viewing these ads";
 "home.announcements.title" = "Announcements";
 "home.announcements.subtitle" = "Latest updates and news";
 "home.statistics.title" = "Platform Statistics";
@@ -543,6 +545,7 @@
 "common.event_photo" = "Event Photo";
 "common.event" = "Event";
 "common.live" = "LIVE";
+"common.partner_event" = "Partner";
 "common.photo" = "Photo";
 "common.no_photos" = "No Photos";
 "common.no_tag" = "No tag";

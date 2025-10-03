@@ -7,6 +7,7 @@
 
 import SwiftUI
 import GoogleSignIn
+import GoogleMobileAds
 import MetricKit
 
 @main
@@ -19,6 +20,15 @@ struct viberankingApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        // Initialize Google Mobile Ads SDK
+        MobileAds.shared.start { status in
+            print("✅ Google Mobile Ads SDK initialized")
+            print("   Adapter statuses:")
+            for (adapter, adapterStatus) in status.adapterStatusesByClassName {
+                print("   - \(adapter): \(adapterStatus.state.rawValue) - \(adapterStatus.description)")
+            }
+        }
+
         // Configure Google Sign-In
         configureGoogleSignIn()
 

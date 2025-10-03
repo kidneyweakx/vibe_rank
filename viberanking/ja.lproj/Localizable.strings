@@ -444,11 +444,14 @@
 "home.recommended.subtitle" = "上位ランクのユーザー";
 "home.events.title" = "イベント";
 "home.events.subtitle" = "最新のイベント投稿";
+"home.ads.title" = "スポンサー";
+"home.ads.subtitle" = "広告を視聴して私たちをサポート";
 
 // MARK: - Common (extra)
 "common.event_photo" = "イベント写真";
 "common.event" = "イベント";
 "common.live" = "ライブ";
+"common.partner_event" = "パートナー";
 "common.photo" = "写真";
 "common.no_photos" = "写真なし";
 "common.no_tag" = "タグなし";

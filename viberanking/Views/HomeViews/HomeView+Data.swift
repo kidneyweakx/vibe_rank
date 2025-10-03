@@ -5,14 +5,27 @@ extension HomeView {
     func calculateGridConfiguration(for availableWidth: CGFloat) -> (columns: [GridItem], spacing: CGFloat, cardWidth: CGFloat) {
         let spacing: CGFloat = 16
         let columnsCount: Int
-        if availableWidth >= 350 {
+
+        // Responsive grid based on available width (iPad-friendly)
+        if availableWidth >= 1200 {
+            // iPad Pro 12.9" landscape or larger displays
+            columnsCount = 5
+        } else if availableWidth >= 900 {
+            // iPad Air/Pro landscape
+            columnsCount = 4
+        } else if availableWidth >= 600 {
+            // iPad portrait or large phones landscape
             columnsCount = 3
-        } else if availableWidth >= 250 {
+        } else if availableWidth >= 400 {
+            // Standard phone portrait
             columnsCount = 2
         } else {
+            // Small phones
             columnsCount = 1
         }
-        let cardWidth = (availableWidth - spacing * CGFloat(columnsCount - 1)) / CGFloat(columnsCount)
+
+        let totalSpacing = spacing * CGFloat(columnsCount - 1)
+        let cardWidth = (availableWidth - totalSpacing - 40) / CGFloat(columnsCount) // 40 for horizontal padding
         let columns = Array(repeating: GridItem(.flexible(), spacing: spacing, alignment: .top), count: columnsCount)
         return (columns: columns, spacing: spacing, cardWidth: cardWidth)
     }

@@ -85,8 +85,17 @@ struct HomeView: View {
                     // Events section (using events from API)
                     if !events.isEmpty {
                         eventSection
+                        divider
                     }
-                    
+
+                    // AdMob Banner section
+                    VStack(alignment: .leading, spacing: 16) {
+                        sectionHeader("home.ads.title".localized, subtitle: "home.ads.subtitle".localized)
+                        AdMobAdaptiveBannerView()
+                            .frame(height: 90)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+
                     // Empty state when no data
                     if topUserGalleries.isEmpty && events.isEmpty && announcements.isEmpty {
                         emptyStateView

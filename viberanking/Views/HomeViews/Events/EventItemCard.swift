@@ -71,17 +71,27 @@ struct EventItemCard: View {
                     VStack {
                         HStack {
                             Spacer()
-                            HStack(spacing: 4) {
-                                Circle()
-                                    .fill(Color.red)
-                                    .frame(width: 6, height: 6)
-                                Text("common.live".localized)
-                                    .font(.system(size: 10, weight: .bold))
+                            HStack(spacing: 6) {
+                                Image(systemName: "star.fill")
+                                    .font(.system(size: 8, weight: .bold))
+                                    .foregroundColor(.yellow)
+                                Text("common.partner_event".localized)
+                                    .font(.system(size: 10, weight: .semibold))
                                     .foregroundColor(.white)
                             }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Capsule().fill(Color.black.opacity(0.7)))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(
+                                Capsule()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.purple.opacity(0.8), Color.pink.opacity(0.7)],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                            )
                         }
                         Spacer()
                     }

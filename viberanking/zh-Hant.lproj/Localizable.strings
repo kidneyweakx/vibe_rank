@@ -444,11 +444,14 @@
 "home.recommended.subtitle" = "排行榜頂尖用戶";
 "home.events.title" = "活動";
 "home.events.subtitle" = "最新活動投稿";
+"home.ads.title" = "贊助廣告";
+"home.ads.subtitle" = "觀看廣告以支持我們";
 
 // MARK: - Common (extra)
 "common.event_photo" = "活動照片";
 "common.event" = "活動";
 "common.live" = "直播";
+"common.partner_event" = "合作活動";
 "common.photo" = "照片";
 "common.no_photos" = "無照片";
 "common.no_tag" = "無標籤";
