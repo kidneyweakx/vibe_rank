@@ -16,7 +16,9 @@ class JourneyViewModel: BaseViewModel {
     // MARK: - Published Properties
     @Published var journeyInfo: JourneyInfo?
     @Published var chartData: [ChartDataPoint] = []
-    
+    @Published var latestPhoto: PhotoInfo?
+    @Published var latestPhotoScore: Double = 0.0
+
     // MARK: - Private Properties
     private let rateAPI = RateAPI()
     private let fileAPI = FileAPI()
@@ -41,6 +43,19 @@ class JourneyViewModel: BaseViewModel {
                     overallRank: journeyResponse.data.overallRank,
                     totalUsers: journeyResponse.data.totalUsers
                 )
+            }
+
+            // Load latest photo and use overall totalScore as the display score
+            do {
+                let photoResponse = try await self.fileAPI.getUserPhotos(userId: userId, page: 1, limit: 1)
+                if let photo = photoResponse.data.photos.first {
+                    self.latestPhoto = photo
+                    // Use totalScore from journeyInfo as the overall score
+                    // This represents the user's overall performance, not just one photo
+                    self.latestPhotoScore = journeyResponse.data.totalScore
+                }
+            } catch {
+                print("Failed to load latest photo: \(error)")
             }
         }
     }

@@ -636,6 +636,16 @@
 "journey.stats.total_users" = "Total Users";
 "journey.stats.top_percentage" = "Top %d%%";
 
+// MARK: - Journey Latest Photo
+"journey.latest_photo.title" = "Latest Upload";
+"journey.latest_photo.overall_score" = "Overall Score";
+"journey.latest_photo.no_photo" = "No photo uploaded yet";
+
+// MARK: - Journey Trend
+"journey.trend.avg_score" = "Avg Score";
+"journey.trend.peak" = "Peak";
+"journey.trend.low" = "Low";
+
 // MARK: - Notifications (Local)
 "notif.daily.title" = "Your daily vibe update";
 "notif.daily.body.beat_people" = "Today you beat %d people. Keep going.";

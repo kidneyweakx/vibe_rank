@@ -31,29 +31,60 @@ struct JourneyTabView: View {
     
     private var mainContent: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
-            
+            // Grid background with gradient overlay
+            ZStack {
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.06, green: 0.06, blue: 0.08),
+                        Color(red: 0.04, green: 0.04, blue: 0.06),
+                        Color.black
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+
+                // Grid pattern (iOS 16 compatible)
+                GridPatternView()
+                    .opacity(0.3)
+                    .ignoresSafeArea()
+            }
+
             if isLoaded {
                 ScrollView {
-                    LazyVStack(spacing: 24) {
+                    LazyVStack(spacing: 28) {
                         // 標題
                         HStack {
                             Text("journey.title".localized)
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
+                                .font(.system(size: 32, weight: .bold))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [
+                                            Color(red: 255/255, green: 139/255, blue: 148/255),
+                                            Color.white
+                                        ],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
                             Spacer()
                         }
                         .padding(.horizontal, 20)
-                        
+
+                        // Latest photo with score (NEW - moved to top)
+                        LatestPhotoCard(
+                            photo: viewModel.latestPhoto,
+                            score: viewModel.latestPhotoScore
+                        )
+
+                        // 圖表 (circular progress)
+                        JourneyTrendChart(data: viewModel.chartData)
+
                         JourneyAchievementBadge(
                             level: viewModel.journeyLevel,
                             overallPerformance: viewModel.overallPerformance
                         )
-                        
-                        // 圖表
-                        JourneyTrendChart(data: viewModel.chartData)
-                        
+
                         // 統計卡片
                         JourneyStatCards(
                             overallPerformance: viewModel.overallPerformance,
@@ -62,7 +93,7 @@ struct JourneyTabView: View {
                             currentRankPercentage: viewModel.currentRankPercentage,
                             totalUsers: viewModel.totalUsers
                         )
-                        
+
                         // AI 改進方案 (付費區塊)
                         aiImprovementSection
                     }
@@ -171,56 +202,65 @@ struct JourneyTabView: View {
         VStack(spacing: 16) {
             HStack {
                 Image(systemName: "brain.head.profile")
-                    .foregroundColor(.purple)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 255/255, green: 139/255, blue: 148/255),
+                                Color(red: 94/255, green: 205/255, blue: 200/255)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
                 Text("journey.ai_improvement.title".localized)
                     .font(.headline)
                     .foregroundColor(.white)
                 Spacer()
                 Image(systemName: "lock.fill")
-                    .foregroundColor(.yellow)
+                    .foregroundColor(Color(red: 94/255, green: 205/255, blue: 200/255))
                     .font(.caption)
             }
-            
+
             VStack(alignment: .leading, spacing: 12) {
                 Text("journey.ai_improvement.personalized_suggestions".localized)
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(.white)
-                
+
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                            .foregroundColor(Color(red: 94/255, green: 205/255, blue: 200/255))
                         Text("journey.ai_improvement.professional_analysis".localized)
                             .font(.caption)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white.opacity(0.7))
                     }
-                    
+
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                            .foregroundColor(Color(red: 94/255, green: 205/255, blue: 200/255))
                         Text("journey.ai_improvement.outfit_suggestions".localized)
                             .font(.caption)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white.opacity(0.7))
                     }
-                    
+
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                            .foregroundColor(Color(red: 94/255, green: 205/255, blue: 200/255))
                         Text("journey.ai_improvement.color_recommendations".localized)
                             .font(.caption)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white.opacity(0.7))
                     }
-                    
+
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                            .foregroundColor(Color(red: 94/255, green: 205/255, blue: 200/255))
                         Text("journey.ai_improvement.trend_prediction".localized)
                             .font(.caption)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white.opacity(0.7))
                     }
                 }
-                
+
                 HStack {
                     Image(systemName: "sparkles")
                     Text("Coming soon")
@@ -233,20 +273,71 @@ struct JourneyTabView: View {
                 .padding(.horizontal, 20)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.gray.opacity(0.3))
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.1), Color.white.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                 )
             }
         }
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.gray.opacity(0.1))
+                .fill(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.purple.opacity(0.3), lineWidth: 1)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 255/255, green: 139/255, blue: 148/255).opacity(0.3),
+                                    Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.3)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
                 )
         )
         .padding(.horizontal, 20)
+    }
+}
+
+// MARK: - Grid Pattern View (iOS 16 compatible)
+struct GridPatternView: View {
+    var body: some View {
+        GeometryReader { geometry in
+            let gridSize: CGFloat = 20
+            let rows = Int(geometry.size.height / gridSize) + 1
+            let columns = Int(geometry.size.width / gridSize) + 1
+
+            ZStack {
+                // Vertical lines
+                ForEach(0..<columns, id: \.self) { column in
+                    Rectangle()
+                        .fill(Color.white.opacity(0.05))
+                        .frame(width: 1)
+                        .offset(x: CGFloat(column) * gridSize - geometry.size.width / 2)
+                }
+
+                // Horizontal lines
+                ForEach(0..<rows, id: \.self) { row in
+                    Rectangle()
+                        .fill(Color.white.opacity(0.05))
+                        .frame(height: 1)
+                        .offset(y: CGFloat(row) * gridSize - geometry.size.height / 2)
+                }
+            }
+        }
     }
 }
 

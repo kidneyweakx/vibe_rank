@@ -17,15 +17,19 @@ struct JourneyAchievementBadge: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [level.color.opacity(0.85), level.color.opacity(0.45)],
+                            colors: [
+                                Color(red: 255/255, green: 139/255, blue: 148/255).opacity(0.85),
+                                Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.45)
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 60, height: 60)
+                    .frame(width: 64, height: 64)
+                    .shadow(color: Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.4), radius: 12, x: 0, y: 4)
 
                 Image(systemName: level.icon)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.system(size: 26, weight: .bold))
                     .foregroundColor(.white)
             }
 
@@ -33,19 +37,28 @@ struct JourneyAchievementBadge: View {
                 Text(level.titleLocalized)
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.white)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 255/255, green: 139/255, blue: 148/255),
+                                Color.white
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
 
                 Text(level.subtitleLocalized)
                     .font(.subheadline)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.white.opacity(0.7))
 
                 HStack(spacing: 6) {
                     Image(systemName: "chart.line.uptrend.xyaxis")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(level.color)
+                        .foregroundColor(Color(red: 94/255, green: 205/255, blue: 200/255))
                     Text("\(Int(overallPerformance))")
                         .font(.caption)
-                        .foregroundColor(level.color)
+                        .foregroundColor(Color(red: 94/255, green: 205/255, blue: 200/255))
                 }
             }
 
@@ -54,10 +67,26 @@ struct JourneyAchievementBadge: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.gray.opacity(0.1))
+                .fill(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(level.color.opacity(0.3), lineWidth: 1)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 255/255, green: 139/255, blue: 148/255).opacity(0.3),
+                                    Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.3)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.5
+                        )
                 )
         )
         .padding(.horizontal, 20)

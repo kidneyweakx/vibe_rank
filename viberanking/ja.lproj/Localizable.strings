@@ -493,6 +493,27 @@
 "profile.scan_to_view" = "スキャンしてプロフィールを表示";
 "profile.share_qr_code" = "QRコードを共有";
 
+// MARK: - Journey Latest Photo
+"journey.latest_photo.title" = "最新アップロード";
+"journey.latest_photo.overall_score" = "総合スコア";
+"journey.latest_photo.no_photo" = "まだ写真がアップロードされていません";
+
+// MARK: - Journey Trend
+"journey.trend.avg_score" = "平均スコア";
+"journey.trend.peak" = "最高";
+"journey.trend.low" = "最低";
+"journey.trend.title" = "スタイルトレンド";
+"journey.trend.range_7d" = "過去7日間";
+
+// MARK: - Journey Stats
+"journey.stats.overall_performance" = "総合パフォーマンス";
+"journey.stats.female_attraction" = "女性への魅力";
+"journey.stats.male_attraction" = "男性への魅力";
+"journey.stats.current_percentage" = "現在のパーセンテージ";
+"journey.stats.your_ranking" = "あなたのランキング";
+"journey.stats.total_users" = "総ユーザー数";
+"journey.stats.top_percentage" = "上位 %d%%";
+
 // MARK: - Notifications (Local)
 "notif.daily.title" = "毎日の vibe アップデート";
 "notif.daily.body.beat_people" = "今日は %d 人を上回りました。続けましょう。";

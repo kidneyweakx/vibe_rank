@@ -10,169 +10,165 @@ import SwiftUI
 struct JourneyTrendChart: View {
     let data: [ChartDataPoint]
 
+    var averageScore: Double {
+        guard !data.isEmpty else { return 0 }
+        return data.reduce(0) { $0 + $1.score } / Double(data.count)
+    }
+
     var body: some View {
         VStack(spacing: 16) {
             // Header
             HStack {
-                Label("journey.trend.title".localized, systemImage: "chart.line.uptrend.xyaxis")
-                    .labelStyle(IconTitleLabelStyle())
-                    .foregroundColor(.white)
+                Image(systemName: "chart.pie.fill")
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 255/255, green: 139/255, blue: 148/255),
+                                Color(red: 94/255, green: 205/255, blue: 200/255)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                Text("journey.trend.title".localized)
+                    .font(.headline)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 255/255, green: 139/255, blue: 148/255),
+                                Color.white
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
                 Spacer()
                 Text("journey.trend.range_7d".localized)
                     .font(.caption)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.white.opacity(0.6))
             }
             .padding(.horizontal, 20)
 
-            // Line Chart
-            VStack(spacing: 12) {
-                GeometryReader { geo in
-                    ZStack {
-                        // Grid
-                        gridBackground(in: geo.size)
+            // Circular Progress Chart
+            VStack(spacing: 20) {
+                ZStack {
+                    // Background circle
+                    Circle()
+                        .stroke(
+                            Color.white.opacity(0.1),
+                            lineWidth: 20
+                        )
+                        .frame(width: 200, height: 200)
 
-                        // Area fill under line
-                        lineAreaPath(in: geo.size)
-                            .fill(
+                    // Progress circle
+                    Circle()
+                        .trim(from: 0, to: min(averageScore / 100, 1.0))
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 255/255, green: 139/255, blue: 148/255),
+                                    Color(red: 184/255, green: 152/255, blue: 156/255),
+                                    Color(red: 152/255, green: 161/255, blue: 159/255),
+                                    Color(red: 94/255, green: 205/255, blue: 200/255)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            style: StrokeStyle(lineWidth: 20, lineCap: .round)
+                        )
+                        .frame(width: 200, height: 200)
+                        .rotationEffect(.degrees(-90))
+                        .shadow(color: Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.5), radius: 10, x: 0, y: 0)
+
+                    // Center text
+                    VStack(spacing: 4) {
+                        Text(String(format: "%.0f", averageScore))
+                            .font(.system(size: 56, weight: .bold))
+                            .foregroundStyle(
                                 LinearGradient(
-                                    colors: [Color.blue.opacity(0.35), Color.purple.opacity(0.12)],
-                                    startPoint: .top,
-                                    endPoint: .bottom
+                                    colors: [
+                                        Color(red: 255/255, green: 139/255, blue: 148/255),
+                                        Color(red: 94/255, green: 205/255, blue: 200/255)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
                                 )
                             )
 
-                        // Line stroke
-                        linePath(in: geo.size)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [Color.blue, Color.purple],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                ),
-                                style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
-                            )
-                            .shadow(color: Color.purple.opacity(0.25), radius: 8, x: 0, y: 6)
-
-                        // Points
-                        pointsOverlay(in: geo.size)
+                        Text("journey.trend.avg_score".localized)
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.7))
                     }
                 }
-                .frame(height: 200)
-                .padding(.horizontal, 16)
+                .padding(.vertical, 20)
 
-                // Trend note
-                HStack(spacing: 8) {
-                    Image(systemName: "arrow.up.right")
-                        .font(.caption)
-                        .foregroundColor(.green)
-                    Text("journey.trend.overall_up".localized)
-                        .font(.caption)
-                        .foregroundColor(.green)
-                    Spacer()
+                // Trend indicators
+                HStack(spacing: 24) {
+                    VStack(spacing: 4) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption2)
+                            Text(String(format: "%.0f", data.max(by: { $0.score < $1.score })?.score ?? 0))
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundColor(Color(red: 94/255, green: 205/255, blue: 200/255))
+
+                        Text("journey.trend.peak".localized)
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+
+                    Rectangle()
+                        .fill(Color.white.opacity(0.2))
+                        .frame(width: 1, height: 30)
+
+                    VStack(spacing: 4) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.down.right")
+                                .font(.caption2)
+                            Text(String(format: "%.0f", data.min(by: { $0.score < $1.score })?.score ?? 0))
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundColor(Color(red: 255/255, green: 139/255, blue: 148/255))
+
+                        Text("journey.trend.low".localized)
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.6))
+                    }
                 }
-                .padding(.horizontal, 16)
             }
             .padding(.vertical, 16)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.gray.opacity(0.05))
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.08),
+                                Color.white.opacity(0.03)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.gray.opacity(0.1), lineWidth: 1)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 255/255, green: 139/255, blue: 148/255).opacity(0.2),
+                                        Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.2)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
                     )
             )
             .padding(.horizontal, 20)
         }
     }
 
-    // MARK: - Drawing Helpers
-
-    private func normalizedPoints(in size: CGSize) -> [CGPoint] {
-        guard !data.isEmpty else { return [] }
-        let padding: CGFloat = 4
-        let width = max(1, size.width - padding * 2)
-        let height = max(1, size.height - padding * 2)
-
-        let maxScore: Double = 100
-        let minScore: Double = 0
-        let count = data.count
-        let stepX = width / CGFloat(max(count - 1, 1))
-
-        return data.enumerated().map { (idx, point) in
-            let x = padding + CGFloat(idx) * stepX
-            let clamped = max(minScore, min(maxScore, point.score))
-            let yRatio = (clamped - minScore) / (maxScore - minScore)
-            let y = padding + height * CGFloat(1.0 - yRatio)
-            return CGPoint(x: x, y: y)
-        }
-    }
-
-    private func linePath(in size: CGSize) -> Path {
-        var path = Path()
-        let pts = normalizedPoints(in: size)
-        guard let first = pts.first else { return path }
-        path.move(to: first)
-        for p in pts.dropFirst() { path.addLine(to: p) }
-        return path
-    }
-
-    private func lineAreaPath(in size: CGSize) -> Path {
-        var path = Path()
-        let pts = normalizedPoints(in: size)
-        guard let first = pts.first, let last = pts.last else { return path }
-        path.move(to: CGPoint(x: first.x, y: size.height))
-        path.addLine(to: first)
-        for p in pts.dropFirst() { path.addLine(to: p) }
-        path.addLine(to: CGPoint(x: last.x, y: size.height))
-        path.closeSubpath()
-        return path
-    }
-
-    private func pointsOverlay(in size: CGSize) -> some View {
-        let pts = normalizedPoints(in: size)
-        return ZStack {
-            ForEach(Array(pts.enumerated()), id: \.offset) { idx, p in
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 6, height: 6)
-                    .position(p)
-                    .shadow(color: Color.black.opacity(0.25), radius: 3, x: 0, y: 2)
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white.opacity(0.6), lineWidth: 1)
-                            .frame(width: 10, height: 10)
-                            .position(p)
-                    )
-                    .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(Double(idx) * 0.05), value: p)
-            }
-        }
-    }
-
-    private func gridBackground(in size: CGSize) -> some View {
-        let rows = 4
-        return ZStack {
-            ForEach(0...rows, id: \.self) { i in
-                let y = size.height * CGFloat(i) / CGFloat(rows)
-                Path { p in
-                    p.move(to: CGPoint(x: 0, y: y))
-                    p.addLine(to: CGPoint(x: size.width, y: y))
-                }
-                .stroke(Color.white.opacity(0.06), lineWidth: 1)
-            }
-        }
-    }
-}
-
-// Icon+Title label style to unify with RatingTabView aesthetics
-struct IconTitleLabelStyle: LabelStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        HStack(spacing: 8) {
-            configuration.icon
-                .foregroundColor(.white)
-            configuration.title
-                .font(.headline)
-        }
-    }
 }
 
 

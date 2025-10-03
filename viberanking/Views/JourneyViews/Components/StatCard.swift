@@ -24,13 +24,34 @@ struct StatCards: View {
                     .fontWeight(.bold)
                     .foregroundColor(.white)
             }
-            
+
             Text(title)
                 .font(.subheadline)
-                .foregroundColor(.white)
+                .foregroundColor(.white.opacity(0.8))
         }
         .padding(16)
-        .background(RoundedRectangle(cornerRadius: 16).fill(Color.gray.opacity(0.1)))
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(
+                    LinearGradient(
+                        colors: [color.opacity(0.15), color.opacity(0.05)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(
+                            LinearGradient(
+                                colors: [color.opacity(0.4), color.opacity(0.2)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.5
+                        )
+                )
+                .shadow(color: color.opacity(0.25), radius: 10, x: 0, y: 4)
+        )
     }
 }
 
