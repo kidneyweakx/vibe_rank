@@ -9,6 +9,7 @@ import SwiftUI
 import GoogleSignIn
 import GoogleMobileAds
 import MetricKit
+import Clarity
 
 @main
 struct viberankingApp: App {
@@ -28,6 +29,11 @@ struct viberankingApp: App {
                 print("   - \(adapter): \(adapterStatus.state.rawValue) - \(adapterStatus.description)")
             }
         }
+
+        // Initialize Microsoft Clarity
+        let clarityConfig = ClarityConfig(projectId: "tkwzcyjf2m")
+        ClaritySDK.initialize(config: clarityConfig)
+        print("✅ Microsoft Clarity initialized")
 
         // Configure Google Sign-In
         configureGoogleSignIn()
