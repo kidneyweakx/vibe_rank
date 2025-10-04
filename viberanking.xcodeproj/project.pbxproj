@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		F1C03F312E8F73A6007C5E0E /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = F1C03F302E8F73A6007C5E0E /* GoogleMobileAds */; };
+		F1C0440E2E915E0D007C5E0E /* Clarity in Frameworks */ = {isa = PBXBuildFile; productRef = F1C0440D2E915E0D007C5E0E /* Clarity */; };
 		F1FA31772E312FBE00964891 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = F1FA31762E312FBE00964891 /* GoogleSignIn */; };
 		F1FA31C72E32926800964891 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = F1FA31C62E32926800964891 /* Kingfisher */; };
 		F1FA31CA2E3299F000964891 /* SDWebImageWebPCoder in Frameworks */ = {isa = PBXBuildFile; productRef = F1FA31C92E3299F000964891 /* SDWebImageWebPCoder */; };
@@ -76,6 +77,7 @@
 				F1FA31CA2E3299F000964891 /* SDWebImageWebPCoder in Frameworks */,
 				F1FA31C72E32926800964891 /* Kingfisher in Frameworks */,
 				F1FA31772E312FBE00964891 /* GoogleSignIn in Frameworks */,
+				F1C0440E2E915E0D007C5E0E /* Clarity in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,6 +150,7 @@
 				F1FA31C62E32926800964891 /* Kingfisher */,
 				F1FA31C92E3299F000964891 /* SDWebImageWebPCoder */,
 				F1C03F302E8F73A6007C5E0E /* GoogleMobileAds */,
+				F1C0440D2E915E0D007C5E0E /* Clarity */,
 			);
 			productName = viberanking;
 			productReference = F1608CAE2E2FF54900404170 /* viberanking.app */;
@@ -239,6 +242,7 @@
 				F1FA31C52E32924600964891 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				F1FA31C82E3299DD00964891 /* XCRemoteSwiftPackageReference "SDWebImageWebPCoder" */,
 				F1C03F2F2E8F739B007C5E0E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				F1C0440C2E915DFD007C5E0E /* XCRemoteSwiftPackageReference "clarity-apps" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F1608CAF2E2FF54900404170 /* Products */;
@@ -821,6 +825,14 @@
 				minimumVersion = 12.12.0;
 			};
 		};
+		F1C0440C2E915DFD007C5E0E /* XCRemoteSwiftPackageReference "clarity-apps" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/microsoft/clarity-apps";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.2.0;
+			};
+		};
 		F1FA31752E312FB200964891 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
@@ -852,6 +864,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F1C03F2F2E8F739B007C5E0E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
 			productName = GoogleMobileAds;
+		};
+		F1C0440D2E915E0D007C5E0E /* Clarity */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1C0440C2E915DFD007C5E0E /* XCRemoteSwiftPackageReference "clarity-apps" */;
+			productName = Clarity;
 		};
 		F1FA31762E312FBE00964891 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
