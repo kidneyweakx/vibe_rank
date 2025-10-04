@@ -1,0 +1,58 @@
+"onb.intro.headline" = "データに裏付けられ、人によって磨かれる";
+"onb.intro.subheadline" = "あなたのvibeは一人の意見では決まらない。**群衆の合意**に、**AIの洞察**が加わる。";
+"onb.intro.description" = "Vibe Rank はメイク、ヘア、コーデ、体型、全体の雰囲気まで—あなたの存在感をまるごと捉えます。毎日が、vibe をレベルアップするチャンス。";
+"onb.intro.cta" = "👉 Vibe の旅をはじめる";
+
+"onb.value.chart.growth" = "成長";
+"onb.value.chart.spend" = "支出 ↓";
+"onb.value.p1" = "新しい服やスキンケア、無限のコーデで良くなると思っていませんか。";
+"onb.value.p2" = "でも真実は—あなたの出費の70%は、自分に合わないvibeに消えています。";
+"onb.value.p3" = "私たちが明確にします：";
+"onb.value.p4" = "✨ 本当にお金をかけるべき所と、そうでない所";
+"onb.value.p5" = "✨ なんとなくの買い物やマーケに踊らされるのをやめる";
+"onb.value.p6" = "✨ 毎日1%成長、30日で自信を倍増";
+"onb.value.cta.gotit" = "了解";
+
+"onb.age.title" = "年齢は？";
+
+"onb.gender.title" = "性別を選択";
+
+"onb.vibe.title.zh" = "你會怎麼形容你現在的 vibe？";
+"onb.vibe.title.en" = "現在の自分のvibeをどう表現しますか？";
+"onb.vibe.option.en.1" = "Attractive enough to make people jealous";
+"onb.vibe.option.en.2" = "I’m okay, still figuring out how to optimize";
+"onb.vibe.option.en.3" = "Pretty average, nothing special";
+"onb.vibe.option.en.4" = "Usually not that confident";
+"onb.vibe.option.en.5" = "Totally clueless about my vibe";
+"onb.vibe.option.zh.1" = "帥/美到別人會嫉妒";
+"onb.vibe.option.zh.2" = "我還行，但正在摸索怎麼變更好";
+"onb.vibe.option.zh.3" = "普普通通，沒什麼特點";
+"onb.vibe.option.zh.4" = "常常缺乏自信";
+"onb.vibe.option.zh.5" = "完全不知道怎麼打理自己";
+
+"onb.time.title.en" = "How much time do you spend each month working on your vibe / getting ready?";
+"onb.time.subtitle.en" = "Slide: %d hours/week\n(0 = almost none, 30 = nearly every day putting in effort)";
+"onb.time.title.zh" = "一週花多少時間在「提升 vibe / 打扮」？";
+"onb.time.subtitle.zh" = "差不多 %d 小時";
+
+"onb.notif.title.en" = "通知をオンにして、成果を逃さない";
+"onb.notif.item.en.1" = "📈 デイリーランク：今日のあなたのvibeは女性の80%を上回りました";
+"onb.notif.item.en.2" = "🔄 週間サマリー：先週と比べてどれだけ成長したか確認";
+"onb.notif.item.en.3" = "✨ さらに早くレベルアップするための個人インサイト";
+"onb.notif.title.zh" = "開啟通知，別錯過每一次勝出";
+"onb.notif.item.zh.1" = "📈 每日排名：今天你的 vibe 打敗了 80% 的女生";
+"onb.notif.item.zh.2" = "🔄 每週回顧：看到自己比上週又成長了多少";
+"onb.notif.item.zh.3" = "✨ 個人化洞察，讓你更快升級";
+"onb.notif.cta.enable" = "通知をオンにする";
+"onb.notif.time_label" = "通知時間";
+"onb.notif.permission_denied" = "通知はオフです。設定から有効にできます。";
+"onb.notif.scheduled" = "毎日の通知を %@ に設定しました";
+
+"common.back" = "戻る";
+"common.next" = "次へ";
+
+"onb.privacy.title" = "プライバシーポリシー";
+"onb.privacy.lastUpdated" = "最終更新日: 2025年9月09日";
+"onb.privacy.agree" = "プライバシーポリシーを読み、同意しました";
+"onb.privacy.cta" = "同意して続行";
+

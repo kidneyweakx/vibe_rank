@@ -14,6 +14,9 @@
 "tab.main.profile" = "Profile";
 "tab.main.rating" = "Rating";
 "tab.main.upload" = "Upload";
+"tab.vibe" = "Vibe";
+"tab.trend" = "Trend";
+"tab.journey" = "Journey";
 
 // MARK: - Authentication
 "auth.title" = "Digital Premium Social Rating Platform";
@@ -73,6 +76,7 @@
 "upload.cancel" = "Cancel";
 "upload.photo_id" = "Photo ID:";
 "upload.upload_time" = "Upload Time:";
+"upload.unavailable" = "Unable to Upload";
 
 // MARK: - Photo Rating
 "rating.title" = "Photo Rating";
@@ -252,6 +256,8 @@
 "permission.camera.message" = "Please allow the app to use the camera in Settings to take photos for upload.";
 "permission.photo_library.title" = "Photo Library Permission Required";
 "permission.photo_library.message" = "Please allow the app to access photos in Settings to select photos for upload.";
+"permission.camera.unavailable" = "Camera not available on this device";
+"permission.camera.unknown" = "Unknown camera permission status, please try again later";
 
 "report.unlock.congrats" = "🎉 Congrats!";
 "report.unlock.title" = "Your Style Report is Unlocked";
@@ -427,11 +433,11 @@
 "contact.title" = "Contact Us";
 "contact.subtitle" = "We'd love to hear from you. If you have questions, feedback, or need support, please reach out:";
 "contact.email" = "Email";
-"contact.email.address" = "support@ninjaplus.app";
+"contact.email.address" = "support@viberank.xyz";
 "contact.twitter" = "Twitter";
-"contact.twitter.handle" = "@ninjaplusapp";
+"contact.twitter.handle" = "@ninjatofuture";
 "contact.business" = "Business Inquiries";
-"contact.business.address" = "business@ninjaplus.app";
+"contact.business.address" = "business@viberank.xyz";
 
 // MARK: - Legal (Privacy & ToS)
 "policy.privacy.title" = "Privacy Policy";
@@ -519,15 +525,74 @@
 "home.recommended.subtitle" = "Top ranked users";
 "home.events.title" = "Events";
 "home.events.subtitle" = "Latest event submissions";
+"home.ads.title" = "Sponsored";
+"home.ads.subtitle" = "Support us by viewing these ads";
+"home.announcements.title" = "Announcements";
+"home.announcements.subtitle" = "Latest updates and news";
+"home.statistics.title" = "Platform Statistics";
+"home.statistics.subtitle" = "Community overview";
+"home.statistics.users" = "Users";
+"home.statistics.photos" = "Photos";
+"home.statistics.ratings" = "Ratings";
+"home.statistics.events" = "Events";
+"home.featured.title" = "Featured Users";
+"home.featured.subtitle" = "Rising stars and top performers";
+"home.trending_events.title" = "Trending Events";
+"home.trending_events.subtitle" = "Popular events right now";
+"home.event.active" = "Active";
 
 // MARK: - Common (extra)
 "common.event_photo" = "Event Photo";
 "common.event" = "Event";
 "common.live" = "LIVE";
+"common.partner_event" = "Partner";
 "common.photo" = "Photo";
 "common.no_photos" = "No Photos";
 "common.no_tag" = "No tag";
 "common.image_load_failed" = "Failed to load image";
+
+// MARK: - Spotlight
+"spotlight.vibe.title" = "Vibe";
+"spotlight.vibe.message" = "Swipe, judge, feel the vibe\n\n- ✅ \"V\" = Looks good\n- ❌ \"X\" = Not it\n- 🔥 \"Flame\" = Big vibe energy";
+"spotlight.trend.title" = "Trend";
+"spotlight.trend.message" = "See what's trending on the vibe leaderboard";
+"spotlight.plus.title" = "+";
+"spotlight.plus.message" = "Upload a photo to start your vibe challenge";
+"spotlight.journey.title" = "Journey";
+"spotlight.journey.message" = "Track your vibe growth over time and see your level-ups";
+"spotlight.profile.title" = "Profile";
+"spotlight.profile.message" = "Upload and keep a record of your vibe photos & profile";
+"spotlight.next" = "Next";
+"spotlight.skip" = "Skip";
+
+"home.empty_state.title" = "Welcome to VibeRanking";
+"home.empty_state.subtitle" = "No content available at the moment. Pull to refresh or check back later.";
+
+// MARK: - Journey Levels
+// MARK: - Journey Trend
+"journey.trend.title" = "Style Trend";
+"journey.trend.range_7d" = "Last 7 days";
+"journey.trend.overall_up" = "Overall trend rising";
+"journey.level.background.title" = "Background Character";
+"journey.level.background.subtitle" = "Still an extra? Level up if you want screen time.";
+"journey.level.invisible.title" = "Invisible Mode";
+"journey.level.invisible.subtitle" = "No one sees you yet. Push harder to get noticed.";
+"journey.level.awkward.title" = "Awkward \U0001F422";
+"journey.level.awkward.subtitle" = "Stop being weird—next level is where the vibe starts.";
+"journey.level.basic.title" = "Basic Package \U0001F37D\uFE0F";
+"journey.level.basic.subtitle" = "Tutorial phase almost over. Step out if you want the real game.";
+"journey.level.wannabe.title" = "Wannabe \U0001F392";
+"journey.level.wannabe.subtitle" = "Wanting isn’t enough. Prove you can actually pull it off.";
+"journey.level.certified_cutie.title" = "Certified Cutie \U0001F495";
+"journey.level.certified_cutie.subtitle" = "Cute is appetizer only. Next level is where style begins.";
+"journey.level.fresh_fit.title" = "Fresh Fit ✨";
+"journey.level.fresh_fit.subtitle" = "Looking good, but style alone won’t cut it. Buff unlocks next.";
+"journey.level.flex_on_me.title" = "Flex on me \U0001F60E";
+"journey.level.flex_on_me.subtitle" = "You’re shining, but not the star yet. Camera’s waiting.";
+"journey.level.camera_magnet.title" = "Camera Magnet \U0001F4F8";
+"journey.level.camera_magnet.subtitle" = "The lens follows you, but Aura is the final boss.";
+"journey.level.aura.title" = "Aura \U0001F451";
+"journey.level.aura.subtitle" = "You hit the vibe ceiling. Nothing higher—legend status unlocked.";
 
 // MARK: - Upload Menu
 "upload.menu.title" = "Choose upload method";
@@ -550,3 +615,62 @@
 "profile.add_photo" = "Add Photo";
 "profile.scan_to_view" = "Scan to view profile";
 "profile.share_qr_code" = "Share QR Code";
+
+// MARK: - Journey
+"journey.loading_data" = "Loading style data...";
+"journey.title" = "Style Journey";
+"journey.ai_improvement.title" = "AI Improvement Plan";
+"journey.ai_improvement.personalized_suggestions" = "Personalized Style Suggestions";
+"journey.ai_improvement.professional_analysis" = "Professional Style Analysis";
+"journey.ai_improvement.outfit_suggestions" = "Personalized Outfit Suggestions";
+"journey.ai_improvement.color_recommendations" = "Color Matching Recommendations";
+"journey.ai_improvement.trend_prediction" = "Style Trend Prediction";
+"journey.ai_improvement.unlock_button" = "Unlock AI Suggestions - $10.00";
+
+// MARK: - Journey Stats
+"journey.stats.overall_performance" = "Overall Performance";
+"journey.stats.female_attraction" = "Female Attraction";
+"journey.stats.male_attraction" = "Male Attraction";
+"journey.stats.current_percentage" = "Current Percentage";
+"journey.stats.your_ranking" = "Your Ranking";
+"journey.stats.total_users" = "Total Users";
+"journey.stats.top_percentage" = "Top %d%%";
+
+// MARK: - Journey Latest Photo
+"journey.latest_photo.title" = "Latest Upload";
+"journey.latest_photo.overall_score" = "Overall Score";
+"journey.latest_photo.no_photo" = "No photo uploaded yet";
+
+// MARK: - Journey Trend
+"journey.trend.avg_score" = "Avg Score";
+"journey.trend.peak" = "Peak";
+"journey.trend.low" = "Low";
+
+// MARK: - Notifications (Local)
+"notif.daily.title" = "Your daily vibe update";
+"notif.daily.body.beat_people" = "Today you beat %d people. Keep going.";
+"notif.daily.body.generic" = "Your vibe is evolving. Open the app to check in.";
+
+// MARK: - Paywall
+"paywall.title" = "Unlock AI Style Suggestions";
+"paywall.subtitle" = "Let AI create a personalized style plan for you";
+"paywall.feature.professional_analysis.title" = "Professional Style Analysis";
+"paywall.feature.professional_analysis.description" = "Deep analysis of your style characteristics and potential";
+"paywall.feature.outfit_suggestions.title" = "Personalized Outfit Suggestions";
+"paywall.feature.outfit_suggestions.description" = "Recommend outfits based on your body type and preferences";
+"paywall.feature.color_recommendations.title" = "Color Matching Recommendations";
+"paywall.feature.color_recommendations.description" = "Find the most suitable color combinations for you";
+"paywall.feature.trend_prediction.title" = "Style Trend Prediction";
+"paywall.feature.trend_prediction.description" = "Master the latest fashion trends and development directions";
+"paywall.choose_plan" = "Choose Plan";
+"paywall.ai_style_suggestions" = "AI Style Suggestions";
+"paywall.one_time_purchase" = "One-time Purchase";
+"paywall.feature.complete_report" = "Complete Style Analysis Report";
+"paywall.feature.personalized_plan" = "Personalized Suggestion Plan";
+"paywall.feature.permanent_access" = "Permanent Access Rights";
+"paywall.unlock_now" = "Unlock Now - $10.00";
+"paywall.terms_agreement" = "Purchase indicates agreement to our terms of service";
+"paywall.privacy_policy" = "Privacy Policy";
+"paywall.terms_of_service" = "Terms of Service";
+"paywall.restore_purchase" = "Restore Purchase";
+"paywall.close" = "Close";

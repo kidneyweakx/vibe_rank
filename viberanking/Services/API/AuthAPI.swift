@@ -28,21 +28,6 @@ class AuthAPI {
         )
     }
     
-    // MARK: - Test Authentication
-    
-    func testLogin(email: String, name: String) async throws -> AuthResponse {
-        let body = [
-            "email": email,
-            "name": name
-        ]
-        return try await apiClient.performRequest(
-            endpoint: "/api/auth/test",
-            method: .POST,
-            body: body,
-            responseType: AuthResponse.self
-        )
-    }
-    
     // MARK: - Apple Authentication
     
     func verifyAppleToken(
@@ -95,17 +80,34 @@ class AuthAPI {
     // MARK: - Profile Setup
     
     func createUserProfile(_ profileData: UserProfileData) async throws -> AuthResponse {
-        let body: [String: Any] = [
+        // Ensure backend receives strings for all fields it validates as strings
+        var body: [String: Any] = [
             "customUserID": profileData.customUserID,
             "displayName": profileData.displayName,
-            "gender": profileData.gender.rawValue,
             "email": profileData.email,
-            "profileImageURL": profileData.profileImageURL as Any,
             "authProvider": profileData.authProvider,
-            "providerUserID": profileData.providerUserID
+            "providerUserID": profileData.providerUserID,
+            "gender": "other"
         ]
+        // Only include optional profileImageURL if present and non-empty to avoid backend errors
+        if let url = profileData.profileImageURL, !url.isEmpty {
+            body["profileImageURL"] = url
+        }
         return try await apiClient.performRequest(
             endpoint: "/api/auth/profile/create",
+            method: .POST,
+            body: body,
+            responseType: AuthResponse.self
+        )
+    }
+
+    // MARK: - Onboarding (Consolidated)
+    
+    /// Complete onboarding with consolidated payload per OpenAPI (/api/onboarding/complete)
+    func completeOnboarding(_ payload: OnboardingCompletePayload) async throws -> AuthResponse {
+        let body = payload.toDictionary()
+        return try await apiClient.performRequest(
+            endpoint: "/api/onboarding/complete",
             method: .POST,
             body: body,
             responseType: AuthResponse.self

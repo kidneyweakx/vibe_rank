@@ -20,9 +20,25 @@
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>en</string>
+		<string>ja</string>
 		<string>zh-Hant</string>
 	</array>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>We use your data to provide personalized content and measure performance. We ask for permission to track activity across apps and websites to support these features.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>需要使用相機拍攝照片</string>
+	<string>We use the camera so you can take a new photo to upload for community ratings and to generate your personal style analysis report. Example: Tap “Take New Photo” in Upload to capture and submit a photo.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to select photos for upload.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need permission to save photos to your library when exporting or saving results.</string>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<key>SKAdNetworkItems</key>
+	<array>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>cstr6suwn9.skadnetwork</string>
+		</dict>
+	</array>
 </dict>
 </plist>

@@ -7,6 +7,8 @@
 
 import SwiftUI
 import GoogleSignIn
+import GoogleMobileAds
+import MetricKit
 
 @main
 struct viberankingApp: App {
@@ -15,22 +17,38 @@ struct viberankingApp: App {
     @StateObject private var errorHandler = ErrorHandler()
     @StateObject private var localizationManager = LocalizationManager.shared
     @StateObject private var themeManager = ThemeManager()
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        // Initialize Google Mobile Ads SDK
+        MobileAds.shared.start { status in
+            print("✅ Google Mobile Ads SDK initialized")
+            print("   Adapter statuses:")
+            for (adapter, adapterStatus) in status.adapterStatusesByClassName {
+                print("   - \(adapter): \(adapterStatus.state.rawValue) - \(adapterStatus.description)")
+            }
+        }
+
         // Configure Google Sign-In
         configureGoogleSignIn()
-        
+
         // Test Apple Sign-In configuration
         AppleSignInTestHelper.testConfiguration()
         AppleSignInTestHelper.checkDeviceSupport()
         AppleSignInTestHelper.testKeychainOperations()
-        
+
         // Print app info for debugging
         print("App Version: \(AppInfo.fullVersionString)")
         print("Environment: \(AppEnvironment.current)")
-        
+
         // Check Apple ID credential state at launch
         checkAppleIDCredentialStateAtLaunch()
+
+        // Start Apple analytics (MetricKit)
+        AppleAnalyticsManager.shared.start()
+
+        // Setup session expiry observer
+        setupSessionExpiryObserver()
     }
     
     /// Configure Google Sign-In
@@ -48,40 +66,30 @@ struct viberankingApp: App {
     
     /// Check Apple ID credential state when app launches
     private func checkAppleIDCredentialStateAtLaunch() {
-        Task {
-            let authService = AuthenticationService()
-            if let credentialState = await authService.checkAppleIDCredentialState() {
-                await MainActor.run {
-                    switch credentialState {
-                    case .authorized:
-                        print("✅ Apple ID credential is valid")
-                        // User is still authorized, continue with app
-                    case .revoked, .notFound:
-                        print("⚠️ Apple ID credential is revoked or not found")
-                        // Force user to sign in again
-                        authenticationViewModel.signOut()
-                    case .transferred:
-                        print("📱 Apple ID credential transferred to new device")
-                        // Handle credential transfer
-                    @unknown default:
-                        print("❓ Unknown Apple ID credential state")
-                    }
-                }
-            }
+        // 這個檢查現在由 AuthenticationService 的 init 方法處理
+        // 不需要在這裡重複檢查
+        print("ℹ️ 認證狀態檢查將由 AuthenticationService 處理")
+    }
+
+    /// Setup observer for session expiry notifications
+    private func setupSessionExpiryObserver() {
+        NotificationCenter.default.addObserver(
+            forName: .userSessionExpired,
+            object: nil,
+            queue: .main
+        ) { [weak authenticationViewModel] _ in
+            print("🔒 Session expired notification received - signing out user")
+            authenticationViewModel?.signOut(dueTo: "Session expired (401)")
         }
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootEntryView()
                 .environmentObject(authenticationViewModel)
                 .environmentObject(errorHandler)
                 .environmentObject(localizationManager)
                 .environmentObject(themeManager)
-                .onAppear {
-                    // Log app start event
-                    AnalyticsService.shared.logEvent(.featureUsed(feature: "app_launch"))
-                }
                 .onOpenURL { url in
                     // Handle Google Sign-In URL callback
                     GIDSignIn.sharedInstance.handle(url)
@@ -100,6 +108,9 @@ struct viberankingApp: App {
                     if let recoverySuggestion = errorHandler.currentError?.recoverySuggestion {
                         Text(recoverySuggestion)
                     }
+                }
+                .onChange(of: scenePhase) { newPhase in
+                    SessionTracker.shared.handleScenePhaseChange(newPhase)
                 }
         }
     }

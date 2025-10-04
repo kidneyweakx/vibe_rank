@@ -22,6 +22,23 @@ struct MainTabView: View {
     @State private var uploadAlertMessage = ""
     @State private var showingCameraAlert = false
     @State private var cameraAlertMessage = ""
+    @AppStorage("has_seen_main_spotlight") var hasSeenMainSpotlight: Bool = false
+    @State var showSpotlight: Bool = false
+    @State private var currentSpotlightIndex: Int = 0
+    @State private var spotlightFrames: [String: CGRect] = [:]
+    @State var overrideSpotlightStep: SpotlightStepModel?
+    private let spotlightStepsModels: [SpotlightStepModel] = SpotlightScripts.mainSteps
+    @AppStorage("has_seen_spotlight_rating_page") var hasSeenRatingPageSpotlight: Bool = false
+    @AppStorage("has_seen_spotlight_trend_page") var hasSeenTrendPageSpotlight: Bool = false
+    @AppStorage("has_seen_spotlight_journey_page") var hasSeenJourneyPageSpotlight: Bool = false
+    @AppStorage("has_seen_spotlight_profile_page") var hasSeenProfilePageSpotlight: Bool = false
+    
+    // Computed property to check if current user has seen spotlight
+    private var currentUserHasSeenSpotlight: Bool {
+        guard let userId = authViewModel.user?.id else { return false }
+        let userSpotlightKey = "has_seen_spotlight_user_\(userId)"
+        return UserDefaults.standard.bool(forKey: userSpotlightKey)
+    }
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -50,13 +67,12 @@ struct MainTabView: View {
                     if canUpload {
                         showingUploadMenu = true
                     } else {
-                        // 顯示為什麼不能上傳的提示
                         if authViewModel.isGuest {
-                            uploadAlertMessage = "請先登入才能上傳照片"
+                            uploadAlertMessage = "auth.login_required".localized
                             showingUploadAlert = true
                         } else {
                             let remaining = authViewModel.user?.ratingProgress.remainingRatings ?? 20
-                            uploadAlertMessage = "還需要完成 \(remaining) 個評分才能解鎖上傳功能"
+                            uploadAlertMessage = "progress.rating_needed".localized(with: remaining)
                             showingUploadAlert = true
                         }
                     }
@@ -69,6 +85,67 @@ struct MainTabView: View {
                     }
                 }
             )
+
+            // Spotlight overlay layer
+            if showSpotlight {
+                if let override = overrideSpotlightStep,
+                   let frame = spotlightFrames[override.id], !frame.isNull, !frame.isEmpty, frame.width > 1, frame.height > 1 {
+                    SpotlightOverlay(
+                        targetFrame: frame,
+                        cornerRadius: override.cornerRadius,
+                        titleKey: override.titleKey,
+                        messageKey: override.messageKey,
+                        position: override.position,
+                        onNext: {
+                            markCurrentPageSpotlightSeen(for: selectedTab)
+                            overrideSpotlightStep = nil
+                            withAnimation { showSpotlight = false }
+                        },
+                        onSkip: {
+                            markCurrentPageSpotlightSeen(for: selectedTab)
+                            overrideSpotlightStep = nil
+                            withAnimation { showSpotlight = false }
+                        }
+                    )
+                    .transition(.opacity)
+                } else if currentSpotlightIndex < spotlightStepsModels.count {
+                    let step = spotlightStepsModels[currentSpotlightIndex]
+                    if let frame = spotlightFrames[step.id], !frame.isNull, !frame.isEmpty, frame.width > 1, frame.height > 1 {
+                        SpotlightOverlay(
+                            targetFrame: frame,
+                            cornerRadius: step.cornerRadius,
+                            titleKey: step.titleKey,
+                            messageKey: step.messageKey,
+                            position: step.position,
+                            onNext: {
+                                if currentSpotlightIndex < spotlightStepsModels.count - 1 {
+                                    currentSpotlightIndex += 1
+                                } else {
+                                    hasSeenMainSpotlight = true
+                                    // Mark that current user has seen spotlight globally
+                                    markCurrentUserSpotlightSeen()
+                                    withAnimation { showSpotlight = false }
+                                }
+                            },
+                            onSkip: {
+                                hasSeenMainSpotlight = true
+                                // Mark that current user has seen spotlight globally
+                                markCurrentUserSpotlightSeen()
+                                withAnimation { showSpotlight = false }
+                            }
+                        )
+                        .transition(.opacity)
+                    }
+                }
+            }
+        }
+        .coordinateSpace(name: "spotlight")
+        .onPreferenceChange(SpotlightPreferenceKey.self) { value in
+            spotlightFrames = value
+            print("🔄 Spotlight frames updated: \(value.keys)")
+            for (id, frame) in value {
+                print("  - \(id): \(frame)")
+            }
         }
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showingUploadMenu) {
@@ -76,7 +153,7 @@ struct MainTabView: View {
                 onCameraSelected: {
                     Task {
                         if !CameraPermissionHelper.isCameraAvailable {
-                            cameraAlertMessage = "此裝置沒有相機可用"
+                            cameraAlertMessage = "permission.camera.unavailable".localized
                             showingCameraAlert = true
                             return
                         }
@@ -89,14 +166,14 @@ struct MainTabView: View {
                             if granted {
                                 showingImagePicker = true
                             } else {
-                                cameraAlertMessage = "請到「設定 > 隱私權 > 相機」允許本 App 使用相機"
+                                cameraAlertMessage = "permission.camera.message".localized
                                 showingCameraAlert = true
                             }
                         case .denied, .restricted:
-                            cameraAlertMessage = "請到「設定 > 隱私權 > 相機」允許本 App 使用相機"
+                            cameraAlertMessage = "permission.camera.message".localized
                             showingCameraAlert = true
                         @unknown default:
-                            cameraAlertMessage = "相機權限狀態未知，請稍後再試"
+                            cameraAlertMessage = "permission.camera.unknown".localized
                             showingCameraAlert = true
                         }
                     }
@@ -148,12 +225,12 @@ struct MainTabView: View {
                 }
             }
         }
-        .alert("無法上傳", isPresented: $showingUploadAlert) {
+        .alert("upload.unavailable".localized, isPresented: $showingUploadAlert) {
             Button("common.ok".localized, role: .cancel) { }
         } message: {
             Text(uploadAlertMessage)
         }
-        .alert("無法使用相機", isPresented: $showingCameraAlert) {
+        .alert("permission.camera.title".localized, isPresented: $showingCameraAlert) {
             Button("common.ok".localized, role: .cancel) { }
         } message: {
             Text(cameraAlertMessage)
@@ -171,6 +248,30 @@ struct MainTabView: View {
                 print("🔄 當前 selectedImage 是否為 nil: \(selectedImage == nil)")
             }
         }
+        .onChange(of: selectedTab) { newTab in
+            maybeShowPerPageSpotlight(for: newTab)
+        }
+        .onAppear {
+            print("🔄 MainTabView onAppear - hasSeenMainSpotlight: \(hasSeenMainSpotlight)")
+            print("🔄 Current user has seen spotlight: \(currentUserHasSeenSpotlight)")
+            
+            // Show main spotlight if current user hasn't seen it before
+            // hasSeenMainSpotlight is global, but currentUserHasSeenSpotlight is user-specific
+            if !currentUserHasSeenSpotlight {
+                print("🔄 Showing main spotlight after delay...")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    print("🔄 Setting currentSpotlightIndex to 0 and showing spotlight")
+                    currentSpotlightIndex = 0
+                    withAnimation { showSpotlight = true }
+                }
+            } else {
+                print("ℹ️ Current user has already seen main spotlight")
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                print("🔄 Checking per-page spotlight for tab: \(selectedTab)")
+                maybeShowPerPageSpotlight(for: selectedTab)
+            }
+        }
     }
     
     private var canUpload: Bool {
@@ -180,112 +281,91 @@ struct MainTabView: View {
         // 原本的邏輯：
         // !authViewModel.isGuest && (authViewModel.user?.ratingProgress.hasUnlockedUpload ?? false)
     }
-}
-
-// MARK: - Tab Items
-enum TabItem: CaseIterable {
-    case rating, home, journey, profile
-}
-
-// MARK: - Custom TikTok Style Tab Bar
-struct CustomTikTokTabBar: View {
-    @Binding var selectedTab: TabItem
-    let onUploadTap: () -> Void
-    let onVibeTap: () -> Void
     
-    var body: some View {
-        HStack(spacing: 0) {
-            // Rating Tab (Vibe)
-            TabBarButton(
-                icon: "heart.fill",
-                title: "Vibe",
-                isSelected: selectedTab == .rating
-            ) {
-                onVibeTap() // 直接調用 vibe 模式
-            }
-            
-            Spacer()
-            
-            // Trend Tab
-            TabBarButton(
-                icon: "flame.fill",
-                title: "Trend",
-                isSelected: selectedTab == .home
-            ) {
-                selectedTab = .home
-            }
-            
-            Spacer()
-            
-            // Plus
-            Button(action: {
-                onUploadTap()
-            }) {
-                ZStack {
-                    Circle()
-                        .fill(Color.red)
-                        .frame(width: 56, height: 56)
-                    Image(systemName: "plus")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundColor(.white)
-                }
-            }
-            .offset(y: -10)
-            
-            Spacer()
-            
-            // Journey Tab
-            TabBarButton(
-                icon: "sparkles",
-                title: "Journey",
-                isSelected: selectedTab == .journey
-            ) {
-                selectedTab = .journey
-            }
-            
-            Spacer()
-            
-            // Profile Tab
-            TabBarButton(
-                icon: "person.circle.fill",
-                title: "Profile",
-                isSelected: selectedTab == .profile
-            ) {
-                selectedTab = .profile
-            }
+    /// Reset spotlight state for testing purposes
+    func resetSpotlightForTesting() {
+        print("🧪 Resetting spotlight state for testing...")
+        hasSeenMainSpotlight = false
+        hasSeenRatingPageSpotlight = false
+        hasSeenTrendPageSpotlight = false
+        hasSeenJourneyPageSpotlight = false
+        hasSeenProfilePageSpotlight = false
+        currentSpotlightIndex = 0
+        showSpotlight = false
+        overrideSpotlightStep = nil
+        
+        // Also reset user-specific spotlight state if available
+        if let userId = getCurrentUserId() {
+            let userSpotlightKey = "has_seen_spotlight_user_\(userId)"
+            UserDefaults.standard.set(false, forKey: userSpotlightKey)
+            print("🧪 Reset user-specific spotlight state for user: \(userId)")
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 8)
-        .padding(.bottom, 8) // 減少底部 padding，避免黑邊
-        .background(
-            Color.black
-                .ignoresSafeArea(edges: .bottom)
-        )
+        
+        print("✅ Spotlight state reset complete")
+    }
+    
+    /// Check current spotlight state for debugging
+    func debugSpotlightState() {
+        print("🔍 Current Spotlight State:")
+        print("  - hasSeenMainSpotlight: \(hasSeenMainSpotlight)")
+        print("  - hasSeenRatingPageSpotlight: \(hasSeenRatingPageSpotlight)")
+        print("  - hasSeenTrendPageSpotlight: \(hasSeenTrendPageSpotlight)")
+        print("  - hasSeenJourneyPageSpotlight: \(hasSeenJourneyPageSpotlight)")
+        print("  - hasSeenProfilePageSpotlight: \(hasSeenProfilePageSpotlight)")
+        print("  - currentSpotlightIndex: \(currentSpotlightIndex)")
+        print("  - showSpotlight: \(showSpotlight)")
+        print("  - overrideSpotlightStep: \(overrideSpotlightStep?.id ?? "nil")")
+        print("  - selectedTab: \(selectedTab)")
+    }
+    
+    /// Force show spotlight for testing purposes
+    func forceShowSpotlight() {
+        print("🧪 Force showing spotlight...")
+        hasSeenMainSpotlight = false
+        currentSpotlightIndex = 0
+        showSpotlight = false
+        overrideSpotlightStep = nil
+        
+        // Also reset user-specific spotlight state if available
+        if let userId = getCurrentUserId() {
+            let userSpotlightKey = "has_seen_spotlight_user_\(userId)"
+            UserDefaults.standard.set(false, forKey: userSpotlightKey)
+            print("🧪 Reset user-specific spotlight state for user: \(userId)")
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            print("🧪 Showing main spotlight...")
+            self.currentSpotlightIndex = 0
+            withAnimation { self.showSpotlight = true }
+        }
+        
+        print("✅ Spotlight state reset complete")
+    }
+    
+    // MARK: - Public Spotlight Methods for Extension
+    
+    /// Check if current user has seen spotlight globally
+    func hasCurrentUserSeenSpotlight() -> Bool {
+        guard let userId = authViewModel.user?.id else { return false }
+        let userSpotlightKey = "has_seen_spotlight_user_\(userId)"
+        return UserDefaults.standard.bool(forKey: userSpotlightKey)
+    }
+    
+    /// Mark current user as having seen spotlight globally
+    func markCurrentUserSpotlightSeen() {
+        if let userId = authViewModel.user?.id {
+            let userSpotlightKey = "has_seen_spotlight_user_\(userId)"
+            UserDefaults.standard.set(true, forKey: userSpotlightKey)
+            print("🔄 Marked user \(userId) as having seen spotlight globally")
+        }
+    }
+    
+    /// Get current user ID for spotlight operations
+    func getCurrentUserId() -> String? {
+        return authViewModel.user?.id
     }
 }
 
-// MARK: - Tab Bar Button
-struct TabBarButton: View {
-    let icon: String
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 20))
-                    .foregroundColor(isSelected ? .red : .gray)
-                
-                Text(title)
-                    .font(.system(size: 10))
-                    .foregroundColor(isSelected ? .red : .gray)
-            }
-        }
-        .frame(width: 60, height: 50)
-    }
-}
 
 #Preview {
     MainTabView()

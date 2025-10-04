@@ -1,0 +1,7 @@
+/* Permission prompts (Traditional Chinese) */
+"NSCameraUsageDescription" = "為了讓您拍攝新照片上傳，供社群評分並產生個人風格分析報告，本 App 會使用相機。範例：在上傳頁面點擊『拍攝新照片』以拍照並提交。";
+"NSUserTrackingUsageDescription" = "為提供個人化內容與效能衡量，請允許跨 App 與網站的活動追蹤。";
+"NSPhotoLibraryUsageDescription" = "為選擇上傳的照片，需要存取您的相簿。";
+"NSPhotoLibraryAddUsageDescription" = "在匯出或儲存結果時，需要權限將照片存入您的相簿。";
+
+

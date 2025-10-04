@@ -14,12 +14,15 @@
 "tab.main.profile" = "個人";
 "tab.main.rating" = "評分";
 "tab.main.upload" = "上傳";
+"tab.vibe" = "Vibe";
+"tab.trend" = "趨勢";
+"tab.journey" = "旅程";
 
 // MARK: - Authentication
 "auth.title" = "數位頂尖社交評價平台";
 "auth.subtitle" = "登入以開始評分和獲取個人風格分析";
-"auth.sign_in_google" = "使用 Google 登入";
-"auth.sign_in_apple" = "使用 Apple 登入";
+"auth.sign_in_google" = "Google 登入";
+"auth.sign_in_apple" = "Apple 登入";
 "auth.continue_guest" = "以訪客模式繼續";
 "auth.signing_in" = "登入中...";
 "auth.login_failed" = "登入失敗，請檢查網路連接並重試";
@@ -73,6 +76,7 @@
 "upload.cancel" = "取消";
 "upload.photo_id" = "照片ID:";
 "upload.upload_time" = "上傳時間:";
+"upload.unavailable" = "無法上傳";
 
 // MARK: - Photo Rating
 "rating.title" = "照片評分";
@@ -252,6 +256,8 @@
 "permission.camera.message" = "請在設定中允許應用程式使用相機，以便拍攝照片上傳。";
 "permission.photo_library.title" = "需要照片權限";
 "permission.photo_library.message" = "請在設定中允許應用程式訪問照片，以便選擇照片上傳。";
+"permission.camera.unavailable" = "此裝置沒有相機可用";
+"permission.camera.unknown" = "相機權限狀態未知，請稍後再試";
 
 "report.unlock.congrats" = "🎉 恭喜！";
 "report.unlock.title" = "你的風格報告已解鎖";
@@ -427,26 +433,72 @@
 "contact.title" = "聯絡我們";
 "contact.subtitle" = "我們很樂意聽到你的聲音。如有任何問題、回饋或需要支援，歡迎與我們聯繫：";
 "contact.email" = "電子郵件";
-"contact.email.address" = "support@ninjaplus.app";
+"contact.email.address" = "support@viberank.xyz";
 "contact.twitter" = "Twitter";
-"contact.twitter.handle" = "@ninjaplusapp";
+"contact.twitter.handle" = "@ninjatofuture";
 "contact.business" = "商務合作";
-"contact.business.address" = "business@ninjaplus.app";
+"contact.business.address" = "business@viberank.xyz";
 
 // MARK: - Home
 "home.recommended.title" = "推薦用戶";
 "home.recommended.subtitle" = "排行榜頂尖用戶";
 "home.events.title" = "活動";
 "home.events.subtitle" = "最新活動投稿";
+"home.ads.title" = "贊助廣告";
+"home.ads.subtitle" = "觀看廣告以支持我們";
 
 // MARK: - Common (extra)
 "common.event_photo" = "活動照片";
 "common.event" = "活動";
 "common.live" = "直播";
+"common.partner_event" = "合作活動";
 "common.photo" = "照片";
 "common.no_photos" = "無照片";
 "common.no_tag" = "無標籤";
 "common.image_load_failed" = "圖片加載失敗";
+
+// MARK: - Spotlight
+"spotlight.vibe.title" = "Vibe";
+"spotlight.vibe.message" = "滑動、評價、感受別人的 vibe\n\n- ✅ 「V」 = 可以哦\n- ❌ 「X」= 不太行\n- 🔥 「火焰」= 很有 vibe";
+"spotlight.trend.title" = "趨勢";
+"spotlight.trend.message" = "看看現在什麼 vibe 最火";
+"spotlight.plus.title" = "+";
+"spotlight.plus.message" = "上傳一張照片，開啟你的 vibe 挑戰";
+"spotlight.journey.title" = "旅程";
+"spotlight.journey.message" = "追蹤查看你的 vibe 成長曲線";
+"spotlight.profile.title" = "個人";
+"spotlight.profile.message" = "上傳並記錄你的 vibe 照片與個人資訊";
+"spotlight.next" = "下一步";
+"spotlight.skip" = "跳過";
+
+"home.empty_state.title" = "歡迎來到 VibeRanking";
+"home.empty_state.subtitle" = "目前沒有內容，請下拉刷新或稍後再試。";
+
+// MARK: - Journey Levels
+// MARK: - Journey Trend
+"journey.trend.title" = "風格趨勢";
+"journey.trend.range_7d" = "過去7天";
+"journey.trend.overall_up" = "整體趨勢向上";
+"journey.level.background.title" = "背景板 👤";
+"journey.level.background.subtitle" = "還想當路人嗎？升級才能進鏡頭。";
+"journey.level.invisible.title" = "隱形人 👻";
+"journey.level.invisible.subtitle" = "存在感快要解鎖，再努力就能被看見。";
+"journey.level.awkward.title" = "有點小怪怪🐢";
+"journey.level.awkward.subtitle" = "別再小怪怪，下一級開始有 vibe。";
+"journey.level.basic.title" = "新手教學區🍼";
+"journey.level.basic.subtitle" = "新手村快畢業了，走出來才是真的挑戰。";
+"journey.level.wannabe.title" = "剛出新手區🎒";
+"journey.level.wannabe.subtitle" = "想好看不夠，證明自己真的能。";
+"journey.level.certified_cutie.title" = "官方認證小可愛蛋💕";
+"journey.level.certified_cutie.subtitle" = "小可愛只能當前菜，下一級算你型";
+"journey.level.fresh_fit.title" = "新鮮有型✨";
+"journey.level.fresh_fit.subtitle" = "有型了，但還差個 buff";
+"journey.level.flex_on_me.title" = "你閃到我了😎";
+"journey.level.flex_on_me.subtitle" = "很亮沒錯，差一步就是鏡頭主角了";
+"journey.level.camera_magnet.title" = "哇！出場自帶鏡頭 📸";
+"journey.level.camera_magnet.subtitle" = "鏡頭都追著你跑，最後一步才是真正的天花板";
+"journey.level.aura.title" = "您到了 Vibe 天花板 👑";
+"journey.level.aura.subtitle" = "You hit the vibe ceiling. Nothing higher—legend status unlocked.";
 
 // MARK: - Upload Menu
 "upload.menu.title" = "選擇上傳方式";
@@ -469,6 +521,65 @@
 "profile.add_photo" = "新增照片";
 "profile.scan_to_view" = "掃描查看個人檔案";
 "profile.share_qr_code" = "分享 QR Code";
+
+// MARK: - Journey
+"journey.loading_data" = "載入風格數據...";
+"journey.title" = "風格歷程";
+"journey.ai_improvement.title" = "AI 改進方案";
+"journey.ai_improvement.personalized_suggestions" = "個人化風格建議";
+"journey.ai_improvement.professional_analysis" = "專業風格分析";
+"journey.ai_improvement.outfit_suggestions" = "個人化穿搭建議";
+"journey.ai_improvement.color_recommendations" = "色彩搭配推薦";
+"journey.ai_improvement.trend_prediction" = "風格趨勢預測";
+"journey.ai_improvement.unlock_button" = "解鎖 AI 建議 - $10.00";
+
+// MARK: - Journey Stats
+"journey.stats.overall_performance" = "整體表現";
+"journey.stats.female_attraction" = "女性吸引力";
+"journey.stats.male_attraction" = "男性吸引力";
+"journey.stats.current_percentage" = "目前趴數";
+"journey.stats.your_ranking" = "你的排名";
+"journey.stats.total_users" = "總用戶";
+"journey.stats.top_percentage" = "前 %d%%";
+
+// MARK: - Journey Latest Photo
+"journey.latest_photo.title" = "最新上傳";
+"journey.latest_photo.overall_score" = "綜合評分";
+"journey.latest_photo.no_photo" = "尚未上傳照片";
+
+// MARK: - Journey Trend
+"journey.trend.avg_score" = "平均分數";
+"journey.trend.peak" = "最高";
+"journey.trend.low" = "最低";
+
+// MARK: - Notifications (Local)
+"notif.daily.title" = "你的每日 vibe 更新";
+"notif.daily.body.beat_people" = "今天你贏過了 %d 個人，繼續保持。";
+"notif.daily.body.generic" = "你的 vibe 正在進化，打開 App 看看吧。";
+
+// MARK: - Paywall
+"paywall.title" = "解鎖 AI 風格建議";
+"paywall.subtitle" = "讓 AI 為你量身打造專屬風格方案";
+"paywall.feature.professional_analysis.title" = "專業風格分析";
+"paywall.feature.professional_analysis.description" = "深度分析你的風格特點和潛力";
+"paywall.feature.outfit_suggestions.title" = "個人化穿搭建議";
+"paywall.feature.outfit_suggestions.description" = "根據你的體型和喜好推薦搭配";
+"paywall.feature.color_recommendations.title" = "色彩搭配推薦";
+"paywall.feature.color_recommendations.description" = "找到最適合你的顏色組合";
+"paywall.feature.trend_prediction.title" = "風格趨勢預測";
+"paywall.feature.trend_prediction.description" = "掌握最新時尚趨勢和發展方向";
+"paywall.choose_plan" = "選擇方案";
+"paywall.ai_style_suggestions" = "AI 風格建議";
+"paywall.one_time_purchase" = "一次性購買";
+"paywall.feature.complete_report" = "完整風格分析報告";
+"paywall.feature.personalized_plan" = "個人化建議方案";
+"paywall.feature.permanent_access" = "永久訪問權限";
+"paywall.unlock_now" = "立即解鎖 - $10.00";
+"paywall.terms_agreement" = "購買即表示同意我們的服務條款";
+"paywall.privacy_policy" = "隱私政策";
+"paywall.terms_of_service" = "服務條款";
+"paywall.restore_purchase" = "恢復購買";
+"paywall.close" = "關閉";
 "profile.title" = "個人檔案";
 "profile.settings.title" = "設定";
 "profile.guest.name" = "訪客用戶";

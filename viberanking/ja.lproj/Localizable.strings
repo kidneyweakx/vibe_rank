@@ -14,6 +14,9 @@
 "tab.main.profile" = "プロフィール";
 "tab.main.rating" = "評価";
 "tab.main.upload" = "アップロード";
+"tab.vibe" = "Vibe";
+"tab.trend" = "トレンド";
+"tab.journey" = "旅";
 
 // MARK: - Authentication
 "auth.title" = "デジタルプレミアムソーシャル評価プラットフォーム";
@@ -73,6 +76,7 @@
 "upload.cancel" = "キャンセル";
 "upload.photo_id" = "写真ID:";
 "upload.upload_time" = "アップロード時間:";
+"upload.unavailable" = "アップロードできません";
 
 // MARK: - Photo Rating
 "rating.title" = "写真評価";
@@ -252,6 +256,8 @@
 "permission.camera.message" = "アップロード用の写真を撮るために、設定でアプリにカメラの使用を許可してください。";
 "permission.photo_library.title" = "写真ライブラリの許可が必要です";
 "permission.photo_library.message" = "アップロードする写真を選択するために、設定でアプリに写真へのアクセスを許可してください。";
+"permission.camera.unavailable" = "このデバイスではカメラが使用できません";
+"permission.camera.unknown" = "カメラの権限状態が不明です。後でもう一度お試しください";
 
 "report.unlock.congrats" = "🎉 おめでとうございます！";
 "report.unlock.title" = "あなたのスタイルレポートがアンロックされました";
@@ -427,26 +433,43 @@
 "contact.title" = "お問い合わせ";
 "contact.subtitle" = "ご意見・ご質問・サポートが必要な場合は、お気軽にご連絡ください:";
 "contact.email" = "メール";
-"contact.email.address" = "support@ninjaplus.app";
+"contact.email.address" = "support@viberank.xyz";
 "contact.twitter" = "Twitter";
-"contact.twitter.handle" = "@ninjaplusapp";
+"contact.twitter.handle" = "@ninjatofuture";
 "contact.business" = "ビジネスお問い合わせ";
-"contact.business.address" = "business@ninjaplus.app";
+"contact.business.address" = "business@viberank.xyz";
 
 // MARK: - Home
 "home.recommended.title" = "おすすめ";
 "home.recommended.subtitle" = "上位ランクのユーザー";
 "home.events.title" = "イベント";
 "home.events.subtitle" = "最新のイベント投稿";
+"home.ads.title" = "スポンサー";
+"home.ads.subtitle" = "広告を視聴して私たちをサポート";
 
 // MARK: - Common (extra)
 "common.event_photo" = "イベント写真";
 "common.event" = "イベント";
 "common.live" = "ライブ";
+"common.partner_event" = "パートナー";
 "common.photo" = "写真";
 "common.no_photos" = "写真なし";
 "common.no_tag" = "タグなし";
 "common.image_load_failed" = "画像の読み込みに失敗しました";
+
+// MARK: - Spotlight
+"spotlight.vibe.title" = "Vibe";
+"spotlight.vibe.message" = "スワイプ、評価、他の人の vibe を感じよう\n\n- ✅ 「V」= いいね\n- ❌ 「X」= イマイチ\n- 🔥 「炎」= すごい vibe";
+"spotlight.trend.title" = "トレンド";
+"spotlight.trend.message" = "今何の vibe が一番人気かチェック";
+"spotlight.plus.title" = "+";
+"spotlight.plus.message" = "写真をアップロードして vibe チャレンジを始めよう";
+"spotlight.journey.title" = "旅";
+"spotlight.journey.message" = "あなたの vibe の成長を追跡してレベルアップを見よう";
+"spotlight.profile.title" = "プロフィール";
+"spotlight.profile.message" = "vibe 写真とプロフィール情報をアップロードして記録しよう";
+"spotlight.next" = "次へ";
+"spotlight.skip" = "スキップ";
 
 // MARK: - Upload Menu
 "upload.menu.title" = "アップロード方法を選択";
@@ -469,3 +492,29 @@
 "profile.add_photo" = "写真を追加";
 "profile.scan_to_view" = "スキャンしてプロフィールを表示";
 "profile.share_qr_code" = "QRコードを共有";
+
+// MARK: - Journey Latest Photo
+"journey.latest_photo.title" = "最新アップロード";
+"journey.latest_photo.overall_score" = "総合スコア";
+"journey.latest_photo.no_photo" = "まだ写真がアップロードされていません";
+
+// MARK: - Journey Trend
+"journey.trend.avg_score" = "平均スコア";
+"journey.trend.peak" = "最高";
+"journey.trend.low" = "最低";
+"journey.trend.title" = "スタイルトレンド";
+"journey.trend.range_7d" = "過去7日間";
+
+// MARK: - Journey Stats
+"journey.stats.overall_performance" = "総合パフォーマンス";
+"journey.stats.female_attraction" = "女性への魅力";
+"journey.stats.male_attraction" = "男性への魅力";
+"journey.stats.current_percentage" = "現在のパーセンテージ";
+"journey.stats.your_ranking" = "あなたのランキング";
+"journey.stats.total_users" = "総ユーザー数";
+"journey.stats.top_percentage" = "上位 %d%%";
+
+// MARK: - Notifications (Local)
+"notif.daily.title" = "毎日の vibe アップデート";
+"notif.daily.body.beat_people" = "今日は %d 人を上回りました。続けましょう。";
+"notif.daily.body.generic" = "あなたの vibe は進化中。アプリでチェック。";

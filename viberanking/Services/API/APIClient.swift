@@ -13,12 +13,16 @@ class APIClient {
     static let shared = APIClient()
     
     private let session: URLSession
-    private let baseURL: String
-    private let accessToken = "vibe_api_2025_secure_token_8f9a2b3c4d5e6f7g8h9i0j1k2l3m4n5o"
-    
+    let baseURL: String
+
     private init() {
         self.session = URLSession.shared
         self.baseURL = AppEnvironment.current.baseURL
+    }
+
+    /// Get JWT token from keychain
+    private func getJWTToken() -> String? {
+        return try? KeychainItem.readJWTToken()
     }
     
     /// Perform a generic API request
@@ -28,15 +32,19 @@ class APIClient {
         body: [String: Any]? = nil,
         responseType: T.Type
     ) async throws -> T {
-        
+
         guard let url = URL(string: "\(baseURL)\(endpoint)") else {
             throw APIError.invalidURL
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(accessToken, forHTTPHeaderField: "X-Access-Token")
+
+        // Add JWT token if available
+        if let jwtToken = getJWTToken() {
+            request.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
+        }
         
         if let body = body {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -60,7 +68,7 @@ class APIClient {
         }
         
         print("📡 API 響應狀態碼: \(httpResponse.statusCode) ← \(method.rawValue) \(endpoint)")
-        
+
         guard httpResponse.statusCode == 200 else {
             let responseText = String(data: data, encoding: .utf8)
             if let responseText = responseText {
@@ -77,6 +85,14 @@ class APIClient {
             } else {
                 print("❌ API 錯誤 [\(httpResponse.statusCode)] — \(method.rawValue) \(endpoint) (無響應內容)")
             }
+
+            // Handle 401 Unauthorized - JWT token expired or invalid
+            if httpResponse.statusCode == 401 {
+                print("🔒 JWT token expired or invalid, clearing token and notifying app")
+                try? KeychainItem.deleteJWTToken()
+                NotificationCenter.default.post(name: .userSessionExpired, object: nil)
+            }
+
             throw APIError.serverError(httpResponse.statusCode)
         }
         
@@ -119,12 +135,16 @@ class APIClient {
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(accessToken, forHTTPHeaderField: "X-Access-Token")
-        
+
+        // Add JWT token if available
+        if let jwtToken = getJWTToken() {
+            request.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
+        }
+
         if let body = body {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
         }
-        
+
         // Request log (no-body response)
         print("➡️ API 請求: \(method.rawValue) \(endpoint)")
         if let body = body, !body.isEmpty,
@@ -158,6 +178,14 @@ class APIClient {
             } else {
                 print("❌ API 錯誤 [\(httpResponse.statusCode)] — \(method.rawValue) \(endpoint) (無響應內容)")
             }
+
+            // Handle 401 Unauthorized - JWT token expired or invalid
+            if httpResponse.statusCode == 401 {
+                print("🔒 JWT token expired or invalid, clearing token and notifying app")
+                try? KeychainItem.deleteJWTToken()
+                NotificationCenter.default.post(name: .userSessionExpired, object: nil)
+            }
+
             throw APIError.serverError(httpResponse.statusCode)
         }
     }

@@ -28,7 +28,7 @@ protocol PhotoRatingServiceProtocol {
 
 // MARK: - Photo Upload Service Protocol
 protocol PhotoUploadServiceProtocol {
-    /// Upload photo from UIImage
+    /// Upload photo from UIImage (userId extracted from JWT token)
     func uploadPhoto(_ image: UIImage, for userId: String) async throws -> Photo
     
     /// Convert image to WebP format

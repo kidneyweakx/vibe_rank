@@ -1,0 +1,14 @@
+/* Profile Setup (Japanese) */
+"profile_setup.title" = "プロフィール設定";
+"profile_setup.error_title" = "設定に失敗しました";
+"profile_setup.unknown_error" = "不明なエラー";
+"profile_setup.welcome_title" = "VibeRankingへようこそ！";
+"profile_setup.welcome_subtitle" = "プロフィールの設定を完了してください";
+"profile_setup.display_name" = "表示名";
+"profile_setup.display_name_placeholder" = "表示名を入力";
+"profile_setup.user_id" = "ユーザーID";
+"profile_setup.user_id_placeholder" = "ユーザーIDを入力";
+"profile_setup.user_id_hint" = "ユーザーIDはアカウント識別に使用され、後から変更できません";
+"profile_setup.continue" = "設定を完了";
+"profile_setup.processing" = "設定中...";
+

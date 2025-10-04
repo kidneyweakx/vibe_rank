@@ -1,0 +1,7 @@
+/* Permission prompts (Japanese) */
+"NSCameraUsageDescription" = "コミュニティの評価とパーソナルなスタイル分析レポート作成のため、新しい写真を撮影してアップロードできるようにカメラを使用します。例：アップロード画面の『新しく撮影』をタップして写真を撮影・投稿します。";
+"NSUserTrackingUsageDescription" = "パーソナライズされたコンテンツ提供と計測のため、追跡の許可をお願いします。";
+"NSPhotoLibraryUsageDescription" = "アップロードする写真を選択するため、フォトライブラリへのアクセスが必要です。";
+"NSPhotoLibraryAddUsageDescription" = "書き出しや保存時に写真をライブラリへ保存するための許可が必要です。";
+
+

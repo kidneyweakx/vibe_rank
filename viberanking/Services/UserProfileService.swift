@@ -53,14 +53,19 @@ class UserProfileService: ObservableObject {
         isLoading = true
         error = nil
         
+        // Skip API call for guest users - let AuthenticationViewModel handle onboarding
+        if user.id.hasPrefix("guest_") {
+            print("ℹ️ Guest user detected, skipping API call - deferring to AuthenticationViewModel for onboarding")
+            // Don't set currentUser here - let AuthenticationViewModel handle the flow
+            isLoading = false
+            return
+        }
+        
         do {
             // Try to load existing user profile from our backend
             if let existingUser = try await userRepository.getUser(by: user.id) {
                 print("✅ Existing user profile loaded: \(existingUser.name)")
                 currentUser = existingUser
-                
-                // Try to update last activity
-                try? await userRepository.updateLastActivity(userId: existingUser.id)
                 
             } else {
                 // No existing profile. Do not set error or throw.
