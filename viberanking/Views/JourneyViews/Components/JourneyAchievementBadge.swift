@@ -2,7 +2,7 @@
 //  JourneyAchievementBadge.swift
 //  viberanking
 //
-//  Created by Assistant on 2025/09/02.
+//  Redesigned to match HomeView style (simple and clean)
 //
 
 import SwiftUI
@@ -11,85 +11,56 @@ struct JourneyAchievementBadge: View {
     let level: JourneyLevel
     let overallPerformance: Double
 
+    // Black-Red theme
+    private let primaryRed = Color(red: 255/255, green: 0/255, blue: 92/255) // #FF005C
+
     var body: some View {
         HStack(spacing: 16) {
+            // Red icon with background
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color(red: 255/255, green: 139/255, blue: 148/255).opacity(0.85),
-                                Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.45)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(primaryRed.opacity(0.2))
                     .frame(width: 64, height: 64)
-                    .shadow(color: Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.4), radius: 12, x: 0, y: 4)
 
                 Image(systemName: level.icon)
-                    .font(.system(size: 26, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.system(size: 28, weight: .semibold))
+                    .foregroundColor(primaryRed)
             }
 
             VStack(alignment: .leading, spacing: 6) {
+                // Simple white text (WCAG compliant)
                 Text(level.titleLocalized)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [
-                                Color(red: 255/255, green: 139/255, blue: 148/255),
-                                Color.white
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.white)
 
                 Text(level.subtitleLocalized)
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.7))
+                    .font(.system(size: 14))
+                    .foregroundColor(.white.opacity(0.8))
 
+                // Performance indicator - red theme
                 HStack(spacing: 6) {
                     Image(systemName: "chart.line.uptrend.xyaxis")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(Color(red: 94/255, green: 205/255, blue: 200/255))
-                    Text("\(Int(overallPerformance))")
-                        .font(.caption)
-                        .foregroundColor(Color(red: 94/255, green: 205/255, blue: 200/255))
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(primaryRed)
+                    Text("\(Int(overallPerformance))%")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(primaryRed)
                 }
             }
 
             Spacer()
         }
-        .padding(20)
+        .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.08), Color.white.opacity(0.03)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+            // Black-red theme card
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color(red: 0.1, green: 0.1, blue: 0.1))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(
-                            LinearGradient(
-                                colors: [
-                                    Color(red: 255/255, green: 139/255, blue: 148/255).opacity(0.3),
-                                    Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.3)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1.5
-                        )
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(primaryRed.opacity(0.4), lineWidth: 1.5)
                 )
         )
-        .padding(.horizontal, 20)
+        // Padding removed - handled by parent
     }
 }
 

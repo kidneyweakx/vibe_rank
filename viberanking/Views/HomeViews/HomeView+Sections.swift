@@ -153,26 +153,53 @@ extension HomeView {
                     ForEach(Array(topUserGalleries.prefix(5).enumerated()), id: \.element.userId) { index, gallery in
                         VStack(spacing: 8) {
                             ZStack(alignment: .bottomTrailing) {
-                                // Simple square image
-                                if let photoURL = gallery.photoURLs.first, let url = URL(string: photoURL) {
+                                // Hexagon image
+                                if let avatarURL = gallery.avatarURL, let url = URL(string: avatarURL) {
                                     AsyncImage(url: url) { phase in
                                         switch phase {
                                         case .success(let image):
                                             image
                                                 .resizable()
                                                 .scaledToFill()
-                                                .frame(width: 70, height: 70)
-                                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                                        default:
-                                            RoundedRectangle(cornerRadius: 12)
+                                                .frame(width: 80, height: 80)
+                                                .clipShape(Hexagon())
+                                        case .failure:
+                                            Hexagon()
                                                 .fill(Color.gray.opacity(0.3))
-                                                .frame(width: 70, height: 70)
+                                                .frame(width: 80, height: 80)
+                                                .overlay(
+                                                    Image(systemName: "person.fill")
+                                                        .foregroundColor(.gray)
+                                                        .font(.system(size: 28))
+                                                )
+                                        case .empty:
+                                            Hexagon()
+                                                .fill(Color.gray.opacity(0.3))
+                                                .frame(width: 80, height: 80)
+                                                .overlay(
+                                                    ProgressView()
+                                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                                )
+                                        @unknown default:
+                                            Hexagon()
+                                                .fill(Color.gray.opacity(0.3))
+                                                .frame(width: 80, height: 80)
                                                 .overlay(
                                                     Image(systemName: "person.fill")
                                                         .foregroundColor(.gray)
                                                 )
                                         }
                                     }
+                                } else {
+                                    // No avatar URL
+                                    Hexagon()
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(width: 80, height: 80)
+                                        .overlay(
+                                            Image(systemName: "person.fill")
+                                                .foregroundColor(.white.opacity(0.5))
+                                                .font(.system(size: 28))
+                                        )
                                 }
 
                                 // Rank badge
@@ -184,7 +211,7 @@ extension HomeView {
                                             .font(.system(size: 11, weight: .bold))
                                             .foregroundColor(.white)
                                     )
-                                    .offset(x: 4, y: 4)
+                                    .offset(x: 8, y: 8)
                             }
 
                             Text(gallery.name)
@@ -192,7 +219,7 @@ extension HomeView {
                                 .foregroundColor(.white)
                                 .lineLimit(1)
                         }
-                        .frame(width: 80)
+                        .frame(width: 90)
                     }
                 }
                 .padding(.horizontal, 24)

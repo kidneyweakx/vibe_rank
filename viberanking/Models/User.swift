@@ -18,8 +18,16 @@ struct User: Codable, Identifiable {
     var lastActivityAt: Date?
     var ratingProgress: RatingProgress
     var uploadedPhotos: [Photo]
+    var onboardedAt: Date?
     
-    init(id: String, name: String, email: String, profileImageURL: String? = nil, gender: Gender? = nil) {
+    init(
+        id: String,
+        name: String,
+        email: String,
+        profileImageURL: String? = nil,
+        gender: Gender? = nil,
+        onboardedAt: Date? = nil
+    ) {
         self.id = id
         self.name = name
         self.email = email
@@ -29,6 +37,7 @@ struct User: Codable, Identifiable {
         self.lastActivityAt = Date()
         self.ratingProgress = RatingProgress()
         self.uploadedPhotos = []
+        self.onboardedAt = onboardedAt
     }
     
     /// Update last activity timestamp

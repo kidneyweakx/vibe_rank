@@ -2,7 +2,7 @@
 //  LatestPhotoCard.swift
 //  viberanking
 //
-//  Created by Assistant on 2025/10/03.
+//  Redesigned to match HomeView style (simple and clean)
 //
 
 import SwiftUI
@@ -12,36 +12,23 @@ struct LatestPhotoCard: View {
     let photo: PhotoInfo?
     let score: Double
 
+    // Black-Red theme
+    private let primaryRed = Color(red: 255/255, green: 0/255, blue: 92/255) // #FF005C
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Header
+        VStack(alignment: .leading, spacing: 12) {
+            // Header - Black-red theme
             HStack {
                 Image(systemName: "photo.fill.on.rectangle.fill")
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [
-                                Color(red: 255/255, green: 139/255, blue: 148/255),
-                                Color(red: 94/255, green: 205/255, blue: 200/255)
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                    .foregroundColor(primaryRed)
+                    .font(.system(size: 16, weight: .semibold))
+
                 Text("journey.latest_photo.title".localized)
-                    .font(.headline)
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [
-                                Color(red: 255/255, green: 139/255, blue: 148/255),
-                                Color.white
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+
                 Spacer()
             }
-            .padding(.horizontal, 20)
 
             // Photo with score overlay
             if let photo = photo {
@@ -83,69 +70,50 @@ struct LatestPhotoCard: View {
                             endPoint: .bottom
                         )
 
-                        // Score overlay
+                        // Score overlay - Simplified
                         VStack {
                             Spacer()
-                            VStack(spacing: 8) {
+                            VStack(spacing: 6) {
                                 Text("journey.latest_photo.overall_score".localized)
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.8))
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.9))
 
                                 Text(String(format: "%.1f", score))
-                                    .font(.system(size: 64, weight: .bold))
-                                    .foregroundStyle(
-                                        LinearGradient(
-                                            colors: [
-                                                Color(red: 255/255, green: 139/255, blue: 148/255),
-                                                Color(red: 94/255, green: 205/255, blue: 200/255)
-                                            ],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                                    .shadow(color: Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.5), radius: 12, x: 0, y: 0)
+                                    .font(.system(size: 52, weight: .bold))
+                                    .foregroundColor(.white)
                             }
-                            .padding(.bottom, 32)
+                            .padding(.bottom, 24)
                         }
                     }
                     .frame(width: geometry.size.width, height: geometry.size.width * 4/3)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        Color(red: 255/255, green: 139/255, blue: 148/255).opacity(0.3),
-                                        Color(red: 94/255, green: 205/255, blue: 200/255).opacity(0.3)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1
-                            )
+                        // Red border (black-red theme)
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(primaryRed.opacity(0.4), lineWidth: 1.5)
                     )
                 }
                 .aspectRatio(3/4, contentMode: .fit)
-                .padding(.horizontal, 20)
             } else {
-                // Empty state
-                VStack(spacing: 16) {
+                // Empty state (matching HomeView empty state style)
+                VStack(spacing: 12) {
                     Image(systemName: "photo.badge.plus")
-                        .font(.system(size: 48))
+                        .font(.system(size: 44))
                         .foregroundColor(.white.opacity(0.3))
 
                     Text("journey.latest_photo.no_photo".localized)
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.6))
+                        .font(.system(size: 14))
+                        .foregroundColor(.white.opacity(0.7))
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: 300)
+                .frame(height: 280)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.white.opacity(0.05))
+                    // Simple dark gray card
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color(red: 0.1, green: 0.1, blue: 0.1))
                 )
-                .padding(.horizontal, 20)
             }
         }
+        // Padding removed - handled by parent
     }
 }

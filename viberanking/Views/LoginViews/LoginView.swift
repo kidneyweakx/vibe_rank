@@ -384,6 +384,12 @@ class PreviewAuthenticationService: AuthenticationService {
         return user
     }
     
+    override func signInAsGuest() async throws -> User {
+        let user = User(id: "guest_preview", name: "Guest Preview", email: "guest@example.com")
+        currentUser = user
+        return user
+    }
+    
     override func signOut() async throws {
         currentUser = nil
     }

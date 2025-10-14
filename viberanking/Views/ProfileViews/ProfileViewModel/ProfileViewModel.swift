@@ -112,7 +112,8 @@ class ProfileViewModel: BaseViewModel {
                         weeklyTrend: data.journey.weeklyTrend,
                         achievements: data.journey.achievements,
                         nextMilestone: data.journey.nextMilestone,
-                        levelProgress: data.journey.levelProgress
+                        levelProgress: data.journey.levelProgress,
+                        weeklyProgress: data.journey.weeklyProgress
                     )
                     self.journeyInfo = convertedJourneyInfo
                     self.recentRatings = data.journey.recentRatings
@@ -212,7 +213,7 @@ class ProfileViewModel: BaseViewModel {
         do {
             print("🔄 ProfileViewModel: Loading user photos...")
             let photosResponse = try await self.fileAPI.getUserPhotos(userId: userId, page: nil, limit: 60)
-            let infos = photosResponse.data.photos
+            let infos = photosResponse.data
             self.userPhotoInfos = infos
             // Build lightweight Photo models for any other consumers
             self.userPhotos = infos.map { info in
