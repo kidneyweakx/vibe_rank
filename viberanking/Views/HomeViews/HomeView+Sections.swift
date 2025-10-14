@@ -7,7 +7,6 @@ extension HomeView {
             Text("Announcements")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.white)
-                .padding(.horizontal, 24)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
@@ -16,7 +15,7 @@ extension HomeView {
                             .frame(width: 280)
                     }
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
             }
         }
     }
@@ -26,7 +25,7 @@ extension HomeView {
             Text("Community Stats")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.white)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
 
             GeometryReader { geometry in
                 let isCompact = geometry.size.width < 600
@@ -146,7 +145,7 @@ extension HomeView {
             Text("Top Creators")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.white)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
@@ -236,7 +235,7 @@ extension HomeView {
 
             EventCardStack(events: events)
                 .frame(height: 500)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
         }
     }
 
@@ -244,7 +243,7 @@ extension HomeView {
         Rectangle()
             .fill(Color.white.opacity(0.1))
             .frame(height: 1)
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 20)
     }
 
     func sectionHeader(_ title: String, subtitle: String) -> some View {

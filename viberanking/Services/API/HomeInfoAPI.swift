@@ -49,7 +49,7 @@ struct RecentEvent: Codable {
     let format: String
     let size: Int
     let startsAt: String
-    let endsAt: String
+    let endsAt: String?
     let createdAt: String
     let updatedAt: String
 }

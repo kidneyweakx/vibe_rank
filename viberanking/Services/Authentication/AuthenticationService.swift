@@ -697,6 +697,7 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
         // Delete JWT token from keychain
         try? KeychainItem.deleteJWTToken()
 
+        pendingUserData = nil
         currentUser = nil
 
         // Optional API notification

@@ -82,7 +82,6 @@ struct HomeView: View {
                                 .offset(x: 4, y: -4)
                         }
                     }
-                    .padding(.horizontal, 24)
                     .padding(.top, 12)
 
                     // Featured users section (using topUserGalleries from API)
@@ -112,7 +111,6 @@ struct HomeView: View {
                         Text("Sponsors")
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.white)
-                            .padding(.horizontal, 24)
 
                         AdMobAdaptiveBannerView()
                             .frame(height: 90)
@@ -125,7 +123,6 @@ struct HomeView: View {
                                 RoundedRectangle(cornerRadius: 16)
                                     .stroke(Color(red: 255/255, green: 0/255, blue: 92/255).opacity(0.3), lineWidth: 1)
                             )
-                            .padding(.horizontal, 24)
                     }
 
                     // Empty state when no data

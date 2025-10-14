@@ -158,6 +158,8 @@ class ProfileViewModel: BaseViewModel {
                     switch urlError.code {
                     case .cancelled:
                         print("   - Issue: Request was cancelled (possibly due to multiple calls)")
+                        print("🚫 ProfileViewModel: Cancelling profile load due to request cancellation")
+                        return
                     case .timedOut:
                         print("   - Issue: Request timed out")
                     case .notConnectedToInternet:
@@ -202,6 +204,10 @@ class ProfileViewModel: BaseViewModel {
                 print("⚠️ ProfileViewModel: Journey info API returned success=false")
             }
         } catch {
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("⚠️ ProfileViewModel: Journey info request was cancelled, skipping error handling")
+                return
+            }
             print("❌ ProfileViewModel: Failed to load journey info: \(error)")
             if let urlError = error as? URLError {
                 print("   URL Error code: \(urlError.code.rawValue)")
@@ -221,6 +227,10 @@ class ProfileViewModel: BaseViewModel {
             }
             print("✅ ProfileViewModel: User photos loaded successfully (\(infos.count) photos)")
         } catch {
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("⚠️ ProfileViewModel: User photo request was cancelled, skipping error handling")
+                return
+            }
             self.userPhotoInfos = []
             self.userPhotos = []
             print("❌ ProfileViewModel: Failed to load user photos: \(error)")
