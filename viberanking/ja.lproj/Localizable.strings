@@ -494,6 +494,15 @@
 "profile.share_qr_code" = "QRコードを共有";
 
 // MARK: - Journey Latest Photo
+// MARK: - Journey Weekly Progress
+"journey.weekly_progress.title" = "今週の成績";
+"journey.weekly_progress.points" = "点";
+"journey.weekly_progress.this_week_improvement" = "今週の伸び";
+"journey.weekly_progress.rank_up" = "ランキングが %d 上昇";
+"journey.weekly_progress.rank_down" = "ランキングが %d 下降";
+"journey.weekly_progress.new_ratings" = "新しい評価 %d 件";
+"journey.weekly_progress.keep_going" = "その調子！もっと強くなるよ";
+
 "journey.latest_photo.title" = "最新アップロード";
 "journey.latest_photo.overall_score" = "総合スコア";
 "journey.latest_photo.no_photo" = "まだ写真がアップロードされていません";

@@ -44,19 +44,6 @@ class JourneyViewModel: BaseViewModel {
                     totalUsers: journeyResponse.data.totalUsers
                 )
             }
-
-            // Load latest photo and use overall totalScore as the display score
-            do {
-                let photoResponse = try await self.fileAPI.getUserPhotos(userId: userId, page: 1, limit: 1)
-                if let photo = photoResponse.data.first {
-                    self.latestPhoto = photo
-                    // Use totalScore from journeyInfo as the overall score
-                    // This represents the user's overall performance, not just one photo
-                    self.latestPhotoScore = journeyResponse.data.totalScore
-                }
-            } catch {
-                print("Failed to load latest photo: \(error)")
-            }
         }
     }
     

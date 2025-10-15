@@ -39,16 +39,34 @@ struct JourneyTabView: View {
                     LazyVStack(spacing: 24) {
                         // Title - Simple white text like HomeView "Discover"
                         HStack {
-                            Text("journey.title".localized)
+                            // Gradient logo-like title: "vibe analysis" (use foregroundStyle to avoid clipping)
+                            Text("vibe analysis")
                                 .font(.system(size: 32, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [
+                                            Color(red: 255/255, green: 0/255, blue: 92/255),
+                                            Color(red: 155/255, green: 81/255, blue: 224/255),
+                                            Color(red: 94/255, green: 205/255, blue: 200/255)
+                                        ],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
                             Spacer()
                         }
                         .padding(.horizontal, 24)
-                        .padding(.top, 12)
+                        .padding(.top, 15)
 
                         // VERSION C: Story Card Flow
-                        // 1. Weekly Progress Card - "本週戰績" (Hero section)
+                        // 0. Achievement Badge - Simplified
+                        JourneyAchievementBadge(
+                            level: viewModel.journeyLevel,
+                            overallPerformance: viewModel.overallPerformance
+                        )
+                        .padding(.horizontal, 24)
+
+                        // 1. Weekly Progress Card - current status first
                         WeeklyProgressCard(
                             scoreChange: viewModel.weeklyScoreChange,
                             currentScore: viewModel.currentWeekScore,
@@ -58,18 +76,11 @@ struct JourneyTabView: View {
                         )
                         .padding(.horizontal, 24)
 
-                        // 2. Latest photo with score - "本週爆款照片"
-                        LatestPhotoCard(
-                            photo: viewModel.latestPhoto,
-                            score: viewModel.latestPhotoScore
-                        )
-                        .padding(.horizontal, 24)
-
-                        // 3. Trend Chart - "7天趨勢"
+                        // 2. Trend Chart - "7天趨勢"
                         JourneyTrendChart(data: viewModel.chartData)
                             .padding(.horizontal, 24)
 
-                        // 4. Gender Attraction with Weekly Changes
+                        // 3. Gender Attraction with Weekly Changes
                         JourneyStatCards(
                             femaleAttraction: viewModel.femaleAttraction,
                             maleAttraction: viewModel.maleAttraction,
@@ -77,13 +88,6 @@ struct JourneyTabView: View {
                             maleChange: viewModel.maleAttractionChange,
                             currentRankPercentage: viewModel.currentRankPercentage,
                             totalUsers: viewModel.totalUsers
-                        )
-                        .padding(.horizontal, 24)
-
-                        // 5. Achievement Badge - Simplified
-                        JourneyAchievementBadge(
-                            level: viewModel.journeyLevel,
-                            overallPerformance: viewModel.overallPerformance
                         )
                         .padding(.horizontal, 24)
 

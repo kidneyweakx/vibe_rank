@@ -636,6 +636,15 @@
 "journey.stats.total_users" = "Total Users";
 "journey.stats.top_percentage" = "Top %d%%";
 
+// MARK: - Journey Weekly Progress
+"journey.weekly_progress.title" = "This Week";
+"journey.weekly_progress.points" = "pts";
+"journey.weekly_progress.this_week_improvement" = "Improvement";
+"journey.weekly_progress.rank_up" = "Ranking up by %d";
+"journey.weekly_progress.rank_down" = "Ranking down by %d";
+"journey.weekly_progress.new_ratings" = "%d new ratings";
+"journey.weekly_progress.keep_going" = "Keep going, you’ll get stronger!";
+
 // MARK: - Journey Latest Photo
 "journey.latest_photo.title" = "Latest Upload";
 "journey.latest_photo.overall_score" = "Overall Score";

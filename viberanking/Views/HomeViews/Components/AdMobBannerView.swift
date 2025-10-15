@@ -81,10 +81,12 @@ struct AdMobBannerView: UIViewRepresentable {
 
 struct AdMobAdaptiveBannerView: UIViewRepresentable {
     let adUnitID: String
+    let containerWidth: CGFloat?
 
-    init(adUnitID: String = "ca-app-pub-3940256099942544/2934735716") {
+    init(adUnitID: String = "ca-app-pub-3940256099942544/2934735716", containerWidth: CGFloat? = nil) {
         // Default test ad unit ID - replace with your actual ad unit ID in production
         self.adUnitID = adUnitID
+        self.containerWidth = containerWidth
     }
 
     func makeUIView(context: Context) -> BannerView {
@@ -94,8 +96,10 @@ struct AdMobAdaptiveBannerView: UIViewRepresentable {
         banner.delegate = context.coordinator
 
         // Use adaptive banner size for better responsive design
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
+        if let containerWidth = containerWidth {
+            banner.adSize = currentOrientationAnchoredAdaptiveBanner(width: containerWidth)
+        } else if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                  let window = windowScene.windows.first {
             let frame = window.frame.inset(by: window.safeAreaInsets)
             let viewWidth = frame.size.width
             banner.adSize = currentOrientationAnchoredAdaptiveBanner(width: viewWidth)
@@ -107,8 +111,14 @@ struct AdMobAdaptiveBannerView: UIViewRepresentable {
 
     func updateUIView(_ uiView: BannerView, context: Context) {
         // Update ad size on rotation or size changes
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
+        if let containerWidth = containerWidth {
+            let newAdSize = currentOrientationAnchoredAdaptiveBanner(width: containerWidth)
+            if !isAdSizeEqualToSize(size1: uiView.adSize, size2: newAdSize) {
+                uiView.adSize = newAdSize
+                uiView.load(Request())
+            }
+        } else if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                  let window = windowScene.windows.first {
             let frame = window.frame.inset(by: window.safeAreaInsets)
             let viewWidth = frame.size.width
             let newAdSize = currentOrientationAnchoredAdaptiveBanner(width: viewWidth)

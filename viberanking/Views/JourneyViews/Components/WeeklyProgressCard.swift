@@ -29,7 +29,7 @@ struct WeeklyProgressCard: View {
         VStack(spacing: 20) {
             // Header
             HStack {
-                Text("本週戰績")
+                Text("journey.weekly_progress.title".localized)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                 Spacer()
@@ -48,10 +48,10 @@ struct WeeklyProgressCard: View {
 
                     // Label
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("分")
+                        Text("journey.weekly_progress.points".localized)
                             .font(.system(size: 18, weight: .medium))
                             .foregroundColor(.white)
-                        Text("本週進步")
+                        Text("journey.weekly_progress.this_week_improvement".localized)
                             .font(.system(size: 12))
                             .foregroundColor(.white.opacity(0.7))
                     }
@@ -85,10 +85,10 @@ struct WeeklyProgressCard: View {
                             .foregroundColor(rankChange > 0 ? .yellow : .white.opacity(0.5))
 
                         if rankChange > 0 {
-                            Text("排名進步 \(abs(rankChange)) 名")
+                            Text(String(format: "journey.weekly_progress.rank_up".localized, abs(rankChange)))
                                 .foregroundColor(.white.opacity(0.9))
                         } else {
-                            Text("排名下降 \(abs(rankChange)) 名")
+                            Text(String(format: "journey.weekly_progress.rank_down".localized, abs(rankChange)))
                                 .foregroundColor(.white.opacity(0.7))
                         }
                     }
@@ -99,7 +99,7 @@ struct WeeklyProgressCard: View {
                     HStack {
                         Image(systemName: "hand.thumbsup.fill")
                             .foregroundColor(primaryRed)
-                        Text("新增 \(newRatings) 個評分")
+                        Text(String(format: "journey.weekly_progress.new_ratings".localized, newRatings))
                             .foregroundColor(.white.opacity(0.9))
                     }
                 }
@@ -109,7 +109,7 @@ struct WeeklyProgressCard: View {
                     HStack {
                         Image(systemName: "sparkles")
                             .foregroundColor(.white.opacity(0.5))
-                        Text("繼續努力，你會變得更強！")
+                        Text("journey.weekly_progress.keep_going".localized)
                             .foregroundColor(.white.opacity(0.7))
                     }
                 }

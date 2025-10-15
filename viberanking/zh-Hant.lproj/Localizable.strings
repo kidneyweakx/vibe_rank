@@ -542,6 +542,15 @@
 "journey.stats.total_users" = "總用戶";
 "journey.stats.top_percentage" = "前 %d%%";
 
+// MARK: - Journey Weekly Progress
+"journey.weekly_progress.title" = "本週戰績";
+"journey.weekly_progress.points" = "分";
+"journey.weekly_progress.this_week_improvement" = "本週進步";
+"journey.weekly_progress.rank_up" = "排名進步 %d 名";
+"journey.weekly_progress.rank_down" = "排名下降 %d 名";
+"journey.weekly_progress.new_ratings" = "新增 %d 個評分";
+"journey.weekly_progress.keep_going" = "繼續努力，你會變得更強！";
+
 // MARK: - Journey Latest Photo
 "journey.latest_photo.title" = "最新上傳";
 "journey.latest_photo.overall_score" = "綜合評分";
