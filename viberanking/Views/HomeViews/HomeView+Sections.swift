@@ -231,11 +231,11 @@ extension HomeView {
             Text("Upcoming Events")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.white)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
 
             EventCardStack(events: events)
-                .frame(height: 500)
-                .padding(.horizontal, 20)
+                .frame(height: 460)
+                .padding(.horizontal, 26)
         }
     }
 

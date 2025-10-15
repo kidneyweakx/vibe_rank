@@ -18,6 +18,7 @@ struct viberankingApp: App {
     @StateObject private var errorHandler = ErrorHandler()
     @StateObject private var localizationManager = LocalizationManager.shared
     @StateObject private var themeManager = ThemeManager()
+    @StateObject private var appNotifications = AppNotificationsService.shared
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -81,6 +82,7 @@ struct viberankingApp: App {
                 .environmentObject(errorHandler)
                 .environmentObject(localizationManager)
                 .environmentObject(themeManager)
+                .environmentObject(appNotifications)
                 .onOpenURL { url in
                     // Handle Google Sign-In URL callback
                     GIDSignIn.sharedInstance.handle(url)

@@ -158,44 +158,59 @@ struct SettingsView: View {
                                 .foregroundColor(.white)
                             
                             VStack(spacing: 12) {
-                                // Notifications toggle
-                                HStack {
-                                    Image(systemName: "bell.fill")
-                                        .font(.system(size: 16))
-                                        .foregroundColor(.white.opacity(0.8))
-                                        .frame(width: 24)
-                                    Text("Daily Reminder")
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(.white)
-                                    Spacer()
-                                    Toggle("", isOn: $notificationsEnabled)
-                                        .labelsHidden()
-                                }
-                                .padding(16)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.black.opacity(0.3))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .stroke(Color.white.opacity(0.06), lineWidth: 1)
-                                        )
-                                )
-                                .onChange(of: notificationsEnabled) { enabled in
-                                    Task {
-                                        if enabled {
-                                            let granted = await LocalNotificationService.shared.requestAuthorization()
-                                            if granted {
-                                                try? await LocalNotificationService.shared.scheduleDailyReminder(hour: 20, minute: 0)
-                                            } else {
-                                                await MainActor.run { notificationsEnabled = false }
-                                            }
-                                        } else {
-                                            await LocalNotificationService.shared.cancelDailyReminder()
-                                        }
+                                NavigationLink {
+                                    NotificationsSettingsView()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "bell.fill")
+                                            .font(.system(size: 16))
+                                            .foregroundColor(.white.opacity(0.8))
+                                            .frame(width: 24)
+                                        Text("Notifications & Reminder Time")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(.white)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.white.opacity(0.4))
                                     }
+                                    .padding(16)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(Color.black.opacity(0.3))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                                            )
+                                    )
                                 }
 
-                                ContentSafetyRow()
+                                NavigationLink {
+                                    ContentSafetySettingsView()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "hand.raised.fill")
+                                            .font(.system(size: 16))
+                                            .foregroundColor(.white.opacity(0.8))
+                                            .frame(width: 24)
+                                        Text("Content Safety")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(.white)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.white.opacity(0.4))
+                                    }
+                                    .padding(16)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(Color.black.opacity(0.3))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                                            )
+                                    )
+                                }
 
                                 SettingsRow(
                                     icon: "doc.text.fill",

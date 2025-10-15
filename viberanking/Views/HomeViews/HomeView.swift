@@ -72,14 +72,20 @@ struct HomeView: View {
                             .font(.system(size: 32, weight: .bold))
                             .foregroundColor(.white)
                         Spacer()
-                        ZStack(alignment: .topTrailing) {
-                            Image(systemName: "bell.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white.opacity(0.8))
-                            Circle()
-                                .fill(Color(red: 255/255, green: 0/255, blue: 92/255)) // #FF005C
-                                .frame(width: 10, height: 10)
-                                .offset(x: 4, y: -4)
+                        NavigationLink {
+                            NotificationsListView()
+                        } label: {
+                            ZStack(alignment: .topTrailing) {
+                                Image(systemName: "bell.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.white.opacity(0.8))
+                                if AppNotificationsService.shared.hasRecent {
+                                    Circle()
+                                        .fill(Color(red: 255/255, green: 0/255, blue: 92/255))
+                                        .frame(width: 10, height: 10)
+                                        .offset(x: 4, y: -4)
+                                }
+                            }
                         }
                     }
                     .padding(.top, 12)
@@ -111,6 +117,7 @@ struct HomeView: View {
                         Text("Sponsors")
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.white)
+                            .padding(.horizontal, 20)
 
                         AdMobAdaptiveBannerView()
                             .frame(height: 90)
@@ -123,6 +130,7 @@ struct HomeView: View {
                                 RoundedRectangle(cornerRadius: 16)
                                     .stroke(Color(red: 255/255, green: 0/255, blue: 92/255).opacity(0.3), lineWidth: 1)
                             )
+                            .padding(.horizontal, 20)
                     }
 
                     // Empty state when no data
