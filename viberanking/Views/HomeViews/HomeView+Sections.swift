@@ -109,8 +109,13 @@ extension HomeView {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
                     ForEach(users, id: \.id) { user in
-                        FeaturedUserCard(user: user)
-                            .frame(width: 120)
+                        GeometryReader { proxy in
+                            let isPad = proxy.size.width > 500 || UIDevice.current.userInterfaceIdiom == .pad
+                            let width: CGFloat = isPad ? 180 : 120
+                            FeaturedUserCard(user: user)
+                                .frame(width: width)
+                        }
+                        .frame(width: 120) // container width for layout; inner adjusts for iPad
                     }
                 }
                 .padding(.horizontal, 20)
@@ -233,9 +238,8 @@ extension HomeView {
                 .foregroundColor(.white)
                 .padding(.horizontal, 20)
 
-            EventCardStack(events: events)
-                .frame(height: 460)
-                .padding(.horizontal, 26)
+            // Cap width on iPad and use explicit 16:9 height to avoid LazyVStack sizing issues
+            EventCarouselView(events: events)
         }
     }
 

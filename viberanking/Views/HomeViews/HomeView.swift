@@ -194,11 +194,6 @@ struct HomeView: View {
 // MARK: - Lifecycle helpers
 extension HomeView {
     private func loadDataIfNeeded() {
-        // Only start when user is ready (align with JourneyTabView behavior)
-        guard authViewModel.user?.id != nil else {
-            // Wait for auth then onChange will trigger
-            return
-        }
         guard !isLoading, !isLoaded else { return }
 
         // Debounce slightly to avoid rapid-fire loads when navigating quickly
