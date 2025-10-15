@@ -14,7 +14,7 @@ import UIKit
 struct AdMobBannerView: UIViewRepresentable {
     let adUnitID: String
 
-    init(adUnitID: String = "ca-app-pub-3940256099942544/2934735716") {
+    init(adUnitID: String = "ca-app-pub-9014394288528908~8868549428") {
         // Default test ad unit ID - replace with your actual ad unit ID in production
         self.adUnitID = adUnitID
     }
@@ -83,7 +83,7 @@ struct AdMobAdaptiveBannerView: UIViewRepresentable {
     let adUnitID: String
     let containerWidth: CGFloat?
 
-    init(adUnitID: String = "ca-app-pub-3940256099942544/2934735716", containerWidth: CGFloat? = nil) {
+    init(adUnitID: String = "ca-app-pub-9014394288528908~8868549428", containerWidth: CGFloat? = nil) {
         // Default test ad unit ID - replace with your actual ad unit ID in production
         self.adUnitID = adUnitID
         self.containerWidth = containerWidth
