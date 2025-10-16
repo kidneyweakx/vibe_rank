@@ -16,6 +16,7 @@ struct OnboardingStepNotifications: View {
     @State private var isScheduling: Bool = false
     @State private var errorMessage: String?
     @State private var scheduledInfo: String?
+    @State private var notificationsEnabled: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -41,6 +42,26 @@ struct OnboardingStepNotifications: View {
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
+                        // Settings-style toggle row
+                        HStack {
+                            Text("onb.notif.cta.enable".localized(table: "Onboarding"))
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                            Spacer()
+                            Toggle("", isOn: $notificationsEnabled)
+                                .labelsHidden()
+                                .tint(.blue)
+                        }
+                        .padding(14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.white.opacity(0.06))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                                )
+                        )
+
                         Text("onb.notif.time_label".localized(table: "Onboarding"))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
@@ -48,6 +69,10 @@ struct OnboardingStepNotifications: View {
                             .datePickerStyle(.wheel)
                             .labelsHidden()
                             .colorScheme(.dark)
+                    // Optional note clarifying notifications are not required
+                    Text("onb.notif.optional_note".localized(table: "Onboarding"))
+                        .font(.system(size: 13))
+                        .foregroundColor(.white.opacity(0.6))
                         if let scheduledInfo {
                             Text(scheduledInfo)
                                 .font(.system(size: 14))
@@ -72,31 +97,32 @@ struct OnboardingStepNotifications: View {
                 Button(action: back) {
                     Text("common.back".localized(table: "Onboarding"))
                         .font(.system(size: 17, weight: .medium))
-                        .frame(maxWidth: .infinity)
-                        .padding()
                         .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
                         .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.white.opacity(0.25), lineWidth: 1.5)
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(Color.white.opacity(0.08))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(Color.white.opacity(0.22), lineWidth: 1.5)
+                                )
                         )
                 }
 
-                Button(action: enableAndSchedule) {
-                    if isScheduling {
-                        ProgressView()
-                            .tint(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    } else {
-                        Text("onb.notif.cta.enable".localized(table: "Onboarding"))
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    }
+                Button(action: { complete() }) {
+                    Text("common.next".localized(table: "Onboarding"))
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
                 }
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 14)
                         .fill(
                             LinearGradient(
                                 gradient: Gradient(colors: [.blue, .purple]),
@@ -104,14 +130,45 @@ struct OnboardingStepNotifications: View {
                                 endPoint: .trailing
                             )
                         )
+                        .shadow(color: Color.blue.opacity(0.35), radius: 12, x: 0, y: 6)
                 )
-                .disabled(isScheduling)
             }
             .padding(20)
         }
         .background(Color.black.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .onAppear { scheduledInfo = nil; errorMessage = nil }
+        .onChange(of: notificationsEnabled) { enabled in
+            Task {
+                if enabled {
+                    let granted = await LocalNotificationService.shared.requestAuthorization()
+                    guard granted else {
+                        await MainActor.run {
+                            notificationsEnabled = false
+                            errorMessage = "onb.notif.permission_denied".localized(table: "Onboarding")
+                        }
+                        return
+                    }
+                    let hour = Calendar.current.component(.hour, from: selectedTime)
+                    let minute = Calendar.current.component(.minute, from: selectedTime)
+                    do {
+                        try await LocalNotificationService.shared.scheduleDailyReminder(hour: hour, minute: minute)
+                        await MainActor.run {
+                            let formatter = DateFormatter()
+                            formatter.timeStyle = .short
+                            scheduledInfo = String(format: "onb.notif.scheduled".localized(table: "Onboarding"), formatter.string(from: selectedTime))
+                        }
+                    } catch {
+                        await MainActor.run {
+                            notificationsEnabled = false
+                            errorMessage = error.localizedDescription
+                        }
+                    }
+                } else {
+                    await LocalNotificationService.shared.cancelDailyReminder()
+                }
+            }
+        }
     }
 }
 

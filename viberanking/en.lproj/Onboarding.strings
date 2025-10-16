@@ -38,7 +38,9 @@
 "onb.notif.item.zh.2" = "🔄 每週回顧：看到自己比上週又成長了多少";
 "onb.notif.item.zh.3" = "✨ 個人化洞察，讓你更快升級";
 "onb.notif.cta.enable" = "Enable Notifications";
+"onb.notif.cta.skip" = "Not now";
 "onb.notif.time_label" = "Remind me at";
+"onb.notif.optional_note" = "Notifications are optional. You can enable them later in Settings.";
 "onb.notif.permission_denied" = "Notifications are disabled. You can enable them in Settings.";
 "onb.notif.scheduled" = "Daily reminder set for %@";
 
