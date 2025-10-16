@@ -19,8 +19,7 @@ struct RootEntryView: View {
 
             if showTrackingPrePrompt {
                 TrackingPrePromptView(
-                    onContinue: { handleTrackingContinue() },
-                    onLater: { handleTrackingLater() }
+                    onContinue: { handleTrackingContinue() }
                 )
                 .transition(.opacity)
             }
@@ -53,11 +52,7 @@ struct RootEntryView: View {
         }
     }
 
-    private func handleTrackingLater() {
-        hasShownTrackingPrePrompt = true
-        showTrackingPrePrompt = false
-        AnalyticsService.shared.logEvent(.featureUsed(feature: "app_launch"))
-    }
+    // Removed Later flow to comply with ATT guidelines
 }
 
 #if DEBUG
