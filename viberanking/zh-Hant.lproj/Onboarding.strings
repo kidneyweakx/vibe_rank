@@ -40,6 +40,12 @@
 "onb.notif.permission_denied" = "通知未開啟，你可至「設定」開啟。";
 "onb.notif.scheduled" = "已設定每日提醒：%@";
 
+// Exit confirmation
+"onb.exit.title" = "要離開設定嗎？";
+"onb.exit.message" = "變更將不會儲存，確定要離開？";
+"onb.exit.confirm" = "離開";
+"onb.exit.cancel" = "繼續";
+
 "common.back" = "返回";
 "common.next" = "下一步";
 

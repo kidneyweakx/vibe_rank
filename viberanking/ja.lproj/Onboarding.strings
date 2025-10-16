@@ -50,6 +50,12 @@
 "onb.notif.permission_denied" = "通知はオフです。設定から有効にできます。";
 "onb.notif.scheduled" = "毎日の通知を %@ に設定しました";
 
+// Exit confirmation
+"onb.exit.title" = "設定を終了しますか？";
+"onb.exit.message" = "変更は保存されません。終了してもよろしいですか？";
+"onb.exit.confirm" = "終了";
+"onb.exit.cancel" = "続ける";
+
 "common.back" = "戻る";
 "common.next" = "次へ";
 

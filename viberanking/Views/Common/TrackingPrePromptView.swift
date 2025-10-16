@@ -34,9 +34,16 @@ struct TrackingPrePromptView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
 
+            // Neutral, non-coercive note for compliance
+            Text("You can choose Allow or Ask App Not to Track. Your choice won’t affect core features, and you can change it anytime in Settings.")
+                .font(.footnote)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+
             Spacer()
 
-            Button(NSLocalizedString("cta.ok", comment: "OK")) {
+            Button("Continue") {
                 onContinue()
             }
             .buttonStyle(.borderedProminent)

@@ -44,6 +44,12 @@
 "onb.notif.permission_denied" = "Notifications are disabled. You can enable them in Settings.";
 "onb.notif.scheduled" = "Daily reminder set for %@";
 
+// Exit confirmation
+"onb.exit.title" = "Leave setup?";
+"onb.exit.message" = "Your changes won't be saved. Are you sure you want to exit?";
+"onb.exit.confirm" = "Exit";
+"onb.exit.cancel" = "Stay";
+
 "common.back" = "Back";
 "common.next" = "Next";
 
