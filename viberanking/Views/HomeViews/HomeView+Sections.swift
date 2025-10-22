@@ -7,7 +7,6 @@ extension HomeView {
             Text("Announcements")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.white)
-                .padding(.horizontal, 24)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
@@ -16,7 +15,7 @@ extension HomeView {
                             .frame(width: 280)
                     }
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
             }
         }
     }
@@ -26,7 +25,7 @@ extension HomeView {
             Text("Community Stats")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.white)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
 
             GeometryReader { geometry in
                 let isCompact = geometry.size.width < 600
@@ -110,8 +109,13 @@ extension HomeView {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
                     ForEach(users, id: \.id) { user in
-                        FeaturedUserCard(user: user)
-                            .frame(width: 120)
+                        GeometryReader { proxy in
+                            let isPad = proxy.size.width > 500 || UIDevice.current.userInterfaceIdiom == .pad
+                            let width: CGFloat = isPad ? 180 : 120
+                            FeaturedUserCard(user: user)
+                                .frame(width: width)
+                        }
+                        .frame(width: 120) // container width for layout; inner adjusts for iPad
                     }
                 }
                 .padding(.horizontal, 20)
@@ -143,48 +147,67 @@ extension HomeView {
     
     var topCreatorsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Top Creators")
+            Text("Featured Creators")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.white)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
-                    ForEach(Array(topUserGalleries.prefix(5).enumerated()), id: \.element.userId) { index, gallery in
+                    // Rotate/shuffle and show up to 10 users without numeric ranking
+                    ForEach(Array(topUserGalleries.shuffled().prefix(10)), id: \.userId) { gallery in
                         VStack(spacing: 8) {
                             ZStack(alignment: .bottomTrailing) {
-                                // Simple square image
-                                if let photoURL = gallery.photoURLs.first, let url = URL(string: photoURL) {
+                                // Hexagon image
+                                if let avatarURL = gallery.avatarURL, let url = URL(string: avatarURL) {
                                     AsyncImage(url: url) { phase in
                                         switch phase {
                                         case .success(let image):
                                             image
                                                 .resizable()
                                                 .scaledToFill()
-                                                .frame(width: 70, height: 70)
-                                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                                        default:
-                                            RoundedRectangle(cornerRadius: 12)
+                                                .frame(width: 80, height: 80)
+                                                .clipShape(Hexagon())
+                                        case .failure:
+                                            Hexagon()
                                                 .fill(Color.gray.opacity(0.3))
-                                                .frame(width: 70, height: 70)
+                                                .frame(width: 80, height: 80)
+                                                .overlay(
+                                                    Image(systemName: "person.fill")
+                                                        .foregroundColor(.gray)
+                                                        .font(.system(size: 28))
+                                                )
+                                        case .empty:
+                                            Hexagon()
+                                                .fill(Color.gray.opacity(0.3))
+                                                .frame(width: 80, height: 80)
+                                                .overlay(
+                                                    ProgressView()
+                                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                                )
+                                        @unknown default:
+                                            Hexagon()
+                                                .fill(Color.gray.opacity(0.3))
+                                                .frame(width: 80, height: 80)
                                                 .overlay(
                                                     Image(systemName: "person.fill")
                                                         .foregroundColor(.gray)
                                                 )
                                         }
                                     }
+                                } else {
+                                    // No avatar URL
+                                    Hexagon()
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(width: 80, height: 80)
+                                        .overlay(
+                                            Image(systemName: "person.fill")
+                                                .foregroundColor(.white.opacity(0.5))
+                                                .font(.system(size: 28))
+                                        )
                                 }
 
-                                // Rank badge
-                                Circle()
-                                    .fill(index == 0 ? Color(red: 255/255, green: 0/255, blue: 92/255) : Color.gray)
-                                    .frame(width: 24, height: 24)
-                                    .overlay(
-                                        Text("\(index + 1)")
-                                            .font(.system(size: 11, weight: .bold))
-                                            .foregroundColor(.white)
-                                    )
-                                    .offset(x: 4, y: 4)
+                                // Removed numeric rank badge to avoid competitive ranking visuals
                             }
 
                             Text(gallery.name)
@@ -192,7 +215,7 @@ extension HomeView {
                                 .foregroundColor(.white)
                                 .lineLimit(1)
                         }
-                        .frame(width: 80)
+                        .frame(width: 90)
                     }
                 }
                 .padding(.horizontal, 24)
@@ -205,11 +228,10 @@ extension HomeView {
             Text("Upcoming Events")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.white)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
 
-            EventCardStack(events: events)
-                .frame(height: 500)
-                .padding(.horizontal, 24)
+            // Cap width on iPad and use explicit 16:9 height to avoid LazyVStack sizing issues
+            EventCarouselView(events: events)
         }
     }
 
@@ -217,7 +239,7 @@ extension HomeView {
         Rectangle()
             .fill(Color.white.opacity(0.1))
             .frame(height: 1)
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 20)
     }
 
     func sectionHeader(_ title: String, subtitle: String) -> some View {

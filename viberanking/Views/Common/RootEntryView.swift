@@ -19,16 +19,15 @@ struct RootEntryView: View {
 
             if showTrackingPrePrompt {
                 TrackingPrePromptView(
-                    onContinue: { handleTrackingContinue() },
-                    onLater: { handleTrackingLater() }
+                    onContinue: { handleTrackingContinue() }
                 )
                 .transition(.opacity)
             }
         }
         .onAppear {
-            evaluateAndPresentPrePromptIfNeeded()
-            // Ensure Apple analytics is started in case app init missed it
+            // Start Apple analytics (no tracking, diagnostic only)
             AppleAnalyticsManager.shared.start()
+            evaluateAndPresentPrePromptIfNeeded()
         }
     }
 
@@ -48,15 +47,10 @@ struct RootEntryView: View {
     private func handleTrackingContinue() {
         hasShownTrackingPrePrompt = true
         showTrackingPrePrompt = false
+        // Immediately request ATT after the message (no Later/Close path)
         TrackingAuthorizationManager.shared.requestAuthorizationIfNeeded { _ in
             AnalyticsService.shared.logEvent(.featureUsed(feature: "app_launch"))
         }
-    }
-
-    private func handleTrackingLater() {
-        hasShownTrackingPrePrompt = true
-        showTrackingPrePrompt = false
-        AnalyticsService.shared.logEvent(.featureUsed(feature: "app_launch"))
     }
 }
 

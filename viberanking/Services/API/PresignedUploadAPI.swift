@@ -10,39 +10,57 @@ import Foundation
 // MARK: - Presigned Upload Models
 
 struct PresignedUploadInfo: Codable {
-    let url: String
+    let uploadUrl: String
     let key: String
     let headers: [String: String]?
-    
-    enum CodingKeys: String, CodingKey {
-        case url
+    let expiresIn: Int?
+
+    var url: String { uploadUrl }
+
+    private enum CodingKeys: String, CodingKey {
         case uploadUrl
+        case url
         case key
         case headers
+        case expiresIn
     }
-    
+
+    init(uploadUrl: String, key: String, headers: [String: String]?, expiresIn: Int?) {
+        self.uploadUrl = uploadUrl
+        self.key = key
+        self.headers = headers
+        self.expiresIn = expiresIn
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let urlValue = try? container.decode(String.self, forKey: .url) {
-            url = urlValue
+        if let explicitUploadUrl = try container.decodeIfPresent(String.self, forKey: .uploadUrl) {
+            uploadUrl = explicitUploadUrl
+        } else if let legacyUrl = try container.decodeIfPresent(String.self, forKey: .url) {
+            uploadUrl = legacyUrl
         } else {
-            url = try container.decode(String.self, forKey: .uploadUrl)
+            throw DecodingError.keyNotFound(CodingKeys.uploadUrl, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "uploadUrl field missing"))
         }
         key = try container.decode(String.self, forKey: .key)
-        headers = try? container.decode([String: String].self, forKey: .headers)
+        headers = try container.decodeIfPresent([String: String].self, forKey: .headers)
+        expiresIn = try container.decodeIfPresent(Int.self, forKey: .expiresIn)
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(url, forKey: .url)
+        try container.encode(uploadUrl, forKey: .uploadUrl)
         try container.encode(key, forKey: .key)
         try container.encodeIfPresent(headers, forKey: .headers)
+        try container.encodeIfPresent(expiresIn, forKey: .expiresIn)
     }
 }
 
-struct PresignedUploadResponse<T: Codable>: Codable {
+private struct PresignedUploadEnvelope: Codable {
     let success: Bool
-    let data: T
+    let key: String
+    let uploadUrl: String
+    let headers: [String: String]?
+    let expiresIn: Int?
 }
 
 // MARK: - Presigned Upload API
@@ -59,15 +77,20 @@ final class PresignedUploadAPI {
             "contentType": contentType
         ]
         let response = try await apiClient.performRequest(
-            endpoint: "/api/file/presign",
+            endpoint: "/api/file/upload-url",
             method: .POST,
             body: body,
-            responseType: PresignedUploadResponse<PresignedUploadInfo>.self
+            responseType: PresignedUploadEnvelope.self
         )
         guard response.success else {
             throw APIError.serverError(400)
         }
-        return response.data
+        return PresignedUploadInfo(
+            uploadUrl: response.uploadUrl,
+            key: response.key,
+            headers: response.headers,
+            expiresIn: response.expiresIn
+        )
     }
 }
 

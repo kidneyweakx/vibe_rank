@@ -24,6 +24,9 @@ struct ProfileInfoData: Codable {
     // Backend returns photos as plain array, not { photos, totalCount, hasMore } (see getProfileInfo.ts:147)
     let photos: [PhotoInfo]
 
+    // Latest photo reference from backend bundle (optional)
+    let latestPhoto: PhotoInfo?
+
     // Provide computed property for backward compatibility
     var journey: ProfileJourneyInfo {
         return stats
@@ -43,6 +46,40 @@ struct UserBasicInfo: Codable {
     let gender: String?
     let provider: String?  // API 返回的額外字段
     // 注意：API 響應中沒有 createdAt 字段，所以移除它
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case email
+        case avatar
+        case gender
+        case provider
+    }
+
+    init(id: String, name: String, email: String, avatar: String?, gender: String?, provider: String?) {
+        self.id = id
+        self.name = name
+        self.email = email
+        self.avatar = avatar
+        self.gender = gender
+        self.provider = provider
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let stringId = try container.decodeIfPresent(String.self, forKey: .id) {
+            id = stringId
+        } else if let intId = try container.decodeIfPresent(Int.self, forKey: .id) {
+            id = String(intId)
+        } else {
+            id = ""
+        }
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
+        email = try container.decodeIfPresent(String.self, forKey: .email) ?? ""
+        avatar = try container.decodeIfPresent(String.self, forKey: .avatar)
+        gender = try container.decodeIfPresent(String.self, forKey: .gender)
+        provider = try container.decodeIfPresent(String.self, forKey: .provider)
+    }
 }
 
 struct UserPhotosData: Codable {
@@ -78,7 +115,10 @@ struct ProfileJourneyInfo: Codable {
     let achievements: [Achievement]
     let nextMilestone: Milestone?
     let levelProgress: LevelProgress
-    
+
+    // 每週進度數據
+    let weeklyProgress: WeeklyProgress
+
     // 注意：新 API 響應中沒有 userId 字段，所以移除它
 }
 
@@ -96,80 +136,31 @@ class ProfileInfoAPI {
         print("   - Photo Limit: \(photoLimit)")
         print("   - Timestamp: \(Date())")
         
-        // First try with photoLimit parameter
-        do {
-            print("📡 ProfileInfoAPI: Attempting request with photoLimit parameter...")
-            let endpoint = "/api/info/profileInfo/\(userId)?photoLimit=\(photoLimit)"
-            print("   - Endpoint: \(endpoint)")
-            
-            let startTime = Date()
-            let response = try await apiClient.performRequest(
-                endpoint: endpoint,
-                method: .GET,
-                responseType: ProfileInfoResponse.self
-            )
-            let endTime = Date()
-            let duration = endTime.timeIntervalSince(startTime)
-            
-            print("✅ ProfileInfoAPI: Request with photoLimit succeeded!")
-            print("   ⏱️ Duration: \(String(format: "%.2f", duration)) seconds")
-            print("   📊 Response Analysis:")
-            print("   - Success: \(response.success)")
-            
-            if response.success {
-                let data = response.data
-                print("   - User ID: \(data.user.id)")
-                print("   - User Name: \(data.user.name)")
-                print("   - User Email: \(data.user.email)")
-                print("   - User Avatar: \(data.user.avatar ?? "None")")
-                print("   - User Gender: \(data.user.gender ?? "None")")
-                print("   - User Provider: \(data.user.provider ?? "None")")
-                print("   - Journey Info Available: \(data.journey != nil)")
-                print("   - Photos Count: \(data.photos.count)")
-                print("   - Total Photos: \(data.photos.count)")
-                print("   - Has More Photos: false")
-            }
-            
-            return response
-        } catch {
-            print("⚠️ ProfileInfoAPI: Request with photoLimit failed, trying without parameter")
-            print("   🔍 Error Details:")
-            print("   - Error Type: \(type(of: error))")
-            print("   - Error Description: \(error.localizedDescription)")
-            
-            if let urlError = error as? URLError {
-                print("   - URL Error Code: \(urlError.code.rawValue)")
-                print("   - Failed URL: \(urlError.failureURLString ?? "Unknown")")
-            }
-            
-            // If that fails, try without photoLimit parameter (matching OpenAPI spec)
-            print("📡 ProfileInfoAPI: Attempting request without photoLimit parameter...")
-            let endpoint = "/api/info/profileInfo/\(userId)"
-            print("   - Endpoint: \(endpoint)")
-            
-            let startTime = Date()
-            let response = try await apiClient.performRequest(
-                endpoint: endpoint,
-                method: .GET,
-                responseType: ProfileInfoResponse.self
-            )
-            let endTime = Date()
-            let duration = endTime.timeIntervalSince(startTime)
-            
-            print("✅ ProfileInfoAPI: Request without photoLimit succeeded!")
-            print("   ⏱️ Duration: \(String(format: "%.2f", duration)) seconds")
-            print("   📊 Response Analysis:")
-            print("   - Success: \(response.success)")
-            
-            if response.success {
-                let data = response.data
-                print("   - User ID: \(data.user.id)")
-                print("   - User Name: \(data.user.name)")
-                print("   - Photos Count: \(data.photos.count)")
-                print("   - Total Photos: \(data.photos.count)")
-            }
-            
-            return response
+        let endpoint = "/api/info/profileInfo/\(userId)?page=1&limit=\(photoLimit)"
+        print("📡 ProfileInfoAPI: Requesting endpoint: \(endpoint)")
+
+        let startTime = Date()
+        let response = try await apiClient.performRequest(
+            endpoint: endpoint,
+            method: .GET,
+            responseType: ProfileInfoResponse.self
+        )
+        let endTime = Date()
+        let duration = endTime.timeIntervalSince(startTime)
+
+        print("✅ ProfileInfoAPI: Request succeeded")
+        print("   ⏱️ Duration: \(String(format: "%.2f", duration)) seconds")
+        print("   📊 Response Analysis:")
+        print("   - Success: \(response.success)")
+
+        if response.success {
+            let data = response.data
+            print("   - User ID: \(data.user.id)")
+            print("   - User Name: \(data.user.name)")
+            print("   - Photos Count: \(data.photos.count)")
+            print("   - Latest Photo ID: \(data.latestPhoto?.id ?? "None")")
         }
+
+        return response
     }
 }

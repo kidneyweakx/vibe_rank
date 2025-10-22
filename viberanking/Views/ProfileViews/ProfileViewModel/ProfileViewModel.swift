@@ -112,7 +112,8 @@ class ProfileViewModel: BaseViewModel {
                         weeklyTrend: data.journey.weeklyTrend,
                         achievements: data.journey.achievements,
                         nextMilestone: data.journey.nextMilestone,
-                        levelProgress: data.journey.levelProgress
+                        levelProgress: data.journey.levelProgress,
+                        weeklyProgress: data.journey.weeklyProgress
                     )
                     self.journeyInfo = convertedJourneyInfo
                     self.recentRatings = data.journey.recentRatings
@@ -157,6 +158,8 @@ class ProfileViewModel: BaseViewModel {
                     switch urlError.code {
                     case .cancelled:
                         print("   - Issue: Request was cancelled (possibly due to multiple calls)")
+                        print("🚫 ProfileViewModel: Cancelling profile load due to request cancellation")
+                        return
                     case .timedOut:
                         print("   - Issue: Request timed out")
                     case .notConnectedToInternet:
@@ -201,6 +204,10 @@ class ProfileViewModel: BaseViewModel {
                 print("⚠️ ProfileViewModel: Journey info API returned success=false")
             }
         } catch {
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("⚠️ ProfileViewModel: Journey info request was cancelled, skipping error handling")
+                return
+            }
             print("❌ ProfileViewModel: Failed to load journey info: \(error)")
             if let urlError = error as? URLError {
                 print("   URL Error code: \(urlError.code.rawValue)")
@@ -212,7 +219,7 @@ class ProfileViewModel: BaseViewModel {
         do {
             print("🔄 ProfileViewModel: Loading user photos...")
             let photosResponse = try await self.fileAPI.getUserPhotos(userId: userId, page: nil, limit: 60)
-            let infos = photosResponse.data.photos
+            let infos = photosResponse.data
             self.userPhotoInfos = infos
             // Build lightweight Photo models for any other consumers
             self.userPhotos = infos.map { info in
@@ -220,6 +227,10 @@ class ProfileViewModel: BaseViewModel {
             }
             print("✅ ProfileViewModel: User photos loaded successfully (\(infos.count) photos)")
         } catch {
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("⚠️ ProfileViewModel: User photo request was cancelled, skipping error handling")
+                return
+            }
             self.userPhotoInfos = []
             self.userPhotos = []
             print("❌ ProfileViewModel: Failed to load user photos: \(error)")
@@ -263,8 +274,14 @@ class ProfileViewModel: BaseViewModel {
         return String(journeyInfo?.totalRatings ?? 0)
     }
     
-    var overallRank: String {
+    var topPercentageText: String {
         guard let info = journeyInfo else { return "N/A" }
-        return "#\(info.overallRank)"
+        let percentage = (Double(info.totalUsers - info.overallRank) / Double(info.totalUsers)) * 100
+        return String(format: "journey.stats.top_percentage".localized, Int(percentage))
+    }
+
+    var currentVibeText: String {
+        guard let info = journeyInfo else { return "0" }
+        return String(format: "%.0f", info.totalScore)
     }
 }

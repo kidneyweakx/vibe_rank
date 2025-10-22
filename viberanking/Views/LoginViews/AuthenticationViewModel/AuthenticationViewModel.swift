@@ -103,7 +103,7 @@ class AuthenticationViewModel: ObservableObject {
                 // Don't override onboarding state - only set signedIn if not in onboarding flow
                 if user != nil && self?.authState != .needsProfileSetup {
                     self?.authState = .signedIn
-                } else if user == nil {
+                } else if user == nil && self?.authState != .needsProfileSetup {
                     self?.authState = .signedOut
                 }
             }
@@ -144,39 +144,32 @@ class AuthenticationViewModel: ObservableObject {
         Task {
             do {
                 let user = try await authenticationService.signInWithGoogle()
-                // Route to onboarding immediately after login
                 self.user = user
-                self.isAuthenticated = false
-                self.initialUserData = InitialUserData(
-                    name: user.name,
-                    email: user.email,
-                    profileImageURL: user.profileImageURL,
-                    authProvider: "google",
-                    providerUserID: user.id
-                )
-                self.needsProfileSetup = true
-                self.authState = .needsProfileSetup
-                
-                // Reset spotlight state for new users
+                self.isAuthenticated = true
+                self.initialUserData = nil
+                self.needsProfileSetup = false
+                self.authState = .signedIn
+                self.isGuest = false
+
                 resetSpotlightState()
-                
-                // Log analytics event
-                logAuthenticationEvent(provider: "google_onboard", success: true)
-            } catch {
-                // Check if this is a 404 error indicating new user needs profile setup
-                if let appError = error as? AppError,
-                   case .serverError(let statusCode) = appError,
-                   statusCode == 404 {
+                logAuthenticationEvent(provider: "google", success: true)
+            } catch let appError as AppError {
+                switch appError {
+                case .needsOnboarding:
                     self.handleNewUserProfileSetup(provider: "google")
-                    // Reset spotlight state for new users
-                    resetSpotlightState()
-                } else {
-                    self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
+                    logAuthenticationEvent(provider: "google_onboard", success: true)
+                case .serverError(let statusCode) where statusCode == 404:
+                    self.handleNewUserProfileSetup(provider: "google")
+                    logAuthenticationEvent(provider: "google_onboard", success: true)
+                default:
+                    self.errorMessage = appError.errorDescription ?? appError.localizedDescription
                     self.authState = .error(self.errorMessage ?? "Unknown error")
-                    
-                    // Log analytics event
                     logAuthenticationEvent(provider: "google", success: false)
                 }
+            } catch {
+                self.errorMessage = error.localizedDescription
+                self.authState = .error(self.errorMessage ?? "Unknown error")
+                logAuthenticationEvent(provider: "google", success: false)
             }
             isLoading = false
         }
@@ -192,39 +185,32 @@ class AuthenticationViewModel: ObservableObject {
         Task {
             do {
                 let user = try await authenticationService.signInWithApple()
-                // Route to onboarding immediately after login
                 self.user = user
-                self.isAuthenticated = false
-                self.initialUserData = InitialUserData(
-                    name: user.name,
-                    email: user.email,
-                    profileImageURL: user.profileImageURL,
-                    authProvider: "apple",
-                    providerUserID: user.id
-                )
-                self.needsProfileSetup = true
-                self.authState = .needsProfileSetup
-                
-                // Reset spotlight state for new users
+                self.isAuthenticated = true
+                self.initialUserData = nil
+                self.needsProfileSetup = false
+                self.authState = .signedIn
+                self.isGuest = false
+
                 resetSpotlightState()
-                
-                // Log analytics event
-                logAuthenticationEvent(provider: "apple_onboard", success: true)
-            } catch {
-                // Check if this is a 404 error indicating new user needs profile setup
-                if let appError = error as? AppError,
-                   case .serverError(let statusCode) = appError,
-                   statusCode == 404 {
+                logAuthenticationEvent(provider: "apple", success: true)
+            } catch let appError as AppError {
+                switch appError {
+                case .needsOnboarding:
                     self.handleNewUserProfileSetup(provider: "apple")
-                    // Reset spotlight state for new users
-                    resetSpotlightState()
-                } else {
-                    self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
+                    logAuthenticationEvent(provider: "apple_onboard", success: true)
+                case .serverError(let statusCode) where statusCode == 404:
+                    self.handleNewUserProfileSetup(provider: "apple")
+                    logAuthenticationEvent(provider: "apple_onboard", success: true)
+                default:
+                    self.errorMessage = appError.errorDescription ?? appError.localizedDescription
                     self.authState = .error(self.errorMessage ?? "Unknown error")
-                    
-                    // Log analytics event
                     logAuthenticationEvent(provider: "apple", success: false)
                 }
+            } catch {
+                self.errorMessage = error.localizedDescription
+                self.authState = .error(self.errorMessage ?? "Unknown error")
+                logAuthenticationEvent(provider: "apple", success: false)
             }
             isLoading = false
         }
@@ -240,30 +226,29 @@ class AuthenticationViewModel: ObservableObject {
         Task {
             do {
                 let guestUser = try await authenticationService.signInAsGuest()
-                
-                // Route to onboarding immediately after login
                 self.user = guestUser
-                self.isAuthenticated = false
-                self.initialUserData = InitialUserData(
-                    name: "",
-                    email: guestUser.email,
-                    profileImageURL: nil,
-                    authProvider: "guest",
-                    providerUserID: guestUser.id
-                )
-                self.needsProfileSetup = true
-                self.authState = .needsProfileSetup
-                
-                // Reset spotlight state for new users
+                self.isAuthenticated = true
+                self.initialUserData = nil
+                self.needsProfileSetup = false
+                self.authState = .signedIn
+                self.isGuest = true
+
                 resetSpotlightState()
-                
-                // Log analytics event
-                logAuthenticationEvent(provider: "guest_onboard", success: true)
+                logAuthenticationEvent(provider: "guest", success: true)
+            } catch let appError as AppError {
+                switch appError {
+                case .needsOnboarding:
+                    self.handleNewUserProfileSetup(provider: "guest")
+                    self.isGuest = true
+                    logAuthenticationEvent(provider: "guest_onboard", success: true)
+                default:
+                    self.errorMessage = appError.errorDescription ?? appError.localizedDescription
+                    self.authState = .error(self.errorMessage ?? "Unknown error")
+                    logAuthenticationEvent(provider: "guest", success: false)
+                }
             } catch {
-                self.errorMessage = (error as? AppError)?.errorDescription ?? error.localizedDescription
+                self.errorMessage = error.localizedDescription
                 self.authState = .error(self.errorMessage ?? "Unknown error")
-                
-                // Log analytics event
                 logAuthenticationEvent(provider: "guest", success: false)
             }
             
@@ -435,6 +420,9 @@ class AuthenticationViewModel: ObservableObject {
         
         self.needsProfileSetup = true
         self.authState = .needsProfileSetup
+        self.user = nil
+        self.isAuthenticated = false
+        self.isGuest = provider == "guest"
         
         // Log analytics event
         logAuthenticationEvent(provider: "\(provider)_new_user", success: true)

@@ -52,14 +52,17 @@ struct DeleteAccountButton: View {
     private func performDelete() {
         isDeleting = true
         errorMessage = nil
+        print("🗑️ DeleteAccountButton: Start delete request")
         Task {
             do {
                 try await UserAPI().deleteAccount()
+                print("✅ DeleteAccountButton: Account delete succeeded")
                 await MainActor.run {
                     isDeleting = false
                     authViewModel.signOut()
                 }
             } catch {
+                print("❌ DeleteAccountButton: Delete failed - \(error.localizedDescription)")
                 await MainActor.run {
                     isDeleting = false
                     errorMessage = error.localizedDescription

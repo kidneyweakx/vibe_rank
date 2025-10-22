@@ -9,6 +9,7 @@ import SwiftUI
 import GoogleSignIn
 import GoogleMobileAds
 import MetricKit
+import Clarity
 
 @main
 struct viberankingApp: App {
@@ -17,6 +18,7 @@ struct viberankingApp: App {
     @StateObject private var errorHandler = ErrorHandler()
     @StateObject private var localizationManager = LocalizationManager.shared
     @StateObject private var themeManager = ThemeManager()
+    @StateObject private var appNotifications = AppNotificationsService.shared
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -28,6 +30,11 @@ struct viberankingApp: App {
                 print("   - \(adapter): \(adapterStatus.state.rawValue) - \(adapterStatus.description)")
             }
         }
+
+        // Initialize Microsoft Clarity
+        let clarityConfig = ClarityConfig(projectId: "tkwzcyjf2m")
+        ClaritySDK.initialize(config: clarityConfig)
+        print("✅ Microsoft Clarity initialized")
 
         // Configure Google Sign-In
         configureGoogleSignIn()
@@ -46,9 +53,6 @@ struct viberankingApp: App {
 
         // Start Apple analytics (MetricKit)
         AppleAnalyticsManager.shared.start()
-
-        // Setup session expiry observer
-        setupSessionExpiryObserver()
     }
     
     /// Configure Google Sign-In
@@ -71,18 +75,6 @@ struct viberankingApp: App {
         print("ℹ️ 認證狀態檢查將由 AuthenticationService 處理")
     }
 
-    /// Setup observer for session expiry notifications
-    private func setupSessionExpiryObserver() {
-        NotificationCenter.default.addObserver(
-            forName: .userSessionExpired,
-            object: nil,
-            queue: .main
-        ) { [weak authenticationViewModel] _ in
-            print("🔒 Session expired notification received - signing out user")
-            authenticationViewModel?.signOut(dueTo: "Session expired (401)")
-        }
-    }
-
     var body: some Scene {
         WindowGroup {
             RootEntryView()
@@ -90,9 +82,23 @@ struct viberankingApp: App {
                 .environmentObject(errorHandler)
                 .environmentObject(localizationManager)
                 .environmentObject(themeManager)
+                .environmentObject(appNotifications)
                 .onOpenURL { url in
                     // Handle Google Sign-In URL callback
                     GIDSignIn.sharedInstance.handle(url)
+                }
+                .onAppear {
+                    // Setup session expiry observer after view appears
+                    NotificationCenter.default.addObserver(
+                        forName: .userSessionExpired,
+                        object: nil,
+                        queue: .main
+                    ) { _ in
+                        print("🔒 Session expired notification received - signing out user")
+                        Task { @MainActor in
+                            authenticationViewModel.signOut(dueTo: "Session expired (401)")
+                        }
+                    }
                 }
                 .alert(
                     errorHandler.currentError?.localizedDescription ?? "Error",

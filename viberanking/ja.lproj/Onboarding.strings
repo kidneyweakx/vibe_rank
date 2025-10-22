@@ -44,9 +44,17 @@
 "onb.notif.item.zh.2" = "🔄 每週回顧：看到自己比上週又成長了多少";
 "onb.notif.item.zh.3" = "✨ 個人化洞察，讓你更快升級";
 "onb.notif.cta.enable" = "通知をオンにする";
+"onb.notif.cta.skip" = "後で";
 "onb.notif.time_label" = "通知時間";
+"onb.notif.optional_note" = "通知は任意です。後から設定で有効にできます。";
 "onb.notif.permission_denied" = "通知はオフです。設定から有効にできます。";
 "onb.notif.scheduled" = "毎日の通知を %@ に設定しました";
+
+// Exit confirmation
+"onb.exit.title" = "設定を終了しますか？";
+"onb.exit.message" = "変更は保存されません。終了してもよろしいですか？";
+"onb.exit.confirm" = "終了";
+"onb.exit.cancel" = "続ける";
 
 "common.back" = "戻る";
 "common.next" = "次へ";

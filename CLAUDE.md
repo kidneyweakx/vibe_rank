@@ -90,7 +90,7 @@ Central configuration for:
 - **Rating System**: Required ratings thresholds (20 for upload, 50 for reports)
 - **Photo Settings**: Max file size (10MB), WebP quality levels, max age (24 hours)
 - **Performance**: Timeouts, retry attempts, memory limits
-- **R2 Storage**: Cloudflare R2 configuration loaded from `Storage-Info.plist`
+- **R2 Storage**: Basic R2 configuration (backend handles all presigning)
 - **Environment**: Base URLs for dev/staging/production
 
 ### Environment Variables
@@ -98,6 +98,11 @@ Central configuration for:
   - `.development` for DEBUG builds
   - `.staging` for STAGING builds
   - `.production` for release builds
+
+### R2 Storage Configuration
+- **Backend Presigning**: All R2 access uses backend-generated presigned URLs
+- **No Client Credentials**: App does not store R2 access/secret keys
+- **Fallback**: If backend signing fails, falls back to public URL
 
 ## Image Processing
 

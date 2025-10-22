@@ -7,6 +7,30 @@
 
 import SwiftUI
 
+// MARK: - Hexagon Shape
+struct Hexagon: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let radius = min(rect.width, rect.height) / 2
+
+        // Start from top and create 6 vertices
+        for i in 0..<6 {
+            let angle = CGFloat(i) * .pi / 3 - .pi / 2
+            let x = center.x + radius * cos(angle)
+            let y = center.y + radius * sin(angle)
+
+            if i == 0 {
+                path.move(to: CGPoint(x: x, y: y))
+            } else {
+                path.addLine(to: CGPoint(x: x, y: y))
+            }
+        }
+        path.closeSubpath()
+        return path
+    }
+}
+
 // MARK: - Announcement Card
 struct AnnouncementCard: View {
     let announcement: Announcement
@@ -153,10 +177,6 @@ struct FeaturedUserCard: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.white)
                     .lineLimit(1)
-                
-                Text("#\(user.rank)")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.yellow)
                 
                 Text(String(format: "%.1f", user.score))
                     .font(.system(size: 10, weight: .medium))

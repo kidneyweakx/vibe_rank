@@ -515,6 +515,7 @@
 // MARK: - Profile Tab Extras
 "profile.likes" = "讚";
 "profile.rank" = "排名";
+"profile.current_vibe" = "目前 Vibe";
 "profile.share_profile" = "分享個人檔案";
 "profile.edit_profile" = "編輯個人檔案";
 "profile.week" = "第 %d 週";
@@ -538,9 +539,19 @@
 "journey.stats.female_attraction" = "女性吸引力";
 "journey.stats.male_attraction" = "男性吸引力";
 "journey.stats.current_percentage" = "目前趴數";
+"journey.stats.current_vibe" = "目前 Vibe";
 "journey.stats.your_ranking" = "你的排名";
 "journey.stats.total_users" = "總用戶";
 "journey.stats.top_percentage" = "前 %d%%";
+
+// MARK: - Journey Weekly Progress
+"journey.weekly_progress.title" = "本週戰績";
+"journey.weekly_progress.points" = "分";
+"journey.weekly_progress.this_week_improvement" = "本週進步";
+"journey.weekly_progress.rank_up" = "排名進步 %d 名";
+"journey.weekly_progress.rank_down" = "排名下降 %d 名";
+"journey.weekly_progress.new_ratings" = "新增 %d 個評分";
+"journey.weekly_progress.keep_going" = "繼續努力，你會變得更強！";
 
 // MARK: - Journey Latest Photo
 "journey.latest_photo.title" = "最新上傳";

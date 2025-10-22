@@ -39,7 +39,6 @@ class APIClient {
 
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         // Add JWT token if available
         if let jwtToken = getJWTToken() {
@@ -47,6 +46,7 @@ class APIClient {
         }
         
         if let body = body {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
         }
         
@@ -134,7 +134,6 @@ class APIClient {
         
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         // Add JWT token if available
         if let jwtToken = getJWTToken() {
@@ -142,6 +141,7 @@ class APIClient {
         }
 
         if let body = body {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
         }
 

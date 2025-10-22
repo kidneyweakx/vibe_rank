@@ -58,6 +58,9 @@ final class LocalNotificationService {
 
     func cancelDailyReminder() async {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [Keys.dailyReminderId])
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: Keys.scheduledHourKey)
+        defaults.removeObject(forKey: Keys.scheduledMinuteKey)
     }
 
     /// Rebuilds and reschedules the daily reminder using last saved time.

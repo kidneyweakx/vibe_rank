@@ -44,19 +44,6 @@ class JourneyViewModel: BaseViewModel {
                     totalUsers: journeyResponse.data.totalUsers
                 )
             }
-
-            // Load latest photo and use overall totalScore as the display score
-            do {
-                let photoResponse = try await self.fileAPI.getUserPhotos(userId: userId, page: 1, limit: 1)
-                if let photo = photoResponse.data.photos.first {
-                    self.latestPhoto = photo
-                    // Use totalScore from journeyInfo as the overall score
-                    // This represents the user's overall performance, not just one photo
-                    self.latestPhotoScore = journeyResponse.data.totalScore
-                }
-            } catch {
-                print("Failed to load latest photo: \(error)")
-            }
         }
     }
     
@@ -93,7 +80,41 @@ class JourneyViewModel: BaseViewModel {
     var totalUsers: String {
         return journeyInfo?.totalUsers.formatted() ?? "0"
     }
-    
+
+    var currentVibeText: String {
+        return String(format: "%.0f", journeyInfo?.totalScore ?? 0.0)
+    }
+
+    // MARK: - Weekly Progress Properties
+
+    var weeklyScoreChange: Double {
+        return journeyInfo?.weeklyProgress.scoreChange ?? 0.0
+    }
+
+    var currentWeekScore: Double {
+        return journeyInfo?.weeklyProgress.currentWeekScore ?? 0.0
+    }
+
+    var lastWeekScore: Double {
+        return journeyInfo?.weeklyProgress.lastWeekScore ?? 0.0
+    }
+
+    var weeklyRankChange: Int {
+        return journeyInfo?.weeklyProgress.rankChange ?? 0
+    }
+
+    var weeklyNewRatings: Int {
+        return journeyInfo?.weeklyProgress.currentWeekRatings ?? 0
+    }
+
+    var femaleAttractionChange: Double {
+        return journeyInfo?.weeklyProgress.femaleAttractionChange ?? 0.0
+    }
+
+    var maleAttractionChange: Double {
+        return journeyInfo?.weeklyProgress.maleAttractionChange ?? 0.0
+    }
+
     // MARK: - AI Evaluation
     @Published var latestEvaluationText: String?
     @Published var outfitEvaluation: AIOutfitEvaluation?
@@ -104,7 +125,7 @@ class JourneyViewModel: BaseViewModel {
         guard !currentUserId.isEmpty else { return }
         do {
             let response = try await fileAPI.getUserPhotos(userId: currentUserId, page: 1, limit: 1)
-            guard let first = response.data.photos.sorted(by: { $0.uploadedAt > $1.uploadedAt }).first else {
+            guard let first = response.data.sorted(by: { $0.uploadedAt > $1.uploadedAt }).first else {
                 await MainActor.run { self.latestEvaluationText = "No uploaded photo found" }
                 return
             }

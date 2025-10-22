@@ -32,7 +32,7 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We need permission to save photos to your library when exporting or saving results.</string>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-9014394288528908~8868549428</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>

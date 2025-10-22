@@ -13,13 +13,28 @@ class AuthAPI {
     
     private let apiClient = APIClient.shared
     
+    // MARK: - Guest Authentication
+
+    func signInGuest(deviceId: String) async throws -> AuthResponse {
+        let body = [
+            "deviceId": deviceId
+        ]
+        return try await apiClient.performRequest(
+            endpoint: "/api/auth/guest/signin",
+            method: .POST,
+            body: body,
+            responseType: AuthResponse.self
+        )
+    }
+
     // MARK: - Google Authentication
     
     func verifyGoogleToken(idToken: String, accessToken: String) async throws -> AuthResponse {
-        // Backend expects a single 'token' field containing the Google ID token
-        let body = [
+        var body: [String: Any] = [
+            "idToken": idToken,
             "token": idToken
         ]
+        body["accessToken"] = accessToken
         return try await apiClient.performRequest(
             endpoint: "/api/auth/google",
             method: .POST,
@@ -103,11 +118,11 @@ class AuthAPI {
 
     // MARK: - Onboarding (Consolidated)
     
-    /// Complete onboarding with consolidated payload per OpenAPI (/api/onboarding/complete)
+    /// Complete onboarding with consolidated payload per OpenAPI (/api/user/onboard)
     func completeOnboarding(_ payload: OnboardingCompletePayload) async throws -> AuthResponse {
         let body = payload.toDictionary()
         return try await apiClient.performRequest(
-            endpoint: "/api/onboarding/complete",
+            endpoint: "/api/user/onboard",
             method: .POST,
             body: body,
             responseType: AuthResponse.self
@@ -128,9 +143,10 @@ class AuthAPI {
 
 struct AuthResponse: Decodable {
     let user: APIUser
-    let token: String
+    let token: String?
     let success: Bool?
     let message: String?
+    let needsOnboarding: Bool?
 }
 
 struct APIUser: Decodable {
@@ -139,6 +155,8 @@ struct APIUser: Decodable {
     let name: String
     let avatar: String?
     let provider: String?
+    let providerId: String?
+    let onboardedAt: String?
     
     private enum CodingKeys: String, CodingKey {
         case id
@@ -147,11 +165,27 @@ struct APIUser: Decodable {
         case avatar
         case profileImageURL
         case provider
+        case providerId
+        case onboardedAt
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(String.self, forKey: .id)
+        if let idString = try? container.decode(String.self, forKey: .id) {
+            id = idString
+        } else if let idInt = try? container.decode(Int.self, forKey: .id) {
+            id = String(idInt)
+        } else if let idDouble = try? container.decode(Double.self, forKey: .id) {
+            id = String(idDouble)
+        } else {
+            throw DecodingError.typeMismatch(
+                String.self,
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Unable to decode user id as string or number"
+                )
+            )
+        }
         email = try container.decode(String.self, forKey: .email)
         name = try container.decode(String.self, forKey: .name)
         // Support both 'avatar' and 'profileImageURL' from backend
@@ -161,5 +195,7 @@ struct APIUser: Decodable {
             avatar = try? container.decode(String.self, forKey: .profileImageURL)
         }
         provider = try? container.decode(String.self, forKey: .provider)
+        providerId = try? container.decode(String.self, forKey: .providerId)
+        onboardedAt = try? container.decode(String.self, forKey: .onboardedAt)
     }
 }

@@ -10,6 +10,7 @@ import GoogleSignIn
 import CryptoKit
 import AuthenticationServices
 import SwiftUI
+import UIKit
 
 import Combine
 
@@ -21,6 +22,7 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
     private var currentNonce: String?
     private var appleSignInCompletion: ((Result<User, Error>) -> Void)?
     private let authAPI = AuthAPI()
+    private let userAPI = UserAPI()
     private var pendingUserData: InitialUserData?
     
     var isAuthenticated: Bool { currentUser != nil }
@@ -59,36 +61,15 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
                 throw AppError.validationError("無法獲取 Google ID Token")
             }
             
-            do {
-                let user = try await verifyGoogleToken(
-                    idToken: idToken,
-                    accessToken: result.user.accessToken.tokenString
-                )
-                
-                currentUser = user
-                saveUserToKeychain(user)
-                return user
-                
-            } catch let error as AppError {
-                if case .serverError(let statusCode) = error, statusCode == 404 {
-                    // Store the user data for profile setup
-                    let userData = InitialUserData(
-                        name: result.user.profile?.name ?? "Google User",
-                        email: result.user.profile?.email ?? "",
-                        profileImageURL: result.user.profile?.imageURL(withDimension: 200)?.absoluteString,
-                        authProvider: "google",
-                        providerUserID: result.user.userID ?? ""
-                    )
-                    
-                    // Store this data temporarily for profile setup
-                    pendingUserData = userData
-                    
-                    // Re-throw the 404 error so the ViewModel can handle it
-                    throw error
-                } else {
-                    throw error
-                }
-            }
+            let fallbackAvatar = result.user.profile?.imageURL(withDimension: 200)?.absoluteString
+            return try await verifyGoogleToken(
+                idToken: idToken,
+                accessToken: result.user.accessToken.tokenString,
+                fallbackName: result.user.profile?.name,
+                fallbackEmail: result.user.profile?.email,
+                fallbackAvatarURL: fallbackAvatar,
+                providerUserID: result.user.userID
+            )
             
         } catch let error as NSError where error.domain == "com.google.GIDSignIn" {
             switch error.code {
@@ -119,22 +100,12 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
         controller.delegate = self
         controller.presentationContextProvider = self
         
-        do {
-            return try await withCheckedThrowingContinuation { continuation in
-                appleSignInCompletion = { result in
-                    continuation.resume(with: result)
-                }
-                DispatchQueue.main.async {
-                    controller.performRequests()
-                }
+        return try await withCheckedThrowingContinuation { continuation in
+            appleSignInCompletion = { result in
+                continuation.resume(with: result)
             }
-        } catch let error as AppError {
-            if case .serverError(let statusCode) = error, statusCode == 404 {
-                // The user data should have been stored in the delegate method
-                // Re-throw the 404 error so the ViewModel can handle it
-                throw error
-            } else {
-                throw error
+            DispatchQueue.main.async {
+                controller.performRequests()
             }
         }
     }
@@ -169,41 +140,22 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
                         throw AppError.validationError("無法獲取 Apple ID Token")
                     }
                     
-                    do {
-                        user = try await verifyAppleToken(
-                            idToken: idTokenString,
-                            nonce: nonce,
-                            userIdentifier: appleIDCredential.user,
-                            fullName: appleIDCredential.fullName,
-                            email: appleIDCredential.email
-                        )
-                    } catch let error as AppError {
-                        if case .serverError(let statusCode) = error, statusCode == 404 {
-                            // Store the user data for profile setup
-                            let displayName = [appleIDCredential.fullName?.givenName, appleIDCredential.fullName?.familyName]
-                                .compactMap { $0 }
-                                .joined(separator: " ")
+                    let displayName = [appleIDCredential.fullName?.givenName, appleIDCredential.fullName?.familyName]
+                        .compactMap { $0 }
+                        .joined(separator: " ")
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
 
-                            // Preserve existing/saved name on re-login when Apple doesn't provide fullName again
-                            let preservedName = self.currentUser?.name ?? self.getSavedUserFromKeychain()?.name ?? ""
+                    let preservedName = self.currentUser?.name ?? self.getSavedUserFromKeychain()?.name ?? ""
+                    let fallbackDisplayName = displayName.isEmpty ? preservedName : displayName
 
-                            let userData = InitialUserData(
-                                name: displayName.isEmpty ? preservedName : displayName,
-                                email: appleIDCredential.email ?? "",
-                                profileImageURL: nil, // Apple doesn't provide profile images
-                                authProvider: "apple",
-                                providerUserID: appleIDCredential.user
-                            )
-                            
-                            // Store this data temporarily for profile setup
-                            pendingUserData = userData
-                            
-                            // Re-throw the 404 error so the ViewModel can handle it
-                            throw error
-                        } else {
-                            throw error
-                        }
-                    }
+                    user = try await verifyAppleToken(
+                        idToken: idTokenString,
+                        nonce: nonce,
+                        userIdentifier: appleIDCredential.user,
+                        fullName: appleIDCredential.fullName,
+                        email: appleIDCredential.email,
+                        fallbackDisplayName: fallbackDisplayName.isEmpty ? nil : fallbackDisplayName
+                    )
                     
                 case let passwordCredential as ASPasswordCredential:
                     user = try await verifyPasswordCredential(
@@ -215,8 +167,6 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
                     throw AppError.validationError("未知的憑證類型")
                 }
                 
-                currentUser = user
-                saveUserToKeychain(user)
                 appleSignInCompletion?(.success(user))
                 
             } catch {
@@ -246,25 +196,39 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
     
     // MARK: - API Verification
     
-    private func verifyGoogleToken(idToken: String, accessToken: String) async throws -> User {
+    private func verifyGoogleToken(
+        idToken: String,
+        accessToken: String,
+        fallbackName: String?,
+        fallbackEmail: String?,
+        fallbackAvatarURL: String?,
+        providerUserID: String?
+    ) async throws -> User {
         do {
             let response = try await authAPI.verifyGoogleToken(idToken: idToken, accessToken: accessToken)
+            let providerIdentifier = response.user.providerId ?? providerUserID ?? response.user.id
 
-            // Save JWT token to keychain
-            try? KeychainItem.saveJWTToken(response.token)
-
-            return User(
-                id: response.user.id,
-                name: response.user.name,
-                email: response.user.email,
-                profileImageURL: response.user.avatar
+            return try processAuthResponse(
+                response,
+                fallbackName: fallbackName,
+                fallbackEmail: fallbackEmail ?? response.user.email,
+                fallbackAvatar: fallbackAvatarURL,
+                authProvider: "google",
+                providerUserID: providerIdentifier
             )
         } catch let apiError as APIError {
             throw convertAPIErrorToAppError(apiError)
         }
     }
     
-    private func verifyAppleToken(idToken: String, nonce: String, userIdentifier: String, fullName: PersonNameComponents?, email: String?) async throws -> User {
+    private func verifyAppleToken(
+        idToken: String,
+        nonce: String,
+        userIdentifier: String,
+        fullName: PersonNameComponents?,
+        email: String?,
+        fallbackDisplayName: String?
+    ) async throws -> User {
         do {
             let response = try await authAPI.verifyAppleToken(
                 idToken: idToken,
@@ -274,14 +238,21 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
                 email: email
             )
 
-            // Save JWT token to keychain
-            try? KeychainItem.saveJWTToken(response.token)
+            let combinedName = [fullName?.givenName, fullName?.familyName]
+                .compactMap { $0 }
+                .joined(separator: " ")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
 
-            return User(
-                id: response.user.id,
-                name: response.user.name,
-                email: response.user.email,
-                profileImageURL: response.user.avatar
+            let fallbackName = combinedName.isEmpty ? fallbackDisplayName : combinedName
+            let providerIdentifier = response.user.providerId ?? userIdentifier
+
+            return try processAuthResponse(
+                response,
+                fallbackName: fallbackName ?? response.user.name,
+                fallbackEmail: email ?? response.user.email,
+                fallbackAvatar: nil,
+                authProvider: "apple",
+                providerUserID: providerIdentifier
             )
         } catch let apiError as APIError {
             throw convertAPIErrorToAppError(apiError)
@@ -291,15 +262,15 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
     private func verifyPasswordCredential(username: String, password: String) async throws -> User {
         do {
             let response = try await authAPI.verifyPasswordCredential(username: username, password: password)
+            let providerIdentifier = response.user.providerId ?? username
 
-            // Save JWT token to keychain
-            try? KeychainItem.saveJWTToken(response.token)
-
-            return User(
-                id: response.user.id,
-                name: response.user.name,
-                email: response.user.email,
-                profileImageURL: response.user.avatar
+            return try processAuthResponse(
+                response,
+                fallbackName: response.user.name,
+                fallbackEmail: response.user.email.isEmpty ? username : response.user.email,
+                fallbackAvatar: nil,
+                authProvider: "password",
+                providerUserID: providerIdentifier
             )
         } catch let apiError as APIError {
             throw convertAPIErrorToAppError(apiError)
@@ -351,22 +322,128 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
     
     // MARK: - Guest Sign-In
 
-    func signInAsGuest() async -> User {
+    func signInAsGuest() async throws -> User {
         print("👤 開始訪客登入...")
-        let guestId = "guest_\(UUID().uuidString)"
-        let guestUser = User(
-            id: guestId,
-            name: "Guest_\(String(guestId.suffix(8)))", // Use last 8 chars of guest ID for better identification
-            email: "guest\(String(guestId.suffix(8)))@example.com"
-        )
+        let storedDeviceId = KeychainItem.readGuestDeviceIdentifier()
+        let deviceId: String
+        if let existing = storedDeviceId {
+            deviceId = existing
+        } else {
+            let generated = UUID().uuidString
+            deviceId = generated
+            try? KeychainItem.saveGuestDeviceIdentifier(generated)
+        }
 
-        currentUser = guestUser
-        // DO NOT save to keychain yet - only save after onboarding is completed
-        // This prevents incomplete guest users from persisting if user abandons onboarding
-        print("✅ 訪客登入成功: \(guestUser.name)")
-        return guestUser
+        do {
+            let response = try await authAPI.signInGuest(deviceId: deviceId)
+            let providerIdentifier = response.user.providerId ?? deviceId
+            let fallbackName = response.user.name.isEmpty ? "Guest User" : response.user.name
+            let guestUser = try processAuthResponse(
+                response,
+                fallbackName: fallbackName,
+                fallbackEmail: response.user.email.isEmpty ? "guest@guest.local" : response.user.email,
+                fallbackAvatar: nil,
+                authProvider: "guest",
+                providerUserID: providerIdentifier
+            )
+            print("✅ 訪客登入成功: \(guestUser.name)")
+            return guestUser
+        } catch let appError as AppError {
+            if case .needsOnboarding = appError {
+                print("ℹ️ 訪客登入完成，需進行引導流程")
+                throw appError
+            }
+            print("❌ 訪客登入失敗: \(appError.localizedDescription)")
+        } catch let apiError as APIError {
+            let converted = convertAPIErrorToAppError(apiError)
+            print("❌ 訪客登入失敗: \(converted.localizedDescription)")
+        } catch {
+            print("❌ 訪客登入失敗: \(error.localizedDescription)")
+            let fallbackId = "guest_\(UUID().uuidString)"
+            let fallbackUser = User(
+                id: fallbackId,
+                name: "Guest_\(String(fallbackId.suffix(8)))",
+                email: "guest\(String(fallbackId.suffix(8)))@example.com"
+            )
+            currentUser = fallbackUser
+            return fallbackUser
+        }
+        let fallbackId = "guest_\(UUID().uuidString)"
+        let fallbackUser = User(
+            id: fallbackId,
+            name: "Guest_\(String(fallbackId.suffix(8)))",
+            email: "guest\(String(fallbackId.suffix(8)))@example.com"
+        )
+        pendingUserData = nil
+        currentUser = fallbackUser
+        return fallbackUser
     }
     
+    private func processAuthResponse(
+        _ response: AuthResponse,
+        fallbackName: String?,
+        fallbackEmail: String?,
+        fallbackAvatar: String?,
+        authProvider: String,
+        providerUserID: String,
+        overrideOnboarded: Bool = false
+    ) throws -> User {
+        if let token = response.token {
+            try? KeychainItem.saveJWTToken(token)
+        }
+
+        let apiUser = response.user
+        let trimmedName = apiUser.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let fallbackResolvedName = fallbackName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let resolvedName = trimmedName.isEmpty ? (fallbackResolvedName ?? "") : trimmedName
+        let resolvedEmail = apiUser.email.isEmpty ? (fallbackEmail ?? "") : apiUser.email
+        let resolvedAvatar = apiUser.avatar ?? fallbackAvatar
+
+        var onboardedAtDate: Date? = nil
+        if let onboardedAtString = apiUser.onboardedAt, !onboardedAtString.isEmpty {
+            let formatterWithFraction = ISO8601DateFormatter()
+            formatterWithFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            onboardedAtDate = formatterWithFraction.date(from: onboardedAtString) ?? ISO8601DateFormatter().date(from: onboardedAtString)
+        }
+
+        let defaultName = resolvedName.isEmpty ? (fallbackResolvedName ?? "") : resolvedName
+        let finalName = defaultName.isEmpty ? "\(authProvider.capitalized) User" : defaultName
+
+        let user = User(
+            id: apiUser.id,
+            name: finalName,
+            email: resolvedEmail,
+            profileImageURL: resolvedAvatar,
+            onboardedAt: onboardedAtDate
+        )
+
+        let requiresOnboarding: Bool
+        if overrideOnboarded {
+            requiresOnboarding = false
+        } else if let explicit = response.needsOnboarding {
+            requiresOnboarding = explicit
+        } else {
+            requiresOnboarding = onboardedAtDate == nil
+        }
+
+        if requiresOnboarding {
+            pendingUserData = InitialUserData(
+                name: finalName,
+                email: user.email,
+                profileImageURL: user.profileImageURL,
+                authProvider: authProvider,
+                providerUserID: providerUserID
+            )
+            currentUser = nil
+            throw AppError.needsOnboarding
+        }
+
+        pendingUserData = nil
+        currentUser = user
+        saveUserToKeychain(user)
+        return user
+    }
+
     // MARK: - Profile Setup
     
     func getPendingUserData() -> InitialUserData? {
@@ -376,20 +453,16 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
     func completeProfileSetup(_ profileData: UserProfileData) async throws -> User {
         do {
             let response = try await authAPI.createUserProfile(profileData)
-
-            // Save JWT token to keychain
-            try? KeychainItem.saveJWTToken(response.token)
-
-            let user = User(
-                id: response.user.id,
-                name: response.user.name,
-                email: response.user.email,
-                profileImageURL: response.user.avatar
+            let user = try processAuthResponse(
+                response,
+                fallbackName: profileData.displayName,
+                fallbackEmail: profileData.email,
+                fallbackAvatar: profileData.profileImageURL,
+                authProvider: profileData.authProvider,
+                providerUserID: profileData.providerUserID,
+                overrideOnboarded: true
             )
-
-            currentUser = user
-            saveUserToKeychain(user)
-            pendingUserData = nil // Clear pending data
+            pendingUserData = nil
             return user
         } catch let apiError as APIError {
             // Fallback: if backend returns 400 (e.g., UNIQUE constraint on email), try updating existing profile
@@ -412,6 +485,7 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
                         gender: updateResponse.data.gender.flatMap { Gender(rawValue: $0) }
                     )
                     currentUser = user
+                    saveUserToKeychain(user)
                     pendingUserData = nil
                     return user
                 } catch let fallbackError as APIError {
@@ -421,6 +495,8 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
                 }
             }
             throw convertAPIErrorToAppError(apiError)
+        } catch {
+            throw error
         }
     }
     
@@ -428,18 +504,17 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
     func completeOnboarding(_ payload: OnboardingCompletePayload) async throws -> User {
         do {
             let response = try await authAPI.completeOnboarding(payload)
-
-            // Save JWT token to keychain
-            try? KeychainItem.saveJWTToken(response.token)
-
-            let user = User(
-                id: response.user.id,
-                name: response.user.name,
-                email: response.user.email,
-                profileImageURL: response.user.avatar
+            let displayName = payload.account?.displayName
+            let avatarUrl = payload.account?.avatarUrl
+            let user = try processAuthResponse(
+                response,
+                fallbackName: displayName,
+                fallbackEmail: payload.auth.email ?? response.user.email,
+                fallbackAvatar: avatarUrl,
+                authProvider: payload.auth.provider,
+                providerUserID: payload.auth.providerUserID,
+                overrideOnboarded: true
             )
-            currentUser = user
-            saveUserToKeychain(user)
             pendingUserData = nil
             return user
         } catch let apiError as APIError {
@@ -461,9 +536,14 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
                 if expirationDate > Date() {
                     print("✅ Google token 仍然有效，嘗試自動登入...")
                     do {
+                        let fallbackAvatar = googleUser.profile?.imageURL(withDimension: 200)?.absoluteString
                         let user = try await verifyGoogleToken(
                             idToken: googleUser.idToken?.tokenString ?? "",
-                            accessToken: googleUser.accessToken.tokenString
+                            accessToken: googleUser.accessToken.tokenString,
+                            fallbackName: googleUser.profile?.name,
+                            fallbackEmail: googleUser.profile?.email,
+                            fallbackAvatarURL: fallbackAvatar,
+                            providerUserID: googleUser.userID
                         )
                         currentUser = user
                         saveUserToKeychain(user)
@@ -488,11 +568,20 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
             do {
                 let validatedUser = try await validateSavedUser(savedUser)
                 currentUser = validatedUser
+                saveUserToKeychain(validatedUser)
                 print("✅ 使用保存的用戶數據自動登入成功: \(validatedUser.name)")
                 return
+            } catch let appError as AppError {
+                print("⚠️ 保存的用戶信息無效，清除數據: \(appError)")
+                clearSavedUser()
+                try? KeychainItem.deleteJWTToken()
+                if case .userNotFound = appError {
+                    NotificationCenter.default.post(name: .userSessionExpired, object: nil)
+                }
             } catch {
                 print("⚠️ 保存的用戶信息無效，清除數據: \(error)")
                 clearSavedUser()
+                try? KeychainItem.deleteJWTToken()
             }
         } else {
             print("ℹ️ 沒有找到保存的用戶數據")
@@ -570,9 +659,29 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
     
     /// 驗證保存的用戶信息是否仍然有效
     private func validateSavedUser(_ user: User) async throws -> User {
-        // 這裡可以調用 API 來驗證用戶信息是否仍然有效
-        // 暫時直接返回用戶，在實際應用中應該調用後端 API
-        return user
+        do {
+            let response = try await userAPI.getUserProfile(userId: user.id)
+            let profile = response.data
+            let mappedGender = profile.gender.flatMap { Gender(rawValue: $0) }
+            var validatedUser = User(
+                id: profile.id,
+                name: profile.name,
+                email: profile.email,
+                profileImageURL: profile.avatar,
+                gender: mappedGender
+            )
+            validatedUser.ratingProgress = user.ratingProgress
+            validatedUser.uploadedPhotos = user.uploadedPhotos
+            validatedUser.lastActivityAt = user.lastActivityAt
+            return validatedUser
+        } catch let apiError as APIError {
+            if case .serverError(let statusCode) = apiError, statusCode == 404 {
+                throw AppError.userNotFound
+            }
+            throw AppError.apiError(apiError)
+        } catch {
+            throw AppError.apiError(error)
+        }
     }
     
     // MARK: - Sign Out
@@ -588,6 +697,7 @@ class AuthenticationService: NSObject, ObservableObject, ASAuthorizationControll
         // Delete JWT token from keychain
         try? KeychainItem.deleteJWTToken()
 
+        pendingUserData = nil
         currentUser = nil
 
         // Optional API notification

@@ -55,7 +55,7 @@ extension HomeView {
                 self.homeInfo = response.data
                 self.announcements = []
                 self.statistics = nil
-                
+
                 // Convert top users to top user galleries for compatibility
                 self.topUserGalleries = response.data.topUsers.overall.prefix(5).map { user in
                     TopUserGallery(
@@ -65,6 +65,13 @@ extension HomeView {
                         avatarURL: user.avatar,
                         photoURLs: user.avatar != nil ? [user.avatar!] : []
                     )
+                }
+
+                // Debug logging
+                print("✅ HomeView: Loaded \(response.data.topUsers.overall.count) top users")
+                print("📊 HomeView: topUserGalleries count: \(self.topUserGalleries.count)")
+                for (index, gallery) in self.topUserGalleries.enumerated() {
+                    print("  [\(index+1)] \(gallery.name) - avatar: \(gallery.avatarURL ?? "nil")")
                 }
                 
                 // Convert recent events to event items for compatibility

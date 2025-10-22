@@ -31,37 +31,23 @@ struct JourneyTabView: View {
     
     private var mainContent: some View {
         ZStack {
-            // Grid background with gradient overlay
-            ZStack {
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.06, green: 0.06, blue: 0.08),
-                        Color(red: 0.04, green: 0.04, blue: 0.06),
-                        Color.black
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
-
-                // Grid pattern (iOS 16 compatible)
-                GridPatternView()
-                    .opacity(0.3)
-                    .ignoresSafeArea()
-            }
+            // Pure black background (simplified, matching HomeView)
+            Color.black.ignoresSafeArea()
 
             if isLoaded {
                 ScrollView {
-                    LazyVStack(spacing: 28) {
-                        // 標題
+                    LazyVStack(spacing: 24) {
+                        // Title - Simple white text like HomeView "Discover"
                         HStack {
-                            Text("journey.title".localized)
+                            // Gradient logo-like title: "vibe analysis" (use foregroundStyle to avoid clipping)
+                            Text("vibe analysis")
                                 .font(.system(size: 32, weight: .bold))
                                 .foregroundStyle(
                                     LinearGradient(
                                         colors: [
-                                            Color(red: 255/255, green: 139/255, blue: 148/255),
-                                            Color.white
+                                            Color(red: 255/255, green: 0/255, blue: 92/255),
+                                            Color(red: 155/255, green: 81/255, blue: 224/255),
+                                            Color(red: 94/255, green: 205/255, blue: 200/255)
                                         ],
                                         startPoint: .leading,
                                         endPoint: .trailing
@@ -69,54 +55,67 @@ struct JourneyTabView: View {
                                 )
                             Spacer()
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 15)
 
-                        // Latest photo with score (NEW - moved to top)
-                        LatestPhotoCard(
-                            photo: viewModel.latestPhoto,
-                            score: viewModel.latestPhotoScore
-                        )
-
-                        // 圖表 (circular progress)
-                        JourneyTrendChart(data: viewModel.chartData)
-
+                        // VERSION C: Story Card Flow
+                        // 0. Achievement Badge - Simplified
                         JourneyAchievementBadge(
                             level: viewModel.journeyLevel,
                             overallPerformance: viewModel.overallPerformance
                         )
+                        .padding(.horizontal, 24)
 
-                        // 統計卡片
+                        // 1. Weekly Progress Card - current status first
+                        WeeklyProgressCard(
+                            scoreChange: viewModel.weeklyScoreChange,
+                            currentScore: viewModel.currentWeekScore,
+                            lastScore: viewModel.lastWeekScore,
+                            rankChange: viewModel.weeklyRankChange,
+                            newRatings: viewModel.weeklyNewRatings
+                        )
+                        .padding(.horizontal, 24)
+
+                        // 2. Trend Chart - "7天趨勢"
+                        JourneyTrendChart(data: viewModel.chartData)
+                            .padding(.horizontal, 24)
+
+                        // 3. Gender Attraction with Weekly Changes
                         JourneyStatCards(
-                            overallPerformance: viewModel.overallPerformance,
                             femaleAttraction: viewModel.femaleAttraction,
                             maleAttraction: viewModel.maleAttraction,
-                            currentRankPercentage: viewModel.currentRankPercentage,
-                            totalUsers: viewModel.totalUsers
+                            femaleChange: viewModel.femaleAttractionChange,
+                            maleChange: viewModel.maleAttractionChange,
+                            currentVibeText: viewModel.currentVibeText
                         )
+                        .padding(.horizontal, 24)
 
-                        // AI 改進方案 (付費區塊)
+                        // REMOVED: AI Improvement Section (付費功能)
+                        // 如需恢復，請參考 git history 或以下註釋代碼
+                        /*
                         aiImprovementSection
+                        */
                     }
-                    .padding(.top, 20)
                     .safeAreaInset(edge: .bottom) {
-                        // Avoid being overlapped by custom tab bar on compact-height devices (e.g., iPhone 13 non-fullscreen)
                         Color.clear.frame(height: 90)
                     }
                 }
             } else {
-                // Loading state
+                // Loading state (matching HomeView style)
                 VStack {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         .scaleEffect(1.2)
-                    
+
                     Text("journey.loading_data".localized)
                         .foregroundColor(.white.opacity(0.7))
-                        .padding(.top, 16)
+                        .padding(.top, 12)
                 }
             }
         }
         .navigationBarHidden(true)
+        // REMOVED: Paywall and DressingRoom sheets (付費功能)
+        /*
         .sheet(isPresented: $showingPaywall) {
             PaywallView(isPresented: $showingPaywall) {
                 Task {
@@ -139,11 +138,11 @@ struct JourneyTabView: View {
                 Text("No result available")
             }
         })
+        */
         .onAppear {
             loadDataIfNeeded()
         }
         .onChange(of: authViewModel.user?.id) { newUserId in
-            // When user becomes available or changes, (re)load journey data
             guard let userId = newUserId else { return }
             print("🔁 JourneyTabView: User changed, reloading data for: \(userId)")
             isLoaded = false
@@ -190,14 +189,10 @@ struct JourneyTabView: View {
         }
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
+
+    // REMOVED: aiImprovementSection (付費功能 - AI 改進建議)
+    // 如需恢復此功能，請參考 git history
+    /*
     private var aiImprovementSection: some View {
         VStack(spacing: 16) {
             HStack {
@@ -310,36 +305,11 @@ struct JourneyTabView: View {
         )
         .padding(.horizontal, 20)
     }
+    */
 }
 
-// MARK: - Grid Pattern View (iOS 16 compatible)
-struct GridPatternView: View {
-    var body: some View {
-        GeometryReader { geometry in
-            let gridSize: CGFloat = 20
-            let rows = Int(geometry.size.height / gridSize) + 1
-            let columns = Int(geometry.size.width / gridSize) + 1
-
-            ZStack {
-                // Vertical lines
-                ForEach(0..<columns, id: \.self) { column in
-                    Rectangle()
-                        .fill(Color.white.opacity(0.05))
-                        .frame(width: 1)
-                        .offset(x: CGFloat(column) * gridSize - geometry.size.width / 2)
-                }
-
-                // Horizontal lines
-                ForEach(0..<rows, id: \.self) { row in
-                    Rectangle()
-                        .fill(Color.white.opacity(0.05))
-                        .frame(height: 1)
-                        .offset(y: CGFloat(row) * gridSize - geometry.size.height / 2)
-                }
-            }
-        }
-    }
-}
+// REMOVED: Grid Pattern View (不再使用花俏背景)
+// Journey Page 現在使用純黑背景，與 HomeView 保持一致
 
 #Preview {
     JourneyTabView()

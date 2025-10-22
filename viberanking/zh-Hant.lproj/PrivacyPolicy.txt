@@ -1,7 +1,7 @@
 Privacy Policy for Vibe Rank
 
 Privacy Policy
-Last updated: September 09, 2025
+Last updated: 2025.10.15
 
 This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You.
 
@@ -40,16 +40,12 @@ You means the individual accessing or using the Service, or the company, or othe
 
 Collecting and Using Your Personal Data
 Types of Data Collected
-Personal Data
-While using Our Service, We may ask You to provide Us with certain personally identifiable information that can be used to contact or identify You. Personally identifiable information may include, but is not limited to:
+個人資料
+在使用我們的服務時，我們可能會要求您提供某些可用於聯繫或識別您的個人識別資訊。個人識別資訊可能包括但不限於：
 
-Email address
+電子郵件地址
 
-Phone number
-
-Address, State, Province, ZIP/Postal code, City
-
-Usage Data
+使用資料
 
 Usage Data
 Usage Data is collected automatically when using the Service.
@@ -60,25 +56,21 @@ When You access the Service by or through a mobile device, We may collect certai
 
 We may also collect information that Your browser sends whenever You visit our Service or when You access the Service by or through a mobile device.
 
-Information from Third-Party Social Media Services
-The Company allows You to create an account and log in to use the Service through the following Third-party Social Media Services:
+來自第三方社交媒體服務的資訊
+本公司允許您透過以下第三方社交媒體服務建立帳戶並登入使用服務：
 
 Google
-Facebook
-Instagram
-Twitter
-LinkedIn
-If You decide to register through or otherwise grant us access to a Third-Party Social Media Service, We may collect Personal data that is already associated with Your Third-Party Social Media Service's account, such as Your name, Your email address, Your activities or Your contact list associated with that account.
+Apple
+如果您決定透過第三方社交媒體服務註冊或授權我們存取，我們可能會收集與您第三方社交媒體服務帳戶相關聯的個人資料，例如您的姓名和電子郵件地址。
 
 You may also have the option of sharing additional information with the Company through Your Third-Party Social Media Service's account. If You choose to provide such information and Personal Data, during registration or otherwise, You are giving the Company permission to use, share, and store it in a manner consistent with this Privacy Policy.
 
-Information Collected while Using the Application
-While using Our Application, in order to provide features of Our Application, We may collect, with Your prior permission:
+使用應用程式時收集的資訊
+在使用我們的應用程式時，為了提供應用程式的功能，我們可能會在您事先許可的情況下收集：
 
-Information regarding your location
-Information from your Device's phone book (contacts list)
-Pictures and other information from your Device's camera and photo library
-We use this information to provide features of Our Service, to improve and customize Our Service. The information may be uploaded to the Company's servers and/or a Service Provider's server or it may be simply stored on Your device.
+您的位置資訊
+來自您裝置相機和相簿的圖片及其他資訊
+我們使用這些資訊來提供服務功能、改進和客製化我們的服務。這些資訊可能會上傳至本公司的伺服器和/或服務提供商的伺服器，或僅儲存在您的裝置上。
 
 You can enable or disable access to this information at any time, through Your Device settings.
 

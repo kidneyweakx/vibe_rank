@@ -23,6 +23,7 @@ enum AppError: Error, LocalizedError {
     case invalidURL
     case ratingSubmissionFailed
     case serverError(Int)
+    case needsOnboarding
     case validationError(String)
     
     var errorDescription: String? {
@@ -65,6 +66,8 @@ enum AppError: Error, LocalizedError {
             }
         case .invalidURL:
             return "無效的網址"
+        case .needsOnboarding:
+            return "需要完成初次引導流程"
         case .validationError(let message):
             return message
         }
@@ -111,6 +114,8 @@ enum AppError: Error, LocalizedError {
             default:
                 return "請稍後重試或聯繫客服"
             }
+        case .needsOnboarding:
+            return "請完成新手引導步驟以繼續使用"
         case .invalidURL:
             return "請檢查輸入資料並重試"
         case .validationError:

@@ -154,6 +154,7 @@ extension KeychainItem {
     static let lastNameKey = "com.viberanking.lastname"
     static let emailKey = "com.viberanking.email"
     static let jwtTokenKey = "com.viberanking.jwttoken"
+    static let guestDeviceKey = "com.viberanking.guestdevice"
 
     // MARK: - JWT Token Management
 
@@ -172,6 +173,23 @@ extension KeychainItem {
     /// Delete JWT token from keychain
     static func deleteJWTToken() throws {
         let keychainItem = KeychainItem(service: jwtTokenKey, account: "jwt")
+        try keychainItem.deleteItem()
+    }
+
+    // MARK: - Guest Device Identifier Management
+
+    static func saveGuestDeviceIdentifier(_ identifier: String) throws {
+        let keychainItem = KeychainItem(service: guestDeviceKey, account: "guest_device")
+        try keychainItem.saveItem(identifier)
+    }
+
+    static func readGuestDeviceIdentifier() -> String? {
+        let keychainItem = KeychainItem(service: guestDeviceKey, account: "guest_device")
+        return try? keychainItem.readItem()
+    }
+
+    static func deleteGuestDeviceIdentifier() throws {
+        let keychainItem = KeychainItem(service: guestDeviceKey, account: "guest_device")
         try keychainItem.deleteItem()
     }
 }

@@ -9,7 +9,6 @@ import SwiftUI
 
 struct TrackingPrePromptView: View {
     let onContinue: () -> Void
-    let onLater: () -> Void
 
     private var message: String {
         // Reuse the same localized copy shown by the system ATT dialog
@@ -35,19 +34,19 @@ struct TrackingPrePromptView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
 
+            // Neutral, non-coercive note for compliance
+            Text("You can choose Allow or Ask App Not to Track. Your choice won’t affect core features, and you can change it anytime in Settings.")
+                .font(.footnote)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+
             Spacer()
 
-            HStack(spacing: 12) {
-                Button(NSLocalizedString("cta.later", comment: "Later")) {
-                    onLater()
-                }
-                .buttonStyle(.bordered)
-
-                Button(NSLocalizedString("cta.ok", comment: "OK")) {
-                    onContinue()
-                }
-                .buttonStyle(.borderedProminent)
+            Button("Continue") {
+                onContinue()
             }
+            .buttonStyle(.borderedProminent)
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
         }
@@ -60,7 +59,7 @@ struct TrackingPrePromptView: View {
 #if DEBUG
 struct TrackingPrePromptView_Previews: PreviewProvider {
     static var previews: some View {
-        TrackingPrePromptView(onContinue: {}, onLater: {})
+        TrackingPrePromptView(onContinue: {})
     }
 }
 #endif

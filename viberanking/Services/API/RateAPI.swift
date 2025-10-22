@@ -34,26 +34,108 @@ struct JourneyInfo: Codable {
     let likeCount: Int
     let normalCount: Int
     let totalRatings: Int
-    
+
     // Ranking info
     let overallRank: Int
     let genderRank: Int?
     let totalUsers: Int
-    
+
     // Gender attraction scores (real data)
     let femaleAttraction: Double
     let maleAttraction: Double
-    
+
     // Recent ratings for chart
     let recentRatings: [RecentRating]
-    
+
     // Pre-calculated 7-day trend
     let weeklyTrend: [DailyScore]
-    
+
     // Extended features
     let achievements: [Achievement]
     let nextMilestone: Milestone?
     let levelProgress: LevelProgress
+
+    // Weekly progress data (NEW)
+    let weeklyProgress: WeeklyProgress
+
+    private enum CodingKeys: String, CodingKey {
+        case userId
+        case totalScore
+        case likeCount
+        case normalCount
+        case totalRatings
+        case overallRank
+        case genderRank
+        case totalUsers
+        case femaleAttraction
+        case maleAttraction
+        case recentRatings
+        case weeklyTrend
+        case achievements
+        case nextMilestone
+        case levelProgress
+        case weeklyProgress
+    }
+
+    init(userId: String,
+         totalScore: Double,
+         likeCount: Int,
+         normalCount: Int,
+         totalRatings: Int,
+         overallRank: Int,
+         genderRank: Int?,
+         totalUsers: Int,
+         femaleAttraction: Double,
+         maleAttraction: Double,
+         recentRatings: [RecentRating],
+         weeklyTrend: [DailyScore],
+         achievements: [Achievement],
+         nextMilestone: Milestone?,
+         levelProgress: LevelProgress,
+         weeklyProgress: WeeklyProgress) {
+        self.userId = userId
+        self.totalScore = totalScore
+        self.likeCount = likeCount
+        self.normalCount = normalCount
+        self.totalRatings = totalRatings
+        self.overallRank = overallRank
+        self.genderRank = genderRank
+        self.totalUsers = totalUsers
+        self.femaleAttraction = femaleAttraction
+        self.maleAttraction = maleAttraction
+        self.recentRatings = recentRatings
+        self.weeklyTrend = weeklyTrend
+        self.achievements = achievements
+        self.nextMilestone = nextMilestone
+        self.levelProgress = levelProgress
+        self.weeklyProgress = weeklyProgress
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let stringId = try container.decodeIfPresent(String.self, forKey: .userId) {
+            userId = stringId
+        } else if let intId = try container.decodeIfPresent(Int.self, forKey: .userId) {
+            userId = String(intId)
+        } else {
+            userId = ""
+        }
+        totalScore = try container.decode(Double.self, forKey: .totalScore)
+        likeCount = try container.decode(Int.self, forKey: .likeCount)
+        normalCount = try container.decode(Int.self, forKey: .normalCount)
+        totalRatings = try container.decode(Int.self, forKey: .totalRatings)
+        overallRank = try container.decode(Int.self, forKey: .overallRank)
+        genderRank = try container.decodeIfPresent(Int.self, forKey: .genderRank)
+        totalUsers = try container.decode(Int.self, forKey: .totalUsers)
+        femaleAttraction = try container.decode(Double.self, forKey: .femaleAttraction)
+        maleAttraction = try container.decode(Double.self, forKey: .maleAttraction)
+        recentRatings = try container.decode([RecentRating].self, forKey: .recentRatings)
+        weeklyTrend = try container.decode([DailyScore].self, forKey: .weeklyTrend)
+        achievements = try container.decode([Achievement].self, forKey: .achievements)
+        nextMilestone = try container.decodeIfPresent(Milestone.self, forKey: .nextMilestone)
+        levelProgress = try container.decode(LevelProgress.self, forKey: .levelProgress)
+        weeklyProgress = try container.decode(WeeklyProgress.self, forKey: .weeklyProgress)
+    }
 }
 
 struct DailyScore: Codable {
@@ -84,6 +166,17 @@ struct LevelProgress: Codable {
     let currentScore: Double
     let nextLevelThreshold: Double
     let progressPercentage: Double
+}
+
+struct WeeklyProgress: Codable {
+    let currentWeekScore: Double
+    let lastWeekScore: Double
+    let scoreChange: Double
+    let currentWeekRatings: Int
+    let lastWeekRatings: Int
+    let rankChange: Int // Positive = improved, negative = dropped
+    let femaleAttractionChange: Double
+    let maleAttractionChange: Double
 }
 
 // Backend returns: { id, type, createdAt, raterName, raterGender } (see journeyService.ts:266)
