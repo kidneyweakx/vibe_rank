@@ -12,8 +12,7 @@ struct JourneyStatCards: View {
     let maleAttraction: Double
     let femaleChange: Double // Weekly change
     let maleChange: Double   // Weekly change
-    let currentRankPercentage: String
-    let totalUsers: String
+    let currentVibeText: String
 
     // Black-Red theme
     private let primaryRed = Color(red: 255/255, green: 0/255, blue: 92/255) // #FF005C
@@ -41,14 +40,14 @@ struct JourneyStatCards: View {
                 )
             }
 
-            // Ranking card - Black-red theme
+            // Current Vibe card - neutral, no ranking
             VStack(spacing: 12) {
                 HStack {
-                    Image(systemName: "trophy.fill")
+                    Image(systemName: "waveform.path.ecg")
                         .foregroundColor(primaryRed)
                         .font(.system(size: 16, weight: .semibold))
 
-                    Text("journey.stats.current_percentage".localized)
+                    Text("journey.stats.current_vibe".localized)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.white)
 
@@ -57,24 +56,15 @@ struct JourneyStatCards: View {
 
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("journey.stats.your_ranking".localized)
+                        Text("journey.stats.current_vibe".localized)
                             .font(.system(size: 11, weight: .medium))
                             .foregroundColor(.white.opacity(0.7))
-                        Text(currentRankPercentage)
+                        Text(currentVibeText)
                             .font(.system(size: 22, weight: .bold))
                             .foregroundColor(.white)
                     }
 
                     Spacer()
-
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text("journey.stats.total_users".localized)
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(.white.opacity(0.7))
-                        Text(totalUsers)
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.9))
-                    }
                 }
             }
             .padding(16)

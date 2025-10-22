@@ -396,10 +396,10 @@ private extension ProfileTabView {
                         }
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("#\(viewModel.overallRank)")
+                            Text(viewModel.currentVibeText)
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundColor(.yellow)
-                            Text("profile.rank".localized)
+                            Text("profile.current_vibe".localized)
                                 .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.6))
                         }

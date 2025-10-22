@@ -81,6 +81,10 @@ class JourneyViewModel: BaseViewModel {
         return journeyInfo?.totalUsers.formatted() ?? "0"
     }
 
+    var currentVibeText: String {
+        return String(format: "%.0f", journeyInfo?.totalScore ?? 0.0)
+    }
+
     // MARK: - Weekly Progress Properties
 
     var weeklyScoreChange: Double {

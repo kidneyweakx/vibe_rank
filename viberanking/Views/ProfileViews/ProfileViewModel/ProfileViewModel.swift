@@ -274,8 +274,14 @@ class ProfileViewModel: BaseViewModel {
         return String(journeyInfo?.totalRatings ?? 0)
     }
     
-    var overallRank: String {
+    var topPercentageText: String {
         guard let info = journeyInfo else { return "N/A" }
-        return "#\(info.overallRank)"
+        let percentage = (Double(info.totalUsers - info.overallRank) / Double(info.totalUsers)) * 100
+        return String(format: "journey.stats.top_percentage".localized, Int(percentage))
+    }
+
+    var currentVibeText: String {
+        guard let info = journeyInfo else { return "0" }
+        return String(format: "%.0f", info.totalScore)
     }
 }

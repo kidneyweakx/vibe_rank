@@ -86,8 +86,7 @@ struct JourneyTabView: View {
                             maleAttraction: viewModel.maleAttraction,
                             femaleChange: viewModel.femaleAttractionChange,
                             maleChange: viewModel.maleAttractionChange,
-                            currentRankPercentage: viewModel.currentRankPercentage,
-                            totalUsers: viewModel.totalUsers
+                            currentVibeText: viewModel.currentVibeText
                         )
                         .padding(.horizontal, 24)
 

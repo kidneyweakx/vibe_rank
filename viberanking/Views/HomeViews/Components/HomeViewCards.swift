@@ -178,10 +178,6 @@ struct FeaturedUserCard: View {
                     .foregroundColor(.white)
                     .lineLimit(1)
                 
-                Text("#\(user.rank)")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.yellow)
-                
                 Text(String(format: "%.1f", user.score))
                     .font(.system(size: 10, weight: .medium))
                     .foregroundColor(.white.opacity(0.7))

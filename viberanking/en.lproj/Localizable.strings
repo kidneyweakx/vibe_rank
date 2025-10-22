@@ -609,6 +609,7 @@
 // MARK: - Profile Tab Extras
 "profile.likes" = "Likes";
 "profile.rank" = "Rank";
+"profile.current_vibe" = "Current Vibe";
 "profile.share_profile" = "Share Profile";
 "profile.edit_profile" = "Edit Profile";
 "profile.week" = "Week %d";
@@ -632,6 +633,7 @@
 "journey.stats.female_attraction" = "Female Attraction";
 "journey.stats.male_attraction" = "Male Attraction";
 "journey.stats.current_percentage" = "Current Percentage";
+"journey.stats.current_vibe" = "Current Vibe";
 "journey.stats.your_ranking" = "Your Ranking";
 "journey.stats.total_users" = "Total Users";
 "journey.stats.top_percentage" = "Top %d%%";

@@ -515,6 +515,7 @@
 // MARK: - Profile Tab Extras
 "profile.likes" = "讚";
 "profile.rank" = "排名";
+"profile.current_vibe" = "目前 Vibe";
 "profile.share_profile" = "分享個人檔案";
 "profile.edit_profile" = "編輯個人檔案";
 "profile.week" = "第 %d 週";
@@ -538,6 +539,7 @@
 "journey.stats.female_attraction" = "女性吸引力";
 "journey.stats.male_attraction" = "男性吸引力";
 "journey.stats.current_percentage" = "目前趴數";
+"journey.stats.current_vibe" = "目前 Vibe";
 "journey.stats.your_ranking" = "你的排名";
 "journey.stats.total_users" = "總用戶";
 "journey.stats.top_percentage" = "前 %d%%";

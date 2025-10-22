@@ -76,23 +76,9 @@ struct WeeklyProgressCard: View {
             // Divider
             Divider().background(Color.white.opacity(0.1))
 
-            // Other achievements
+            // Other achievements (neutralized)
             VStack(alignment: .leading, spacing: 8) {
-                // Rank change
-                if rankChange != 0 {
-                    HStack {
-                        Image(systemName: rankChange > 0 ? "trophy.fill" : "arrow.down.circle.fill")
-                            .foregroundColor(rankChange > 0 ? .yellow : .white.opacity(0.5))
-
-                        if rankChange > 0 {
-                            Text(String(format: "journey.weekly_progress.rank_up".localized, abs(rankChange)))
-                                .foregroundColor(.white.opacity(0.9))
-                        } else {
-                            Text(String(format: "journey.weekly_progress.rank_down".localized, abs(rankChange)))
-                                .foregroundColor(.white.opacity(0.7))
-                        }
-                    }
-                }
+                // Removed rank change messaging to avoid comparative framing
 
                 // New ratings
                 if newRatings > 0 {
@@ -105,7 +91,7 @@ struct WeeklyProgressCard: View {
                 }
 
                 // Empty state message
-                if rankChange == 0 && newRatings == 0 {
+                if newRatings == 0 {
                     HStack {
                         Image(systemName: "sparkles")
                             .foregroundColor(.white.opacity(0.5))
