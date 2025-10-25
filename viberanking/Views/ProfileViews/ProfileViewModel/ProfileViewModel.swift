@@ -249,6 +249,32 @@ class ProfileViewModel: BaseViewModel {
         isLoadingProfile = false // Reset loading flag to allow refresh
         await loadUserProfile(userId: currentUserId, forceReload: true)
     }
+
+    func deletePhoto(photoId: String) async {
+        guard !photoId.isEmpty else {
+            print("⚠️ ProfileViewModel: deletePhoto called with empty photoId")
+            return
+        }
+
+        print("🗑️ ProfileViewModel: Attempting to delete photo with id: \(photoId)")
+        setLoading(true)
+        defer { setLoading(false) }
+
+        do {
+            let response = try await fileAPI.deleteFile(photoId: photoId)
+            print("🗑️ ProfileViewModel: Delete API response success: \(response.success)")
+            if response.success {
+                userPhotoInfos.removeAll { $0.id == photoId }
+                userPhotos.removeAll { $0.id == photoId }
+                print("✅ ProfileViewModel: Photo deleted locally and state updated")
+            } else {
+                throw APIError.serverError(400)
+            }
+        } catch {
+            print("❌ ProfileViewModel: Failed to delete photo: \(error)")
+            handleError(error)
+        }
+    }
     
     // MARK: - Computed Properties
     

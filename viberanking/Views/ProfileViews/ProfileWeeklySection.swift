@@ -13,19 +13,25 @@ struct WeekData {
     let days: [DayData]
 }
 
+struct DayPhoto {
+    let id: String
+    let url: String
+}
+
 struct DayData {
     let date: Date
     let dayNumber: Int
     let monthName: String
     let weekdayName: String
-    let photoURLs: [String]
-    var hasPhoto: Bool { !photoURLs.isEmpty }
+    let photos: [DayPhoto]
+    var hasPhoto: Bool { !photos.isEmpty }
 }
 
 // MARK: - Section and Cards
 struct WeeklyPhotoSection: View {
     let week: WeekData
     let onPhotoTap: () -> Void
+    let onPhotoDelete: (String) -> Void
     var focusTodayTrigger: UUID? = nil
     
     var body: some View {
@@ -50,9 +56,9 @@ struct WeeklyPhotoSection: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
                         ForEach(Array(week.days.enumerated()), id: \.offset) { _, day in
-                            let totalSlots = max(1, day.photoURLs.count)
+                            let totalSlots = max(1, day.photos.count)
                             ForEach(0..<totalSlots, id: \.self) { slot in
-                                DayPhotoCard(day: day, slotIndex: slot, onTap: onPhotoTap)
+                                DayPhotoCard(day: day, slotIndex: slot, onTap: onPhotoTap, onDelete: onPhotoDelete)
                                     .id(slot == 0 ? dayAnchorId(for: day) : nil)
                             }
                         }
@@ -91,18 +97,31 @@ struct DayPhotoCard: View {
     let day: DayData
     let slotIndex: Int
     let onTap: () -> Void
+    let onDelete: (String) -> Void
     @State private var isPressed = false
+    @State private var showingDeleteConfirmation = false
+    @State private var pendingDeletionPhotoId: String?
+
+    private var photo: DayPhoto? {
+        day.photos[safe: slotIndex]
+    }
     
     var body: some View {
-        Button(action: onTap) {
+        Button(action: {
+            if let photo {
+                pendingDeletionPhotoId = photo.id
+                showingDeleteConfirmation = true
+            } else {
+                onTap()
+            }
+        }) {
             VStack(spacing: 8) {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.gray.opacity(0.1))
                     .frame(width: 120, height: 160)
                     .overlay(
                         Group {
-                            if slotIndex < day.photoURLs.count,
-                               let urlString = day.photoURLs[safe: slotIndex],
+                            if let urlString = photo?.url,
                                let url = URL(string: urlString) {
                                 AsyncImage(url: url) { phase in
                                     switch phase {
@@ -141,6 +160,18 @@ struct DayPhotoCard: View {
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(day.hasPhoto ? Color.white.opacity(0.2) : Color.gray.opacity(0.1), lineWidth: 1)
                     )
+                    .overlay(
+                        Group {
+                            if photo != nil && showingDeleteConfirmation {
+                                Color.black.opacity(0.6)
+                                    .overlay(
+                                        Text("profile.delete".localized)
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundColor(.white)
+                                    )
+                            }
+                        }
+                    )
                 
                 VStack(spacing: 4) {
                     Text(day.monthName)
@@ -158,10 +189,28 @@ struct DayPhotoCard: View {
         .frame(width: 120)
         .scaleEffect(isPressed ? 0.95 : 1.0)
         .animation(.easeInOut(duration: 0.1), value: isPressed)
-        .onLongPressGesture(minimumDuration: 0) { pressing in
+        .onLongPressGesture(minimumDuration: 0.5) { pressing in
             isPressed = pressing
         } perform: {
-            // Long press action
+            guard let photo else { return }
+            pendingDeletionPhotoId = photo.id
+            showingDeleteConfirmation = true
+        }
+        .confirmationDialog("profile.delete".localized, isPresented: $showingDeleteConfirmation, titleVisibility: .visible) {
+            if photo != nil {
+                Text("profile.delete_photo_prompt".localized)
+            }
+            Button("profile.delete".localized, role: .destructive) {
+                if let photoId = pendingDeletionPhotoId {
+                    onDelete(photoId)
+                }
+                pendingDeletionPhotoId = nil
+                isPressed = false
+            }
+            Button("common.cancel".localized, role: .cancel) {
+                pendingDeletionPhotoId = nil
+                isPressed = false
+            }
         }
     }
 }

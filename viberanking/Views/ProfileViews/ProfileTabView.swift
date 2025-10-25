@@ -449,10 +449,18 @@ private extension ProfileTabView {
         ScrollView {
             LazyVStack(spacing: 24) {
                 ForEach(getRecentWeeks(), id: \.weekNumber) { week in
-                    WeeklyPhotoSection(week: week, onPhotoTap: {
-                        // This should trigger the regular photo upload flow (like + button)
-                        showingUploadMenu = true
-                    }, focusTodayTrigger: focusTodayTrigger)
+                    WeeklyPhotoSection(
+                        week: week,
+                        onPhotoTap: {
+                            showingUploadMenu = true
+                        },
+                        onPhotoDelete: { photoId in
+                            Task {
+                                await viewModel.deletePhoto(photoId: photoId)
+                            }
+                        },
+                        focusTodayTrigger: focusTodayTrigger
+                    )
                 }
             }
             .padding(.horizontal, 16)
@@ -491,12 +499,12 @@ private extension ProfileTabView {
                 let dayNumber = calendar.component(.day, from: dayDate)
                 let monthName = DateFormatter().shortMonthSymbols[calendar.component(.month, from: dayDate) - 1]
                 let weekdayName = DateFormatter().shortWeekdaySymbols[calendar.component(.weekday, from: dayDate) - 1]
-                let urls: [String] = list
-                    .map { $0.urls.bestAvailableURL }  // 使用最佳可用URL而不是縮略圖
-                    .filter { !$0.isEmpty }
-                
-                if !urls.isEmpty {
-                    print("📸 Day \(dayNumber): \(urls.count) photos")
+                let photos: [DayPhoto] = list
+                    .map { DayPhoto(id: $0.id, url: $0.urls.bestAvailableURL) }
+                    .filter { !$0.url.isEmpty }
+
+                if !photos.isEmpty {
+                    print("📸 Day \(dayNumber): \(photos.count) photos")
                 }
                 
                 days.append(DayData(
@@ -504,7 +512,7 @@ private extension ProfileTabView {
                     dayNumber: dayNumber,
                     monthName: monthName,
                     weekdayName: weekdayName,
-                    photoURLs: urls
+                    photos: photos
                 ))
             }
             resultWeeks.append(WeekData(weekNumber: weekNumber, days: days))

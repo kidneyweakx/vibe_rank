@@ -217,6 +217,7 @@
 "profile.delete_account_title" = "アカウントを削除";
 "profile.delete_account_message" = "この操作はアカウントと関連するすべてのデータを永久に削除し、元に戻すことはできません。続行しますか？";
 "profile.delete" = "削除";
+"profile.delete_photo_prompt" = "この写真を削除してもよろしいですか？";
 
 // MARK: - Authentication
 "auth.google_sign_in_hint" = "タップしてGoogleアカウントでサインイン";
