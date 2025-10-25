@@ -217,6 +217,7 @@
 "profile.delete_account_title" = "刪除帳戶";
 "profile.delete_account_message" = "此操作將永久刪除您的帳戶和所有相關資料，且無法復原。您確定要繼續嗎？";
 "profile.delete" = "刪除";
+"profile.delete_photo_prompt" = "確定要刪除這張照片嗎？";
 
 // MARK: - Authentication
 "auth.google_sign_in_hint" = "點擊以使用 Google 帳戶登入";

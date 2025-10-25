@@ -217,6 +217,7 @@
 "profile.delete_account_title" = "Delete Account";
 "profile.delete_account_message" = "This action will permanently delete your account and all related data, and cannot be undone. Are you sure you want to continue?";
 "profile.delete" = "Delete";
+"profile.delete_photo_prompt" = "Are you sure you want to delete this photo?";
 
 // MARK: - Authentication
 "auth.google_sign_in_hint" = "Tap to sign in with Google account";

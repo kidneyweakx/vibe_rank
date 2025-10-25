@@ -9,8 +9,13 @@ import SwiftUI
 import UIKit
 
 struct ImageCropView: View {
-    let image: UIImage
+    private let image: UIImage
     let onCropped: (UIImage) -> Void
+
+    init(image: UIImage, onCropped: @escaping (UIImage) -> Void) {
+        self.image = image.normalizedOrientation()
+        self.onCropped = onCropped
+    }
     
     @Environment(\.dismiss) private var dismiss
     @State private var imageOffset: CGPoint = .zero
@@ -270,7 +275,7 @@ struct ImageCropView: View {
         }
         
         print("✅ 裁切成功，創建新圖片")
-        let croppedImage = UIImage(cgImage: cgImage, scale: image.scale, orientation: image.imageOrientation)
+        let croppedImage = UIImage(cgImage: cgImage, scale: image.scale, orientation: .up)
         onCropped(croppedImage)
         dismiss()
     }
@@ -291,6 +296,18 @@ struct CropCorner: View {
             }
         }
         .frame(width: 20, height: 20)
+    }
+}
+
+private extension UIImage {
+    func normalizedOrientation() -> UIImage {
+        guard imageOrientation != .up else { return self }
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = scale
+        let renderer = UIGraphicsImageRenderer(size: size, format: format)
+        return renderer.image { _ in
+            draw(in: CGRect(origin: .zero, size: size))
+        }
     }
 }
 
