@@ -31,12 +31,14 @@ extension HomeView {
     }
 
 
-    
-    @MainActor
     func loadHomeInfo() async {
-        guard !isLoading else { return }
-        isLoading = true
-        defer { isLoading = false }
+        let started: Bool = await MainActor.run {
+            if isLoading { return false }
+            isLoading = true
+            return true
+        }
+        guard started else { return }
+        defer { Task { await MainActor.run { isLoading = false } } }
 
         let maxAttempts = 3
         var attempt = 0
@@ -52,12 +54,8 @@ extension HomeView {
                 let response = try await HomeInfoAPI().getHomeInfo()
                 if Task.isCancelled { return }
 
-                self.homeInfo = response.data
-                self.announcements = []
-                self.statistics = nil
-
-                // Convert top users to top user galleries for compatibility
-                self.topUserGalleries = response.data.topUsers.overall.prefix(5).map { user in
+                // Prepare view models off the main actor
+                let computedTopGalleries: [TopUserGallery] = response.data.topUsers.overall.prefix(5).map { user in
                     TopUserGallery(
                         userId: user.userId,
                         name: user.name,
@@ -67,15 +65,7 @@ extension HomeView {
                     )
                 }
 
-                // Debug logging
-                print("✅ HomeView: Loaded \(response.data.topUsers.overall.count) top users")
-                print("📊 HomeView: topUserGalleries count: \(self.topUserGalleries.count)")
-                for (index, gallery) in self.topUserGalleries.enumerated() {
-                    print("  [\(index+1)] \(gallery.name) - avatar: \(gallery.avatarURL ?? "nil")")
-                }
-                
-                // Convert recent events to event items for compatibility
-                self.events = response.data.recentEvents.map { event in
+                let computedEvents: [EventItem] = response.data.recentEvents.map { event in
                     EventItem(
                         id: event.id,
                         title: event.title,
@@ -90,9 +80,34 @@ extension HomeView {
                         isActive: true
                     )
                 }
-                
-                withAnimation(.easeInOut(duration: 0.25)) { 
-                    self.isLoaded = true 
+
+                // Start prefetching images in the background (avatars + event images)
+                let avatarURLs = computedTopGalleries.compactMap { $0.avatarURL }
+                let eventImageURLs = computedEvents.compactMap { $0.imageURL }
+                let uniqueURLs = Array(Set(avatarURLs + eventImageURLs))
+                if !uniqueURLs.isEmpty {
+                    Task.detached(priority: .utility) {
+                        ImageCache.shared.preloadImages(urls: uniqueURLs)
+                    }
+                }
+
+                // Debug logging
+                print("✅ HomeView: Loaded \(response.data.topUsers.overall.count) top users")
+                print("📊 HomeView: topUserGalleries count: \(computedTopGalleries.count)")
+                for (index, gallery) in computedTopGalleries.enumerated() {
+                    print("  [\(index+1)] \(gallery.name) - avatar: \(gallery.avatarURL ?? "nil")")
+                }
+
+                // Apply to UI on main actor
+                await MainActor.run {
+                    self.homeInfo = response.data
+                    self.announcements = []
+                    self.statistics = nil
+                    self.topUserGalleries = computedTopGalleries
+                    self.events = computedEvents
+                    withAnimation(.easeInOut(duration: 0.25)) { 
+                        self.isLoaded = true 
+                    }
                 }
                 return
             } catch is CancellationError {
@@ -141,17 +156,19 @@ extension HomeView {
         if let lastError = lastError {
             print("❌ HomeView: Failed to load home info after retries: \(lastError)")
         }
-        self.topUserGalleries = []
-        self.events = []
-        self.eventPhotos = []
-        self.homeInfo = nil
-        self.announcements = []
-        self.statistics = nil
-        withAnimation(.easeInOut(duration: 0.25)) { 
-            self.isLoaded = true 
+        await MainActor.run {
+            self.topUserGalleries = []
+            self.events = []
+            self.eventPhotos = []
+            self.homeInfo = nil
+            self.announcements = []
+            self.statistics = nil
+            withAnimation(.easeInOut(duration: 0.25)) { 
+                self.isLoaded = true 
+            }
         }
     }
-    
+
 
 
     func fetchEvents() async -> [EventItem] {
