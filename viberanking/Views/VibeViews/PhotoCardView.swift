@@ -25,17 +25,20 @@ struct PhotoCardView: View {
         let urlString = photo.imageURL.bestAvailableURL
         
         return ZStack {
-            // 16:9 Card container
-            ZStack {
-                // Show cached image first if available
-                if let cachedImage = cachedImage {
-                    imageView(image: cachedImage)
-                } else {
-                    optimizedImageLoader(urlString: urlString)
+            // 9:16 Card container (portrait)
+            GeometryReader { proxy in
+                ZStack {
+                    // Show cached image first if available
+                    if let cachedImage = cachedImage {
+                        imageView(image: cachedImage, size: proxy.size)
+                    } else {
+                        optimizedImageLoader(urlString: urlString, size: proxy.size)
+                    }
                 }
+                .frame(width: proxy.size.width, height: proxy.size.height)
             }
             .frame(maxWidth: .infinity)
-            .aspectRatio(16/9, contentMode: .fit)
+            .aspectRatio(9/16, contentMode: .fit)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 6)
             
@@ -71,28 +74,29 @@ struct PhotoCardView: View {
     
     // MARK: - Optimized Image Loader
     @ViewBuilder
-    private func optimizedImageLoader(urlString: String) -> some View {
+    private func optimizedImageLoader(urlString: String, size: CGSize) -> some View {
         switch imageLoadState {
         case .loading:
             loadingPlaceholder
+                .frame(width: size.width, height: size.height)
                 .onAppear {
                     startImageLoad(urlString: urlString)
                 }
         case .success(let image):
-            imageView(image: image)
+            imageView(image: image, size: size)
         case .failure:
             errorPlaceholder
+                .frame(width: size.width, height: size.height)
         }
     }
 
     /// Centralized image rendering with optional blur based on safety setting
     @ViewBuilder
-    private func imageView(image: UIImage) -> some View {
+    private func imageView(image: UIImage, size: CGSize) -> some View {
         let blurEnabled = UserDefaults.standard.bool(forKey: "safety_blur_enabled")
         Image(uiImage: image)
             .resizable()
-            .scaledToFill()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(width: size.width, height: size.height)
             .clipped()
             .if(blurEnabled) { view in
                 view.blur(radius: 10)
@@ -125,7 +129,6 @@ struct PhotoCardView: View {
                     .foregroundColor(.white)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private var errorPlaceholder: some View {
@@ -139,7 +142,6 @@ struct PhotoCardView: View {
                     .foregroundColor(.white)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private var swipeIndicators: some View {

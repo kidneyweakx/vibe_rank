@@ -11,6 +11,7 @@ import UserNotifications
 struct OnboardingStepNotifications: View {
     let complete: () -> Void
     let back: () -> Void
+    let onToggle: (Bool) -> Void
 
     @State private var selectedTime: Date = defaultInitialTime()
     @State private var isScheduling: Bool = false
@@ -146,6 +147,7 @@ struct OnboardingStepNotifications: View {
                         await MainActor.run {
                             notificationsEnabled = false
                             errorMessage = "onb.notif.permission_denied".localized(table: "Onboarding")
+                            onToggle(false)
                         }
                         return
                     }
@@ -157,15 +159,20 @@ struct OnboardingStepNotifications: View {
                             let formatter = DateFormatter()
                             formatter.timeStyle = .short
                             scheduledInfo = String(format: "onb.notif.scheduled".localized(table: "Onboarding"), formatter.string(from: selectedTime))
+                            onToggle(true)
                         }
                     } catch {
                         await MainActor.run {
                             notificationsEnabled = false
                             errorMessage = error.localizedDescription
+                            onToggle(false)
                         }
                     }
                 } else {
                     await LocalNotificationService.shared.cancelDailyReminder()
+                    await MainActor.run {
+                        onToggle(false)
+                    }
                 }
             }
         }
@@ -240,7 +247,7 @@ private extension OnboardingStepNotifications {
 }
 
 #Preview {
-    OnboardingStepNotifications(complete: {}, back: {})
+    OnboardingStepNotifications(complete: {}, back: {}, onToggle: { _ in })
 }
 
 

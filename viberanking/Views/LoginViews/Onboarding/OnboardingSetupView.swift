@@ -53,7 +53,13 @@ struct OnboardingSetupView: View {
                 OnboardingStepTimeInvestment(next: { hours in answers.timeInvestmentHours = hours; goNext() }, back: goBack)
                     .tag(6)
 
-                OnboardingStepNotifications(complete: completeOnboarding, back: goBack)
+                OnboardingStepNotifications(
+                    complete: completeOnboarding,
+                    back: goBack,
+                    onToggle: { enabled in
+                        answers.notificationsEnabled = enabled
+                    }
+                )
                     .tag(7)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))

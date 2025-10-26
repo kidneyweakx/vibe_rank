@@ -25,6 +25,28 @@ class APIClient {
         return try? KeychainItem.readJWTToken()
     }
     
+    /// Decode JWT token to see its payload
+    private func decodeJWTToken(_ token: String) -> [String: Any]? {
+        let parts = token.components(separatedBy: ".")
+        guard parts.count == 3 else { return nil }
+        
+        // JWT payload is base64url encoded (second part)
+        var base64 = parts[1]
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        
+        // Add padding if needed
+        let paddingLength = (4 - base64.count % 4) % 4
+        base64 = base64.padding(toLength: base64.count + paddingLength, withPad: "=", startingAt: 0)
+        
+        guard let data = Data(base64Encoded: base64),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return nil
+        }
+        
+        return json
+    }
+    
     /// Perform a generic API request
     func performRequest<T: Decodable>(
         endpoint: String,
@@ -43,6 +65,15 @@ class APIClient {
         // Add JWT token if available
         if let jwtToken = getJWTToken() {
             request.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
+            // Debug: Print JWT token details (first 50 chars for security)
+            print("🔑 JWT Token (partial): \(String(jwtToken.prefix(50)))...")
+            
+            // Debug: Decode JWT payload to see what's inside
+            if let jwtPayload = decodeJWTToken(jwtToken) {
+                print("🔍 JWT Payload: \(jwtPayload)")
+            }
+        } else {
+            print("⚠️ No JWT token found in keychain")
         }
         
         if let body = body {
