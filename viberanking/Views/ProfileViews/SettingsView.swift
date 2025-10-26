@@ -19,8 +19,6 @@ struct SettingsView: View {
     @State private var showContact = false
     @State private var name = ""
     @State private var customUserID: String = ""
-    @State private var isCheckingID = false
-    @State private var idAvailable: Bool? = nil
     @State private var pendingAvatarURL: String? = nil
     @State private var showingSpotlightResetAlert = false
     @State private var notificationsEnabled = false
@@ -93,60 +91,29 @@ struct SettingsView: View {
                             
                             VStack(spacing: 16) {
                                 SettingsTextField(title: "Name", text: $name, placeholder: "Enter your name")
-                                // Username / ID
+                                // User ID (non-editable)
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text("User ID")
                                         .font(.system(size: 14, weight: .medium))
                                         .foregroundColor(.white.opacity(0.8))
-                                    HStack(spacing: 8) {
-                                        TextField("Enter your user ID", text: $customUserID)
-                                            .autocapitalization(.none)
-                                            .disableAutocorrection(true)
-                                            .font(.system(size: 16))
-                                            .foregroundColor(.white)
-                                            .padding(16)
-                                            .background(
-                                                RoundedRectangle(cornerRadius: 12)
-                                                    .fill(Color.black.opacity(0.4))
-                                                    .overlay(
-                                                        RoundedRectangle(cornerRadius: 12)
-                                                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                                                    )
-                                            )
-                                            .onChange(of: customUserID) { _ in
-                                                idAvailable = nil
-                                            }
-                                        Button(action: {
-                                            Task {
-                                                isCheckingID = true
-                                                let trimmed = customUserID.trimmingCharacters(in: .whitespacesAndNewlines)
-                                                if trimmed.isEmpty {
-                                                    idAvailable = nil
-                                                    isCheckingID = false
-                                                    return
-                                                }
-                                                let available = await authViewModel.checkUserIDAvailability(trimmed)
-                                                await MainActor.run {
-                                                    idAvailable = available
-                                                    isCheckingID = false
-                                                }
-                                            }
-                                        }) {
-                                            if isCheckingID { ProgressView().tint(.white) } else { Text("Check").font(.system(size: 14, weight: .semibold)) }
-                                        }
-                                        .padding(.horizontal, 12)
-                                        .frame(height: 44)
-                                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.black.opacity(0.5)))
-                                    }
-                                    if let idAvailable = idAvailable {
-                                        Text(idAvailable ? "This ID is available" : "This ID is taken")
-                                            .font(.system(size: 12))
-                                            .foregroundColor(idAvailable ? .green : .red)
-                                    } else {
-                                        Text("ID can be changed here. We will check availability.")
-                                            .font(.system(size: 12))
-                                            .foregroundColor(.secondary)
-                                    }
+                                    TextField("Enter your user ID", text: $customUserID)
+                                        .autocapitalization(.none)
+                                        .disableAutocorrection(true)
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.white.opacity(0.5))
+                                        .padding(16)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.black.opacity(0.4))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                                                )
+                                        )
+                                        .disabled(true)
+                                    Text("User ID cannot be changed after account creation.")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.secondary)
                                 }
                             }
                         }
@@ -367,26 +334,20 @@ struct SettingsView: View {
     }
     
     private func saveSettings() {
-        let trimmedId = customUserID.trimmingCharacters(in: .whitespacesAndNewlines)
-        let currentId = authViewModel.user?.id ?? ""
         Task {
-            // Change ID first if different
-            if !trimmedId.isEmpty, trimmedId != currentId {
-                let available = await authViewModel.checkUserIDAvailability(trimmedId)
-                if available {
-                    await MainActor.run { self.isCheckingID = true }
-                    do { try await authViewModel.changeUserID(to: trimmedId) } catch { await MainActor.run { self.isCheckingID = false }; return }
-                    await MainActor.run { self.isCheckingID = false }
-                } else {
-                    await MainActor.run { self.idAvailable = false }
-                    return
-                }
-            }
             // Update name only (gender editing disabled)
-            do { try await authViewModel.saveProfileEdits(name: name.isEmpty ? nil : name, gender: nil) } catch { return }
+            do { 
+                try await authViewModel.saveProfileEdits(name: name.isEmpty ? nil : name, gender: nil) 
+            } catch { 
+                return 
+            }
             // Apply pending avatar URL if any
             if let avatar = pendingAvatarURL {
-                do { try await authViewModel.saveAvatar(urlString: avatar) } catch { /* ignore to not block */ }
+                do { 
+                    try await authViewModel.saveAvatar(urlString: avatar) 
+                } catch { 
+                    /* ignore to not block */ 
+                }
             }
             await MainActor.run { dismiss() }
         }
